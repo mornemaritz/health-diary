@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-diary-dep
+spec:
+  selector:
+    matchLabels:
+      app: health-diary-dep
+  template:
+    metadata:
+      labels:
+        app: health-diary-dep
+    spec:
+      containers:
+      - name: health-diary-dep
+        image: container-registry.local:32000/health-diary-ui:v0.1.0
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: health-diary-svc
+spec:
+  selector:
+    app: health-diary-dep
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: LoadBalancer
