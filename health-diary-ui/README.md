@@ -1,69 +1,81 @@
-# React + TypeScript + Vite
+# health-diary-ui
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based web application for tracking daily health and care activities.
 
-Currently, two official plugins are available:
+## Features
+The features for this app are currently specific to a use case of tracking health events and actions for a young child. The vision is to add features that enable the tracking of more extensive health events and actions for a broader range of subjects, and include, for example healthcare encounters and data derived from wearables.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Current Features
+- Track bottle feeds with time and volume
+- Record medication administration
+- Monitor solid food intake
+- Log diaper changes
+- Add daily notes
+- Track sleep patterns
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js (v16 or higher)
+- npm (v8 or higher)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Install dependencies
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Start development server
+npm run dev
 ```
+
+The application will be available at `http://localhost:3000`
+
+## Building for Production
+
+```bash
+# Create production build
+npm run build
+```
+
+## Build and publish container images
+```bash
+docker build -t health-diary-ui:{version} .
+```
+currently images are pushed to a local microk8s registry
+
+## Technology Stack
+
+- React
+- TypeScript
+- Material-UI (MUI)
+- Moment.js
+- Vite
+
+## Project Structure
+
+```
+health-diary-ui/
+├── src/
+│   ├── components/    # Reusable UI components
+│   ├── pages/        # Page components
+│   ├── types/        # TypeScript type definitions
+│   └── utils/        # Utility functions
+├── public/           # Static assets
+└── package.json      # Project dependencies and scripts
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+MIT License
