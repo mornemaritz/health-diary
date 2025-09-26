@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.9 (2025-09-26)
+
+
+### Features
+
+* sync app and image version? ([4514d21](https://github.com/mornemaritz/health-diary/commit/4514d219055e715d3313af3edd1c6d7b6e38e636))
+
 ### 0.0.8 (2025-09-26)
 
 
