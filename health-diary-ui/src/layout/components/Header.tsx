@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 
-const TopMenu: React.FC = () => {
+const Header: React.FC = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -29,4 +29,4 @@ const TopMenu: React.FC = () => {
   );
 }
 
-export default TopMenu;
+export default Header;

@@ -1,11 +1,13 @@
 import React from 'react';
-import TopMenu from './TopMenu';
+import Header from './Header';
 import Summary from '../../pages/components/Summary';
+import Footer from './Footer';
 
 const Home: React.FC = () =>(
   <>
-  <TopMenu />
+  <Header />
   <Summary />
+  <Footer />
   </>
 )
 export default Home;
