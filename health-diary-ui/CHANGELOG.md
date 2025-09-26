@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.6 (2025-09-26)
+
+
+### Features
+
+* end-to-end ci cd test ([b30a111](https://github.com/mornemaritz/health-diary/commit/b30a11155063708dc11e4f0eea32270a3e369e45))
+
 ### 0.0.5 (2025-09-26)
 
 
