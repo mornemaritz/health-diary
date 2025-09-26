@@ -82,6 +82,6 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ github.repository }}/health-diary-ui:latest
-          ghcr.io/${{ github.repository }}/health-diary-ui:${{ needs.build-and-test.outputs.NEW_VERSION }}
+          ghcr.io/${{ github.repository }}/health-diary-ui:${{ needs.build-and-test.bump_version.outputs.NEW_VERSION }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
