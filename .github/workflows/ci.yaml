@@ -87,3 +87,29 @@ jobs:
           ghcr.io/${{ github.repository }}/health-diary-ui:${{ needs.build-and-test.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [docker, build-and-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout rendered gitops repository
+      uses: actions/checkout@v4
+      with:
+        repository: mornemaritz/gitops-helm-application-repo
+        ref: 'main'
+        token:  ${{ secrets.GITHUB_TOKEN }}
+    - name: setup git config for gitops repo
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "noreply.githubactionsbot@no-mail.com"
+    - name: Update Helm values with new image tag
+      run: |
+        sed -i "s|tag: .*|tag: \"${{ needs.build-and-test.outputs.version }}\"|g" ./configurations/local-microk8s/health-diary/values.yaml
+        cat ./configurations/local-microk8s/health-diary/values.yaml
+    - name: Commit and Push changes to GitOps repo
+      run: |
+        git add .
+        git commit -m"Bake manifest ${{ needs.build-and-test.outputs.version }}"
+        git push origin main
