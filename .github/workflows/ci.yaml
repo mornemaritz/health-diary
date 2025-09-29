@@ -48,6 +48,10 @@ jobs:
       id: bump_version
       working-directory: ./health-diary-ui
       run: |
+        echo '==============================================================='
+        echo 'Formatted git log:'
+        git log --format=%B%n-hash-%n%H%n-gitTags-%n%d%n-committerDate-%n%ci%n
+        echo '==============================================================='
         npm install -g standard-version
         npx standard-version --verbose
         echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
