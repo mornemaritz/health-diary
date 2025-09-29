@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<<<<<<< Updated upstream
+### 0.0.13 (2025-09-29)
+
+
+### Features
+
+* change to confirm versioning issue - take 2 ([e619ed4](https://github.com/mornemaritz/health-diary/commit/e619ed449473735aa48349aa1d0c67c16a97ae8a))
+
 ### 0.0.12 (2025-09-29)
 
 
