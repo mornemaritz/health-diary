@@ -1,8 +1,13 @@
 # Changelog
 
-# change to confirm versioning issue - take 3
-
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### 0.0.14 (2025-09-29)
+
+
+### Features
+
+* change to confirm versioning issue - take 3 ([cf81a36](https://github.com/mornemaritz/health-diary/commit/cf81a366858be4a74888f0a02a8f9aad4f39ccd4))
 
 ### 0.0.13 (2025-09-29)
 
