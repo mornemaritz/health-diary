@@ -47,16 +47,25 @@ jobs:
         git config user.name "GitHub Actions Bot"
         git config user.email "noreply.githubactionsbot@no-mail.com"
 
+    - name: Fetch all tags
+      run: git fetch --tags origin
+
     - name: Bump Version and Create Tag
       id: bump_version
       working-directory: ./health-diary-ui
       run: |
-        echo '==============================================================='
-        echo 'Formatted git log:'
+        echo '================== git log ============================'
         git log --format=%B%n-hash-%n%H%n-gitTags-%n%d%n-committerDate-%n%ci%n
-        echo '==============================================================='
+        echo '================== end git log ============================'
+        echo '================== git fetch tags ============================'
+        git fetch --all --tags
+        echo '================== end git fetch tags ============================'
+        echo '================== install standard-version ============================'
         npm install -g standard-version
+        echo '================== end install standard-version ============================'
+        echo '================== run standard-version ============================'
         npx standard-version --verbose
+        echo '================== run standard-version ============================'
         echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
     - name: Push Changes and Tags
