@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.17](https://github.com/mornemaritz/health-diary/compare/v0.0.16...v0.0.17) (2025-09-30)
+
+
+### Features
+
+* copilot suggested fix for versioning issue ([cc3879c](https://github.com/mornemaritz/health-diary/commit/cc3879c77c2defa81810a2df6ed49305b1e82183))
+
 ### [0.0.16](https://github.com/mornemaritz/health-diary/compare/v0.0.15...v0.0.16) (2025-09-30)
 
 
