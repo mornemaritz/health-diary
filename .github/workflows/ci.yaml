@@ -15,7 +15,7 @@ jobs:
   build-test-tag:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.semver.outputs.NEW_VERSION }}
+      version: ${{ steps.semver.outputs.next }}
     
     steps:
     - uses: actions/checkout@v5
@@ -54,9 +54,9 @@ jobs:
 
     - name: write version to package.json
       run: |
-        echo "NEW_VERSION=${{ steps.semver.outputs.NEW_VERSION }}" >> $GITHUB_ENV
         cd ./health-diary-ui
-        npm version ${{ steps.semver.outputs.NEW_VERSION }} --no-git-tag-version
+        npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
+        echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         cat package.json
 
     - name: Push Changes and Tags
@@ -117,7 +117,7 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ github.repository }}/health-diary-ui:latest
-          ghcr.io/${{ github.repository }}/health-diary-ui:${{ needs.build-and-test.outputs.version }}
+          ghcr.io/${{ github.repository }}/health-diary-ui:${{ needs.build-test-tag.outputs.version }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
