@@ -12,10 +12,10 @@ permissions:
   packages: write
 
 jobs:
-  build-and-test:
+  build-test-tag:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.bump_version.outputs.NEW_VERSION }}
+      version: ${{ steps.semver.outputs.NEW_VERSION }}
     
     steps:
     - uses: actions/checkout@v5
@@ -52,19 +52,12 @@ jobs:
         token: ${{ github.token }}
         branch: main
 
-    - name: Push Changes and Tags
-      uses: ad-m/github-push-action@v0.6.0
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: main
-        tags: true
-
-    - name: Update CHANGELOG
-      id: changelog
-      uses: requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ github.ref_name }}        
+    # - name: Push Changes and Tags
+    #   uses: ad-m/github-push-action@v0.6.0
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     branch: main
+    #     tags: true
 
     - name: Create Release
       uses: ncipollo/release-action@v1.12.0
@@ -75,6 +68,18 @@ jobs:
         name: ${{ steps.semver.outputs.next }}
         body: Changelog Contents
         token: ${{ github.token }}
+
+  # release:
+  #   needs: build-test-tag
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+    - name: Update CHANGELOG
+      id: changelog
+      uses: requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ github.ref_name }}        
 
     - name: Commit CHANGELOG.md
       uses: stefanzweifel/git-auto-commit-action@v4

@@ -1,4 +1,4 @@
-# switch to ietf-tools/semver-action@v1 for tag creation, requarks/changelog-action@v1 for changelog creation and ncipollo/release-action@v1.12.0 for release creation
+# re-orgnise steps
 
 # Changelog
 
