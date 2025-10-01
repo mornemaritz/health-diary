@@ -58,6 +58,7 @@ jobs:
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
         echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         cat package.json
+        git add .
         git commit -m"chore(release) ${{ steps.semver.outputs.next }}"
 
     - name: Push Changes and Tags
