@@ -52,12 +52,26 @@ jobs:
         token: ${{ github.token }}
         branch: main
 
-    # - name: Push Changes and Tags
-    #   uses: ad-m/github-push-action@v0.6.0
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     branch: main
-    #     tags: true
+    - name: write version to package.json
+      run: |
+        echo "NEW_VERSION=${{ steps.semver.outputs.NEW_VERSION }}" >> $GITHUB_ENV
+        cd ./health-diary-ui
+        npm version ${{ steps.semver.outputs.NEW_VERSION }} --no-git-tag-version
+        cat package.json
+
+    - name: Push Changes and Tags
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        tags: true
+
+    - name: Update CHANGELOG
+      id: changelog
+      uses: requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ github.ref_name }}        
 
     - name: Create Release
       uses: ncipollo/release-action@v1.12.0
@@ -69,18 +83,6 @@ jobs:
         body: Changelog Contents
         token: ${{ github.token }}
 
-  # release:
-  #   needs: build-test-tag
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-    - name: Update CHANGELOG
-      id: changelog
-      uses: requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ github.ref_name }}        
-
     - name: Commit CHANGELOG.md
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
@@ -89,7 +91,7 @@ jobs:
         file_pattern: CHANGELOG.md        
 
   docker:
-    needs: build-and-test
+    needs: build-test-tag
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -120,7 +122,7 @@ jobs:
         cache-to: type=gha,mode=max
 
   deploy:
-    needs: [docker, build-and-test]
+    needs: [docker, build-test-tag]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
@@ -137,10 +139,10 @@ jobs:
         git config user.email "noreply.githubactionsbot@no-mail.com"
     - name: Update Helm values with new image tag
       run: |
-        sed -i "s|tag: .*|tag: \"${{ needs.build-and-test.outputs.version }}\"|g" ./configurations/local-microk8s/health-diary/values.yaml
+        sed -i "s|tag: .*|tag: \"${{ needs.build-test-tag.outputs.version }}\"|g" ./configurations/local-microk8s/health-diary/values.yaml
         cat ./configurations/local-microk8s/health-diary/values.yaml
     - name: Commit and Push changes to GitOps repo
       run: |
         git add .
-        git commit -m"Bake manifest ${{ needs.build-and-test.outputs.version }}"
+        git commit -m"Bake manifest ${{ needs.build-test-tag.outputs.version }}"
         git push origin main
