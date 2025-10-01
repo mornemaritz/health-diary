@@ -56,7 +56,6 @@ jobs:
       run: |
         cd ./health-diary-ui
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
-        echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         cat package.json
         git add .
         git commit -m"chore(release) ${{ steps.semver.outputs.next }}"
@@ -149,4 +148,5 @@ jobs:
       run: |
         git add .
         git commit -m"Bake manifest ${{ needs.build-test-tag.outputs.version }}"
-        git push origin main
+        git tag ${{ needs.build-test-tag.outputs.version }}
+        git push --follow-tags origin main
