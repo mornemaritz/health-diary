@@ -19,9 +19,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v5
-      with:
-        fetch-depth: 0  # Fetch all history
-        fetch-tags: true # Ensure tags are fetched for versioning
 
     - name: Set up Node.js
       uses: actions/setup-node@v5
@@ -34,6 +31,7 @@ jobs:
       working-directory: ./health-diary-ui
       run: npm ci
 
+    # TODO: Enable tests once they are implemented
     # - name: Run Tests
     #   working-directory: ./health-diary-ui
     #   run: npm test
@@ -42,38 +40,48 @@ jobs:
       working-directory: ./health-diary-ui
       run: npm run build
 
-    - name: setup git config for pushing version tag
-      run: |
-        git config user.name "GitHub Actions Bot"
-        git config user.email "noreply.githubactionsbot@no-mail.com"
-
-    - name: Fetch all tags
-      run: git fetch --tags origin
+    # - name: setup git config for pushing version tag
+    #   run: |
+    #     git config user.name "GitHub Actions Bot"
+    #     git config user.email "noreply.githubactionsbot@no-mail.com"
 
     - name: Bump Version and Create Tag
-      id: bump_version
-      working-directory: ./health-diary-ui
-      run: |
-        echo '================== git log ============================'
-        git log --format=%B%n-hash-%n%H%n-gitTags-%n%d%n-committerDate-%n%ci%n
-        echo '================== end git log ============================'
-        echo '================== git fetch tags ============================'
-        git fetch --all --tags
-        echo '================== end git fetch tags ============================'
-        echo '================== install standard-version ============================'
-        npm install -g standard-version
-        echo '================== end install standard-version ============================'
-        echo '================== run standard-version ============================'
-        npx standard-version --verbose
-        echo '================== run standard-version ============================'
-        echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-    - name: Push Changes and Tags
-      uses: ad-m/github-push-action@v0.6.0
+      id: semver
+      uses: ietf-tools/semver-action@v1
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
         branch: main
-        tags: true
+
+    - name: Update CHANGELOG
+      id: changelog
+      uses: requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ github.ref_name }}        
+
+    - name: Create Release
+      uses: ncipollo/release-action@v1.12.0
+      with:
+        allowUpdates: true
+        draft: false
+        makeLatest: true
+        name: ${{ steps.semver.outputs.next }}
+        body: Changelog Contents
+        token: ${{ github.token }}
+
+    - name: Commit CHANGELOG.md
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        branch: main
+        commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
+        file_pattern: CHANGELOG.md        
+
+    # - name: Push Changes and Tags
+    #   uses: ad-m/github-push-action@v0.6.0
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
+    #     branch: main
+    #     tags: true
 
   docker:
     needs: build-and-test

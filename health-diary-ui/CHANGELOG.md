@@ -1,3 +1,5 @@
+# switch to ietf-tools/semver-action@v1 for tag creation, requarks/changelog-action@v1 for changelog creation and ncipollo/release-action@v1.12.0 for release creation
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
