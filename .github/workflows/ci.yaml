@@ -52,6 +52,13 @@ jobs:
         token: ${{ github.token }}
         branch: main
 
+    - name: Push Changes and Tags
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        tags: true
+
     - name: Update CHANGELOG
       id: changelog
       uses: requarks/changelog-action@v1
@@ -75,13 +82,6 @@ jobs:
         branch: main
         commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
         file_pattern: CHANGELOG.md        
-
-    # - name: Push Changes and Tags
-    #   uses: ad-m/github-push-action@v0.6.0
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     branch: main
-    #     tags: true
 
   docker:
     needs: build-and-test
