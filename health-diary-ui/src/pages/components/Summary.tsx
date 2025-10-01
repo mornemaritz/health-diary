@@ -1,4 +1,5 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { styled } from '@mui/material/styles';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
@@ -10,6 +11,18 @@ import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-picker
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useState } from "react";
+
+const AccentedTableHead = styled(TableHead)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.light,
+  '& .MuiTableCell-head': {
+    color: theme.palette.getContrastText(theme.palette.primary.light)
+  },
+}));
+
+const VerticallyBorderedCell = styled(TableCell)(({ theme }) => ({
+  borderLeft: `1px solid ${theme.palette.divider}`,
+  borderRight: `1px solid ${theme.palette.divider}`,
+}));
 
 const bottleRows = [
   createBottleData('07:00am', 60),
@@ -65,23 +78,20 @@ const Summary: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 100 }} aria-label="simple table">
-              <TableHead>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
+              <AccentedTableHead>
                 <TableRow>
-                  <TableCell>Time</TableCell>
-                  <TableCell align="right">Size (ml)</TableCell>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell align="right">Size (ml)</VerticallyBorderedCell>
                 </TableRow>
-              </TableHead>
+              </AccentedTableHead>
               <TableBody>
                 {bottleRows.map((row) => (
-                  <TableRow
-                    key={row.time}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
+                  <TableRow>
+                    <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
-                    </TableCell>
-                    <TableCell align="right">{row.size}</TableCell>
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell align="right">{row.size}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -135,27 +145,24 @@ const Summary: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <TableContainer component={Paper} sx={{ marginRight: 1 }}>
-            <Table sx={{ minWidth: 100 }} aria-label="simple table">
-              <TableHead>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="nappy table">
+              <AccentedTableHead>
                 <TableRow>
-                  <TableCell>Time</TableCell>
-                  <TableCell>Size</TableCell>
-                  <TableCell>Consistency</TableCell>
-                  <TableCell>Color</TableCell>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Size</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Consistency</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Color</VerticallyBorderedCell>
                 </TableRow>
-              </TableHead>
+              </AccentedTableHead>
               <TableBody>
                 {nappyRows.map((row) => (
-                  <TableRow
-                    key={row.time}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
+                  <TableRow>
+                    <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
-                    </TableCell>
-                    <TableCell>{row.size}</TableCell>
-                    <TableCell>{row.consistency}</TableCell>
-                    <TableCell>{row.color}</TableCell>
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.size}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.consistency}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.color}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
