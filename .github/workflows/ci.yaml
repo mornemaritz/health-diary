@@ -60,6 +60,7 @@ jobs:
         cat package.json
         git add .
         git commit -m"chore(release) ${{ steps.semver.outputs.next }}"
+        git tag ${{ steps.semver.outputs.next }}
 
     - name: Push Changes and Tags
       uses: ad-m/github-push-action@v0.6.0
