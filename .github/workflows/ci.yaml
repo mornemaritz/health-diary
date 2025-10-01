@@ -40,10 +40,10 @@ jobs:
       working-directory: ./health-diary-ui
       run: npm run build
 
-    # - name: setup git config for pushing version tag
-    #   run: |
-    #     git config user.name "GitHub Actions Bot"
-    #     git config user.email "noreply.githubactionsbot@no-mail.com"
+    - name: setup git config for pushing version tag
+      run: |
+        git config user.name "GitHub Actions Bot"
+        git config user.email "noreply.githubactionsbot@no-mail.com"
 
     - name: Bump Version and Create Tag
       id: semver
@@ -58,6 +58,7 @@ jobs:
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
         echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         cat package.json
+        git commit -m"chore(release) ${{ steps.semver.outputs.next }}"
 
     - name: Push Changes and Tags
       uses: ad-m/github-push-action@v0.6.0
