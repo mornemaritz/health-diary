@@ -52,11 +52,14 @@ jobs:
         token: ${{ github.token }}
         branch: main
 
-    - name: write version to package.json
+    - name: write version to package.json and k8s manifest
       run: |
         cd ./health-diary-ui
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
         cat package.json
+        sed -i "s|health-diary-ui:.*|health-diary-ui:${{ steps.semver.outputs.next }}|g" ../.k8s/health-diary.yaml
+        cat ../.k8s/health-diary.yaml
+        git add ../.k8s/health-diary.yaml
         git add .
         git commit -m"chore(release) ${{ steps.semver.outputs.next }}"
         git tag ${{ steps.semver.outputs.next }}
