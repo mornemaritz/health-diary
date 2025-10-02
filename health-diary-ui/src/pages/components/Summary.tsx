@@ -1,5 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
-import { styled } from '@mui/material/styles';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
@@ -11,18 +10,8 @@ import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-picker
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useState } from "react";
-
-const AccentedTableHead = styled(TableHead)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.light,
-  '& .MuiTableCell-head': {
-    color: theme.palette.getContrastText(theme.palette.primary.light)
-  },
-}));
-
-const VerticallyBorderedCell = styled(TableCell)(({ theme }) => ({
-  borderLeft: `1px solid ${theme.palette.divider}`,
-  borderRight: `1px solid ${theme.palette.divider}`,
-}));
+import { AccentedTableHead } from "../../components/AccentedTableHead";
+import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell";
 
 const bottleRows = [
   createBottleData('07:00am', 60),
@@ -87,7 +76,7 @@ const Summary: React.FC = () => {
               </AccentedTableHead>
               <TableBody>
                 {bottleRows.map((row) => (
-                  <TableRow>
+                  <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
                     </VerticallyBorderedCell>
@@ -156,7 +145,7 @@ const Summary: React.FC = () => {
               </AccentedTableHead>
               <TableBody>
                 {nappyRows.map((row) => (
-                  <TableRow>
+                  <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
                     </VerticallyBorderedCell>
