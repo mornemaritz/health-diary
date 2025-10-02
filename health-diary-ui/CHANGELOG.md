@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.7.0] - 2025-10-02
+### :sparkles: New Features
+- [`babc136`](https://github.com/mornemaritz/health-diary/commit/babc136dd9904ae288d4d2e7ba2030fb4b9343c9) - bold headers *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+### :wrench: Chores
+- [`86e6eef`](https://github.com/mornemaritz/health-diary/commit/86e6eefcac3da0c2f62f9bf3d51cf05c9bf531ed) - ci/cd updates *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.4.2] - 2025-10-01
 ### :bug: Bug Fixes
 - [`8fbef31`](https://github.com/mornemaritz/health-diary/commit/8fbef31839fd2c22e600645b5487fda33d7e4ca7) - trigger app repo action *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -31,3 +39,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.4.0]: https://github.com/mornemaritz/health-diary/compare/v0.3.0...v0.4.0
 [v0.4.1]: https://github.com/mornemaritz/health-diary/compare/v0.4.0...v0.4.1
 [v0.4.2]: https://github.com/mornemaritz/health-diary/compare/v0.4.1...v0.4.2
+[v0.7.0]: https://github.com/mornemaritz/health-diary/compare/v0.6.0...v0.7.0
