@@ -95,7 +95,7 @@ jobs:
       with:
         branch: main
         commit_message: 'docs: update CHANGELOG.md for ${{ github.ref_name }} [skip ci]'
-        file_pattern: CHANGELOG.md        
+        file_pattern: ./health-diary-ui/CHANGELOG.md
 
   docker:
     needs: build-test-tag

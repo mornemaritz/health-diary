@@ -137,7 +137,7 @@ const Summary: React.FC = () => {
               id="medication-7am-panel-header"
             >
             <Typography component="span" sx={{marginRight: 1}}>7am</Typography>
-              <Chip label="07:30" size="small" color="success"/>
+              <Chip label="07:30am" size="small" color="success"/>
             </AccordionSummary>
             <AccordionDetails>
             </AccordionDetails>
@@ -169,7 +169,7 @@ const Summary: React.FC = () => {
               id="medication-3pm-panel-header"
             >
             <Typography component="span" sx={{marginRight: 1}}>3pm</Typography>
-              <Chip label="15:15" size="small" color="success"/>
+              <Chip label="03:15pm" size="small" color="success"/>
             </AccordionSummary>
             <AccordionDetails>
             </AccordionDetails>
