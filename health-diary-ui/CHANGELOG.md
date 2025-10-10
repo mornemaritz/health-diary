@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.8.1] - 2025-10-10
+### :bug: Bug Fixes
+- [`20b3e7c`](https://github.com/mornemaritz/health-diary/commit/20b3e7c4602b0864526ffdc0691bc08b045f58c1) - useState for all data *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.8.0] - 2025-10-10
 ### :sparkles: New Features
 - [`65966b5`](https://github.com/mornemaritz/health-diary/commit/65966b56cc59e43aef50da69cd401ca6cedf412f) - demo data. add bottle operation *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -50,3 +55,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.4.2]: https://github.com/mornemaritz/health-diary/compare/v0.4.1...v0.4.2
 [v0.7.0]: https://github.com/mornemaritz/health-diary/compare/v0.6.0...v0.7.0
 [v0.8.0]: https://github.com/mornemaritz/health-diary/compare/v0.7.0...v0.8.0
+[v0.8.1]: https://github.com/mornemaritz/health-diary/compare/v0.8.0...v0.8.1
