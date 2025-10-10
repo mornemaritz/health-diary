@@ -73,7 +73,12 @@ const threePmMedicationRows = [
   createMedicationData('Purmycin (125)', '3.2ml'),
 ];
 
-function createMedicationData(medication: string, dosage: string) {
+interface MedicationRow {
+  medication: string;
+  dosage: string;
+}
+
+function createMedicationData(medication: string, dosage: string): MedicationRow {
   return { medication, dosage };
 }
 
@@ -81,6 +86,14 @@ const Summary: React.FC = () => {
   const [day, setDate] = useState(moment());
   const [currentTime, setCurrentTime] = useState(moment());
   const [bottleRowsState, setBottleRowsState] = useState(bottleRows);
+  const [sevenPmMedicationRowsState] = useState<MedicationRow[]>([]);
+  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
+  const [sevenAmMedicationRowsState] = useState(sevenAmMedicationRows);
+  const [threePmMedicationRowsState] = useState(threePmMedicationRows);
+
+  const [nappyRowsState] = useState(nappyRows);
+  const [solidRowsState] = useState(solidRows);
+  const [noteRowsState] = useState(noteRows); 
 
   const handleRecordBottle = useCallback((data: { bottleTime: string; bottleSize: number }) => {
     const newBottle = createBottleData(
@@ -90,14 +103,13 @@ const Summary: React.FC = () => {
     setBottleRowsState(prevRows => [...prevRows, newBottle]);
   }, []);
 
-  const [open, setOpen] = useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleBottleRecordClickOpen = () => {
+    setBottleRecordDialogOpen(true);
   };
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
+  const handleBottleRecordClose = useCallback(() => {
+    setBottleRecordDialogOpen(false);
   }, []);
 
   return (
@@ -164,9 +176,9 @@ const Summary: React.FC = () => {
             </Table>
           </TableContainer>
         </AccordionDetails>
-        <RecordBottleDialog open={open} onClose={handleClose} onRecordBottle={handleRecordBottle} />
+        <RecordBottleDialog open={openBottleRecordDialog} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
         <AccordionActions>
-          <Button variant="contained" size="small" onClick={handleClickOpen}>Record Bottle</Button>
+          <Button variant="contained" size="small" onClick={handleBottleRecordClickOpen}>Record Bottle</Button>
         </AccordionActions>
       </Accordion>
       <Accordion>
@@ -205,7 +217,7 @@ const Summary: React.FC = () => {
                   </TableRow>
                 </AccentedTableHead>
                 <TableBody>
-                  {sevenAmMedicationRows.map((row) => (
+                  {sevenAmMedicationRowsState.map((row) => (
                     <TableRow key={row.medication}>
                       <VerticallyBorderedCell component="th" scope="row">
                         {row.medication}
@@ -237,7 +249,7 @@ const Summary: React.FC = () => {
                   </TableRow>
                 </AccentedTableHead>
                 <TableBody>
-                  {threePmMedicationRows.map((row) => (
+                  {threePmMedicationRowsState.map((row) => (
                     <TableRow key={row.medication}>
                       <VerticallyBorderedCell component="th" scope="row">
                         {row.medication}
@@ -257,9 +269,31 @@ const Summary: React.FC = () => {
             >
               <Typography component="span" sx={{marginRight: 1}}>7pm</Typography>
             </AccordionSummary>
+            {sevenPmMedicationRowsState.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 100 }} size="small" aria-label="seven pm meds table">
+                <AccentedTableHead>
+                  <TableRow>
+                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
+                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
+                  </TableRow>
+                </AccentedTableHead>
+                <TableBody>
+                  {sevenPmMedicationRowsState.map((row) => (
+                    <TableRow key={row.medication}>
+                      <VerticallyBorderedCell component="th" scope="row">
+                        {row.medication}
+                      </VerticallyBorderedCell>
+                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>) : (          
             <AccordionActions>
               <Button variant="contained" size="small">Record 7pm Meds</Button>
             </AccordionActions>
+            )}
           </Accordion>
           <Accordion>
             <AccordionSummary
@@ -299,7 +333,7 @@ const Summary: React.FC = () => {
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
-                {solidRows.map((row) => (
+                {solidRowsState.map((row) => (
                   <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
@@ -339,7 +373,7 @@ const Summary: React.FC = () => {
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
-                {nappyRows.map((row) => (
+                {nappyRowsState.map((row) => (
                   <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
@@ -376,7 +410,7 @@ const Summary: React.FC = () => {
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
-                {noteRows.map((row) => (
+                {noteRowsState.map((row) => (
                   <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
