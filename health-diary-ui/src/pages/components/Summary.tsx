@@ -1,4 +1,4 @@
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, TextField, Typography } from "@mui/material";
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, TextField, Typography, useMediaQuery } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
@@ -102,19 +102,34 @@ const Summary: React.FC = () => {
 
   return (
     <Box>
-      <Container sx={{ marginTop: 2, marginBottom: 2, display: 'flex', justifyContent: 'center', maxWidth: 400 }}>
+      <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
-          <DatePicker 
-            label={day.format('dddd')}
-            value={day} 
-            onChange={(newValue) => setDate(newValue || moment())} 
-            sx={{ marginRight: 2 }}
-          />
-          <TimePicker
-            label="Time"
-            value={currentTime}
-            onChange={(newValue) => setCurrentTime(newValue || moment())}
-          />
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr 1fr', // 2 columns on extra small devices
+                md: '1fr 1fr 1fr 1fr' // 4 columns on medium and larger devices
+              },
+              gap: 2,
+              alignItems: 'center'
+            }}
+          >
+            <DatePicker 
+              label={day.format('dddd')}
+              value={day} 
+              onChange={(newValue) => setDate(newValue || moment())}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+            <TimePicker
+              label="Time"
+              value={currentTime}
+              onChange={(newValue) => setCurrentTime(newValue || moment())}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+            <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
+            <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>06h45</Typography>
+          </Box>
         </LocalizationProvider>
       </Container>
       <Accordion>
