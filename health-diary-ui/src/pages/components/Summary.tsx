@@ -1,4 +1,4 @@
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, Typography } from "@mui/material";
+import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, TextField, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
@@ -9,9 +9,10 @@ import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AccentedTableHead } from "../../components/AccentedTableHead";
 import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell";
+import { RecordBottleDialog } from "../../components/RecordBottleDialog";
 
 const bottleRows = [
   createBottleData('07:00am', 60),
@@ -35,9 +36,27 @@ function createNappyData(time: string, size: string, consistency: string, color:
   return { time, size, consistency, color };
 }
 
+const solidRows = [
+  createSolidData('08:00am', 'Porridge', 'medium', 'ate 75%'),
+  createSolidData('12:00pm', 'Pizza & Pesto', 'large', 'ate 75%'),
+];
+
+function createSolidData(time: string, item: string, size: string, notes: string) {
+  return { time, item, size, notes };
+}
+
+const noteRows = [
+  createNoteData('07:00am', 'Woke up happy'),
+  createNoteData('09:00am', 'Played nicely with toys'),
+];
+
+function createNoteData(time: string, note: string) {
+  return { time, note };
+}
+
 const sevenAmMedicationRows = [
   createMedicationData('Epilim', '4ml'),
-  createMedicationData('Gapapentin', '300mg'),
+  createMedicationData('Gabapentin', '300mg'),
   createMedicationData('Risperidone', '0.5mg'),
   createMedicationData('Nexium', '10mg'),
   createMedicationData('Movicol', '0.5 sachet'),
@@ -48,7 +67,7 @@ const sevenAmMedicationRows = [
 
 const threePmMedicationRows = [
   createMedicationData('Epilim', '4ml'),
-  createMedicationData('Gapapentin', '300mg'),
+  createMedicationData('Gabapentin', '300mg'),
   createMedicationData('Movicol', '0.5 sachet'),
   createMedicationData('Hyfibre', '15ml'),
   createMedicationData('Purmycin (125)', '3.2ml'),
@@ -61,6 +80,26 @@ function createMedicationData(medication: string, dosage: string) {
 const Summary: React.FC = () => {
   const [day, setDate] = useState(moment());
   const [currentTime, setCurrentTime] = useState(moment());
+  const [bottleRowsState, setBottleRowsState] = useState(bottleRows);
+
+  const handleRecordBottle = useCallback((data: { bottleTime: string; bottleSize: number }) => {
+    const newBottle = createBottleData(
+      moment(data.bottleTime).format('hh:mma'),
+      data.bottleSize
+    );
+    setBottleRowsState(prevRows => [...prevRows, newBottle]);
+  }, []);
+
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, []);
+
   return (
     <Box>
       <Container sx={{ marginTop: 2, marginBottom: 2, display: 'flex', justifyContent: 'center', maxWidth: 400 }}>
@@ -98,7 +137,7 @@ const Summary: React.FC = () => {
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
-                {bottleRows.map((row) => (
+                {bottleRowsState.map((row) => (
                   <TableRow key={row.time}>
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
@@ -108,10 +147,11 @@ const Summary: React.FC = () => {
                 ))}
               </TableBody>
             </Table>
-          </TableContainer>          
+          </TableContainer>
         </AccordionDetails>
+        <RecordBottleDialog open={open} onClose={handleClose} onRecordBottle={handleRecordBottle} />
         <AccordionActions>
-          <Button variant="contained" size="small">Record Bottle</Button>
+          <Button variant="contained" size="small" onClick={handleClickOpen}>Record Bottle</Button>
         </AccordionActions>
       </Accordion>
       <Accordion>
@@ -233,8 +273,30 @@ const Summary: React.FC = () => {
           <Typography component="span">Solids</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          malesuada lacus ex, sit amet blandit leo lobortis eget.
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="solids table">
+              <AccentedTableHead>
+                <TableRow>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Item</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Size</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Notes</VerticallyBorderedCell>
+                </TableRow>
+              </AccentedTableHead>
+              <TableBody>
+                {solidRows.map((row) => (
+                  <TableRow key={row.time}>
+                    <VerticallyBorderedCell component="th" scope="row">
+                      {row.time}
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.item}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.size}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.notes}</VerticallyBorderedCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </AccordionDetails>
         <AccordionActions>
           <Button variant="contained" size="small">Record Solids</Button>
@@ -290,8 +352,26 @@ const Summary: React.FC = () => {
           <Typography component="span">Notes</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          malesuada lacus ex, sit amet blandit leo lobortis eget.
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="notes table">
+              <AccentedTableHead>
+                <TableRow>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Note</VerticallyBorderedCell>
+                </TableRow>
+              </AccentedTableHead>
+              <TableBody>
+                {noteRows.map((row) => (
+                  <TableRow key={row.time}>
+                    <VerticallyBorderedCell component="th" scope="row">
+                      {row.time}
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.note}</VerticallyBorderedCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </AccordionDetails>
         <AccordionActions>
           <Button variant="contained" size="small">Add Note</Button>
@@ -307,12 +387,8 @@ const Summary: React.FC = () => {
           <Typography component="span">How was the night?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          malesuada lacus ex, sit amet blandit leo lobortis eget.
+          Had a good night! Slept through until 5am. Asked for mommy from then on. Had 3 bottles
         </AccordionDetails>
-        <AccordionActions>
-          <Button variant="contained" size="small">Add Night Report</Button>
-        </AccordionActions>
       </Accordion>
     </Box>
   )
