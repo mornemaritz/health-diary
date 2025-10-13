@@ -13,7 +13,8 @@ import { useCallback, useState } from "react";
 import { AccentedTableHead } from "../../components/AccentedTableHead";
 import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell";
 import { RecordBottleDialog } from "../../components/RecordBottleDialog";
-import { RecordMedicationDialog, type MedicationRecord } from "../../components/RecordMedicationDialog";
+import { type MedicationRecord } from "../../components/RecordMedicationDialogContent";
+import { RecordDialog } from "../../components/RecordDialog";
 
 const bottleRows = [
   createBottleData('07:00am', 60),
@@ -238,7 +239,12 @@ const Summary: React.FC = () => {
               </Table>
             </TableContainer>) : (
               <>
-              <RecordMedicationDialog open={openMedsRecordDialog} onClose={handleMedsRecordClose} onRecord={handleRecordMeds} title={"Add Medication"}/>
+              <RecordDialog<MedicationRecord[]>
+                open={openMedsRecordDialog}
+                onClose={handleMedsRecordClose}
+                onRecord={handleRecordMeds}
+                title={"Add Medication"}>
+              </RecordDialog>
               <AccordionActions>
                 <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 7am Meds</Button>
               </AccordionActions>
@@ -280,7 +286,13 @@ const Summary: React.FC = () => {
               </Table>
             </TableContainer>) : (
               <>
-              <RecordMedicationDialog open={openMedsRecordDialog} onClose={handleMedsRecordClose} onRecord={handleRecordMeds} title={"Add Medication"} />
+              <RecordDialog<MedicationRecord[]>
+                open={openMedsRecordDialog}
+                onClose={handleMedsRecordClose}
+                onRecord={handleRecordMeds}
+                title={"Add Medication"}
+              >
+              </RecordDialog>
               <AccordionActions>
                 <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 3pm Meds</Button>
               </AccordionActions>
@@ -319,7 +331,12 @@ const Summary: React.FC = () => {
               </Table>
             </TableContainer>) : (
               <>
-              <RecordMedicationDialog open={openMedsRecordDialog} onClose={handleMedsRecordClose} onRecord={handleRecordMeds} title={"Add Medication"}/>
+              <RecordDialog<MedicationRecord[]>
+                open={openMedsRecordDialog}
+                onClose={handleMedsRecordClose}
+                onRecord={handleRecordMeds}
+                title={"Add Medication"}>
+              </RecordDialog>
               <AccordionActions>
                 <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 7pm Meds</Button>
               </AccordionActions>
@@ -358,7 +375,12 @@ const Summary: React.FC = () => {
               </Table>
             </TableContainer>) : (
               <>
-              <RecordMedicationDialog open={openMedsRecordDialog} onClose={handleMedsRecordClose} onRecord={handleRecordMeds} title={"Add Medication"} />
+              <RecordDialog<MedicationRecord[]>
+                open={openMedsRecordDialog}
+                onClose={handleMedsRecordClose}
+                onRecord={handleRecordMeds}
+                title={"Add Medication"}>
+              </RecordDialog>
               <AccordionActions>
                 <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 10pm Meds</Button>
               </AccordionActions>

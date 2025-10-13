@@ -1,9 +1,8 @@
-import { TextField } from "@mui/material";
+import { DialogContent, TextField } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useState } from "react";
-import { RecordDialog, type RecordDialogProps } from "./RecordDialog";
 
 export interface MedicationRecord {
   recordTime: string;
@@ -12,19 +11,12 @@ export interface MedicationRecord {
   schedule: '7am' | '3pm' | '7pm' | '10pm' | 'adhoc';
 }
 
-export interface RecordMedicationDialogProps extends RecordDialogProps<MedicationRecord[]> {
-}
-
-export const RecordMedicationDialog = ({
-  onClose,
-  ...dialogProps
-}: RecordMedicationDialogProps) => {
+export const RecordMedicationDialogContent = () => {
   const [currentTime, setCurrentTime] = useState(moment());
 
   return (
-    <RecordDialog<MedicationRecord[]>
-      onClose={onClose}
-      {...dialogProps}    >
+  <DialogContent sx={{ pt: 1 }}>
+    <form onSubmit={() => { }} id="medication-form">
       <LocalizationProvider dateAdapter={AdapterMoment}>
         <TimePicker
           sx={{ width: '100%', mb: 2 }}
@@ -66,6 +58,6 @@ export const RecordMedicationDialog = ({
         fullWidth
         variant="standard"
       />
-    </RecordDialog>
-  );
-};
+    </form>
+  </DialogContent>);
+}

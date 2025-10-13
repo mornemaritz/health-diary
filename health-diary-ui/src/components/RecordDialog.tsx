@@ -9,7 +9,7 @@ export interface RecordDialogProps<T> extends Omit<DialogProps, 'onClose'> {
   onClose: () => void;
 }
 
-export const RecordDialog = <T,>({ 
+export const RecordDialog = <T,>({
   title,
   onRecord,
   onClose,
@@ -30,6 +30,8 @@ export const RecordDialog = <T,>({
       disablePortal={false}
     >
       <DialogTitle>{title}</DialogTitle>
+      {/* Replace this DialogContent with a derived DialogContent component */}
+      {/* <RecordMedicationDialogContent/> for example */}
       <DialogContent sx={{ pt: 1 }}>
         <form onSubmit={handleSubmit} id="record-form">
         </form>
