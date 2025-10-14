@@ -1,17 +1,18 @@
 import { Button, Dialog, type DialogProps } from "@mui/material";
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
-import { type DialogContentProps } from '@mui/material/DialogContent';
+
+// Base props for dialog content
+export interface RecordDialogContentProps<T> {
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  formId: string;
+}
 
 export interface RecordDialogProps<T> extends Omit<DialogProps, 'onClose'> {
   title: string;
-  ContentComponent: React.ComponentType<RecordDialogContentProps>;
+  ContentComponent: React.ComponentType<RecordDialogContentProps<T>>;
   onRecord: (data: T) => void;
   onClose: () => void;
-}
-
-export interface RecordDialogContentProps extends DialogContentProps {
-  onSubmit: (event: React.FormEvent<HTMLDivElement>) => void;
 }
 
 export const RecordDialog = <T,>({
@@ -21,11 +22,22 @@ export const RecordDialog = <T,>({
   ContentComponent,
   ...dialogProps
 }: RecordDialogProps<T>) => {
+  const formId = 'record-form';
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries((formData as any).entries());
-    onRecord(formJson as T);
+    // Get all medications (we know there are at least 2 slots)
+    const medications = [0, 1].map(i => ({
+      recordTime: formData.get(`recordTime`),
+      medication: formData.get(`medication${i}`),
+      dosage: formData.get(`dosage${i}`),
+      schedule: formData.get(`schedule`) || 'adhoc'
+    })).filter(med => med.medication); // Filter out empty medication slots
+
+    // For now we'll just take the first medication as T
+    const medicationRecord = medications[0] as T;
+    
+    onRecord(medicationRecord);
     onClose();
   };
 
@@ -36,16 +48,12 @@ export const RecordDialog = <T,>({
       disablePortal={false}
     >
       <DialogTitle>{title}</DialogTitle>
-      {/* Replace this DialogContent with a derived DialogContent component */}
-      {/* <RecordMedicationDialogContent/> for example */}
-      {/* <DialogContent sx={{ pt: 1 }}>
-        <form onSubmit={handleSubmit} id="record-form">
-        </form>
-      </DialogContent> */}
-      <ContentComponent onSubmit={handleSubmit} />
+      <ContentComponent onSubmit={handleSubmit} formId={formId} />
       <DialogActions>
-        <Button color="error" variant="contained" onClick={onClose}>Cancel</Button>
-        <Button variant="contained" type="submit" form="record-form">
+        <Button color="error" variant="contained" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" type="submit" form={formId}>
           Add
         </Button>
       </DialogActions>

@@ -16,16 +16,37 @@ import { RecordBottleDialog } from "../../components/RecordBottleDialog";
 import { RecordMedicationDialogContent, type MedicationRecord } from "../../components/RecordMedicationDialogContent";
 import { RecordDialog } from "../../components/RecordDialog";
 
+interface BottleRecord {
+  time: string;
+  size: number;
+}
+
+interface NappyRecord {
+  time: string;
+  size: string;
+  consistency: string;
+  color: string;
+}
+
+interface SolidRecord {
+  time: string;
+  item: string;
+  size: string;
+  notes: string;
+}
+
+interface NoteRecord {
+  time: string;
+  note: string;
+}
+
 const bottleRows = [
   createBottleData('07:00am', 60),
   createBottleData('08:00am', 60),
   createBottleData('09:00am', 60),
 ];
 
-function createBottleData(
-  time: string,
-  size: number,
-) {
+function createBottleData(time: string, size: number): BottleRecord {
   return { time, size };
 }
 
@@ -34,7 +55,7 @@ const nappyRows = [
   createNappyData('09:00am', 'large', 'puddle', 'brown'),
 ];
 
-function createNappyData(time: string, size: string, consistency: string, color: string) {
+function createNappyData(time: string, size: string, consistency: string, color: string): NappyRecord {
   return { time, size, consistency, color };
 }
 
@@ -43,7 +64,7 @@ const solidRows = [
   createSolidData('12:00pm', 'Pizza & Pesto', 'large', 'ate 75%'),
 ];
 
-function createSolidData(time: string, item: string, size: string, notes: string) {
+function createSolidData(time: string, item: string, size: string, notes: string): SolidRecord {
   return { time, item, size, notes };
 }
 
@@ -52,7 +73,7 @@ const noteRows = [
   createNoteData('09:00am', 'Played nicely with toys'),
 ];
 
-function createNoteData(time: string, note: string) {
+function createNoteData(time: string, note: string): NoteRecord {
   return { time, note };
 }
 
@@ -84,12 +105,11 @@ const Summary: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(moment());
   const [bottleRowsState, setBottleRowsState] = useState(bottleRows);
   const [medicationRowsState, setMedicationRowsState] = useState([...sevenAmMedicationRows, ...threePmMedicationRows]);
-  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
-  const [openMedsRecordDialog, setMedsRecordDialogOpen] = useState(false);
-
   const [nappyRowsState] = useState(nappyRows);
   const [solidRowsState] = useState(solidRows);
-  const [noteRowsState] = useState(noteRows); 
+  const [noteRowsState] = useState(noteRows);
+  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
+  const [openMedsRecordDialog, setMedsRecordDialogOpen] = useState(false);
 
   const handleRecordBottle = useCallback((data: { bottleTime: string; bottleSize: number }) => {
     const newBottle = createBottleData(
@@ -111,8 +131,8 @@ const Summary: React.FC = () => {
     setMedsRecordDialogOpen(true);
   };
 
-  const handleRecordMeds = useCallback((data:  MedicationRecord[]) => {
-    setMedicationRowsState(data);
+  const handleRecordMeds = useCallback((data: MedicationRecord) => {
+    setMedicationRowsState(prev => [...prev, data]);
   }, []);
 
   const handleMedsRecordClose = useCallback(() => {
@@ -204,193 +224,40 @@ const Summary: React.FC = () => {
           </Stack>
         </AccordionSummary>
         <AccordionDetails>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-7am-panel-content"
-              id="medication-7am-panel-header"
-            >
-            <Typography component="span" sx={{marginRight: 1}}>7am</Typography>
-              <Chip label="07:30am" size="small" color="success"/>
-            </AccordionSummary>
-            <AccordionDetails>
-            </AccordionDetails>
-            {medicationRowsState.filter(r => r.schedule === '7am').length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="seven am meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
+              <AccentedTableHead>
+                <TableRow>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Dosage</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Schedule</VerticallyBorderedCell>
+                </TableRow>
+              </AccentedTableHead>
+              <TableBody>
+                {medicationRowsState.map((row) => (
+                  <TableRow key={`${row.recordTime}-${row.medication}`}>
+                    <VerticallyBorderedCell component="th" scope="row">
+                      {row.recordTime}
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.medication}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.dosage}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.schedule}</VerticallyBorderedCell>
                   </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {medicationRowsState.filter(r => r.schedule === '7am').map((row, index) => (
-                    <TableRow key={index}>
-                      <VerticallyBorderedCell>{row.recordTime}</VerticallyBorderedCell>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>) : (
-              <>
-              <RecordDialog<MedicationRecord[]>
-                    open={openMedsRecordDialog}
-                    onClose={handleMedsRecordClose}
-                    onRecord={handleRecordMeds}
-                    title={"Add Medication"}
-                    ContentComponent={<RecordMedicationDialogContent/>}>
-              </RecordDialog>
-              <AccordionActions>
-                <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 7am Meds</Button>
-              </AccordionActions>
-              </>
-            )}          
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-3pm-panel-content"
-              id="medication-3pm-panel-header"
-            >
-            <Typography component="span" sx={{marginRight: 1}}>3pm</Typography>
-              <Chip label="03:15pm" size="small" color="success"/>
-            </AccordionSummary>
-            <AccordionDetails>
-            </AccordionDetails>
-            {medicationRowsState.filter(r => r.schedule === '3pm').length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="three pm meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
-                  </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {medicationRowsState.filter(r => r.schedule === '3pm').map((row, index) => (
-                    <TableRow key={index}>
-                      <VerticallyBorderedCell>{row.recordTime}</VerticallyBorderedCell>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>) : (
-              <>
-              <RecordDialog<MedicationRecord[]>
-                open={openMedsRecordDialog}
-                onClose={handleMedsRecordClose}
-                onRecord={handleRecordMeds}
-                title={"Add Medication"}
-              >
-              </RecordDialog>
-              <AccordionActions>
-                <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 3pm Meds</Button>
-              </AccordionActions>
-              </>
-            )}          
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-7pm-panel-content"
-              id="medication-7pm-panel-header"
-            >
-              <Typography component="span" sx={{marginRight: 1}}>7pm</Typography>
-            </AccordionSummary>
-            {medicationRowsState.filter(r => r.schedule === '7pm').length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="seven pm meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
-                  </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {medicationRowsState.filter(r => r.schedule === '7pm').map((row, index) => (
-                    <TableRow key={index}>
-                      <VerticallyBorderedCell>{row.recordTime}</VerticallyBorderedCell>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>) : (
-              <>
-              <RecordDialog<MedicationRecord[]>
-                open={openMedsRecordDialog}
-                onClose={handleMedsRecordClose}
-                onRecord={handleRecordMeds}
-                title={"Add Medication"}>
-              </RecordDialog>
-              <AccordionActions>
-                <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 7pm Meds</Button>
-              </AccordionActions>
-              </>
-            )}
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-10pm-panel-content"
-              id="medication-10pm-panel-header"
-            >
-              <Typography component="span" sx={{marginRight: 1}}>10pm</Typography>
-            </AccordionSummary>
-            {medicationRowsState.filter(r => r.schedule === '10pm').length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="ten pm meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
-                  </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {medicationRowsState.filter(r => r.schedule === '10pm').map((row, index) => (
-                    <TableRow key={index}>
-                      <VerticallyBorderedCell>{row.recordTime}</VerticallyBorderedCell>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>) : (
-              <>
-              <RecordDialog<MedicationRecord[]>
-                open={openMedsRecordDialog}
-                onClose={handleMedsRecordClose}
-                onRecord={handleRecordMeds}
-                title={"Add Medication"}>
-              </RecordDialog>
-              <AccordionActions>
-                <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 10pm Meds</Button>
-              </AccordionActions>
-              </>
-            )}
-          </Accordion>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </AccordionDetails>
         <AccordionActions>
-          <Button variant="contained" size="small">Record Ad-hoc Meds</Button>
+      <RecordDialog<MedicationRecord>
+        open={openMedsRecordDialog}
+        onClose={handleMedsRecordClose}
+        onRecord={handleRecordMeds}
+        title="Record Medication"
+        ContentComponent={RecordMedicationDialogContent}
+      />
+          <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record Medication</Button>
         </AccordionActions>
       </Accordion>
       <Accordion>
@@ -521,7 +388,7 @@ const Summary: React.FC = () => {
         </AccordionDetails>
       </Accordion>
     </Box>
-  )
-}
+  );
+};
 
 export default Summary;
