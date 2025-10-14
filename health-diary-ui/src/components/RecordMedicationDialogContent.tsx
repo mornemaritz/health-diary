@@ -11,12 +11,15 @@ export interface MedicationRecord {
   schedule: '7am' | '3pm' | '7pm' | '10pm' | 'adhoc';
 }
 
-export const RecordMedicationDialogContent = () => {
+export const RecordMedicationDialogContent = ({
+  onSubmit,
+  ...dialogContentProps
+}) => {
   const [currentTime, setCurrentTime] = useState(moment());
 
   return (
-  <DialogContent sx={{ pt: 1 }}>
-    <form onSubmit={() => { }} id="medication-form">
+  <DialogContent sx={{ pt: 1 }} {...dialogContentProps}>
+    <form onSubmit={onSubmit} id="medication-form">
       <LocalizationProvider dateAdapter={AdapterMoment}>
         <TimePicker
           sx={{ width: '100%', mb: 2 }}

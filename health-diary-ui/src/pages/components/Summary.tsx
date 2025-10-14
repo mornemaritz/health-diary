@@ -13,7 +13,7 @@ import { useCallback, useState } from "react";
 import { AccentedTableHead } from "../../components/AccentedTableHead";
 import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell";
 import { RecordBottleDialog } from "../../components/RecordBottleDialog";
-import { type MedicationRecord } from "../../components/RecordMedicationDialogContent";
+import { RecordMedicationDialogContent, type MedicationRecord } from "../../components/RecordMedicationDialogContent";
 import { RecordDialog } from "../../components/RecordDialog";
 
 const bottleRows = [
@@ -240,10 +240,11 @@ const Summary: React.FC = () => {
             </TableContainer>) : (
               <>
               <RecordDialog<MedicationRecord[]>
-                open={openMedsRecordDialog}
-                onClose={handleMedsRecordClose}
-                onRecord={handleRecordMeds}
-                title={"Add Medication"}>
+                    open={openMedsRecordDialog}
+                    onClose={handleMedsRecordClose}
+                    onRecord={handleRecordMeds}
+                    title={"Add Medication"}
+                    ContentComponent={<RecordMedicationDialogContent/>}>
               </RecordDialog>
               <AccordionActions>
                 <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record 7am Meds</Button>
