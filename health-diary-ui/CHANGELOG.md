@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.9.1] - 2025-10-22
+### :bug: Bug Fixes
+- [`fbbb1b5`](https://github.com/mornemaritz/health-diary/commit/fbbb1b505b00a6f66a4352e2bd64ca1d4494115b) - close dialog on save *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.9.0] - 2025-10-22
 ### :sparkles: New Features
 - [`8852035`](https://github.com/mornemaritz/health-diary/commit/885203518e3cfefc4651547a678aef7596d2abec) - generic RecordDialog *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -66,3 +71,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.8.0]: https://github.com/mornemaritz/health-diary/compare/v0.7.0...v0.8.0
 [v0.8.1]: https://github.com/mornemaritz/health-diary/compare/v0.8.0...v0.8.1
 [v0.9.0]: https://github.com/mornemaritz/health-diary/compare/v0.8.1...v0.9.0
+[v0.9.1]: https://github.com/mornemaritz/health-diary/compare/v0.9.0...v0.9.1
