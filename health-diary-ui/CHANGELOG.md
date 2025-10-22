@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.9.1] - 2025-10-22
+### :bug: Bug Fixes
+- [`fbbb1b5`](https://github.com/mornemaritz/health-diary/commit/fbbb1b505b00a6f66a4352e2bd64ca1d4494115b) - close dialog on save *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
+## [v0.9.0] - 2025-10-22
+### :sparkles: New Features
+- [`8852035`](https://github.com/mornemaritz/health-diary/commit/885203518e3cfefc4651547a678aef7596d2abec) - generic RecordDialog *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+- [`836f359`](https://github.com/mornemaritz/health-diary/commit/836f359d02699afb855fd96464984e03e057681a) - dialogcontent subtyping *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+- [`616ebc6`](https://github.com/mornemaritz/health-diary/commit/616ebc6e61d49b687b3129dc03eecc238ba9821a) - non-compiling attempt *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+- [`5615148`](https://github.com/mornemaritz/health-diary/commit/5615148c91b68b1e2e475ede44fcf3d677789808) - claude-ified *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+- [`8953344`](https://github.com/mornemaritz/health-diary/commit/895334441a5bc0eb2fda2760d8ad5317267dfd8e) - form and nginx *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.8.1] - 2025-10-10
 ### :bug: Bug Fixes
 - [`20b3e7c`](https://github.com/mornemaritz/health-diary/commit/20b3e7c4602b0864526ffdc0691bc08b045f58c1) - useState for all data *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -56,3 +70,5 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.7.0]: https://github.com/mornemaritz/health-diary/compare/v0.6.0...v0.7.0
 [v0.8.0]: https://github.com/mornemaritz/health-diary/compare/v0.7.0...v0.8.0
 [v0.8.1]: https://github.com/mornemaritz/health-diary/compare/v0.8.0...v0.8.1
+[v0.9.0]: https://github.com/mornemaritz/health-diary/compare/v0.8.1...v0.9.0
+[v0.9.1]: https://github.com/mornemaritz/health-diary/compare/v0.9.0...v0.9.1

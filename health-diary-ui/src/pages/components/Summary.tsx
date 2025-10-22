@@ -13,6 +13,32 @@ import { useCallback, useState } from "react";
 import { AccentedTableHead } from "../../components/AccentedTableHead";
 import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell";
 import { RecordBottleDialog } from "../../components/RecordBottleDialog";
+import { RecordMedicationDialogContent, type MedicationRecord } from "../../components/RecordMedicationDialogContent";
+import { RecordDialog } from "../../components/RecordDialog";
+
+interface BottleRecord {
+  time: string;
+  size: number;
+}
+
+interface NappyRecord {
+  time: string;
+  size: string;
+  consistency: string;
+  color: string;
+}
+
+interface SolidRecord {
+  time: string;
+  item: string;
+  size: string;
+  notes: string;
+}
+
+interface NoteRecord {
+  time: string;
+  note: string;
+}
 
 const bottleRows = [
   createBottleData('07:00am', 60),
@@ -20,10 +46,7 @@ const bottleRows = [
   createBottleData('09:00am', 60),
 ];
 
-function createBottleData(
-  time: string,
-  size: number,
-) {
+function createBottleData(time: string, size: number): BottleRecord {
   return { time, size };
 }
 
@@ -32,7 +55,7 @@ const nappyRows = [
   createNappyData('09:00am', 'large', 'puddle', 'brown'),
 ];
 
-function createNappyData(time: string, size: string, consistency: string, color: string) {
+function createNappyData(time: string, size: string, consistency: string, color: string): NappyRecord {
   return { time, size, consistency, color };
 }
 
@@ -41,7 +64,7 @@ const solidRows = [
   createSolidData('12:00pm', 'Pizza & Pesto', 'large', 'ate 75%'),
 ];
 
-function createSolidData(time: string, item: string, size: string, notes: string) {
+function createSolidData(time: string, item: string, size: string, notes: string): SolidRecord {
   return { time, item, size, notes };
 }
 
@@ -50,50 +73,43 @@ const noteRows = [
   createNoteData('09:00am', 'Played nicely with toys'),
 ];
 
-function createNoteData(time: string, note: string) {
+function createNoteData(time: string, note: string): NoteRecord {
   return { time, note };
 }
 
 const sevenAmMedicationRows = [
-  createMedicationData('Epilim', '4ml'),
-  createMedicationData('Gabapentin', '300mg'),
-  createMedicationData('Risperidone', '0.5mg'),
-  createMedicationData('Nexium', '10mg'),
-  createMedicationData('Movicol', '0.5 sachet'),
-  createMedicationData('Hyfibre', '15ml'),
-  createMedicationData('Purmycin (125)', '3.2ml'),
-  createMedicationData('Panado', '10ml'),
+  createMedicationData('07:00am', 'Epilim', '4ml', '7am'),
+  createMedicationData('07:00am', 'Gabapentin', '300mg', '7am'),
+  createMedicationData('07:00am', 'Risperidone', '0.5mg', '7am'),
+  createMedicationData('07:00am', 'Nexium', '10mg', '7am'),
+  createMedicationData('07:00am', 'Movicol', '0.5 sachet', '7am'),
+  createMedicationData('07:00am', 'Hyfibre', '15ml', '7am'),
+  createMedicationData('07:00am', 'Purmycin (125)', '3.2ml', '7am'),
+  createMedicationData('07:00am', 'Panado', '10ml', '7am'),
 ];
 
 const threePmMedicationRows = [
-  createMedicationData('Epilim', '4ml'),
-  createMedicationData('Gabapentin', '300mg'),
-  createMedicationData('Movicol', '0.5 sachet'),
-  createMedicationData('Hyfibre', '15ml'),
-  createMedicationData('Purmycin (125)', '3.2ml'),
+  createMedicationData('03:00pm', 'Epilim', '4ml', '3pm'),
+  createMedicationData('03:00pm', 'Gabapentin', '300mg', '3pm'),
+  createMedicationData('03:00pm', 'Movicol', '0.5 sachet', '3pm'),
+  createMedicationData('03:00pm', 'Hyfibre', '15ml', '3pm'),
+  createMedicationData('03:00pm', 'Purmycin (125)', '3.2ml', '3pm'),
 ];
 
-interface MedicationRow {
-  medication: string;
-  dosage: string;
-}
-
-function createMedicationData(medication: string, dosage: string): MedicationRow {
-  return { medication, dosage };
+function createMedicationData(recordTime: string, medication: string, dosage: string, schedule: '7am' | '3pm' | '7pm' | '10pm' | 'adhoc'): MedicationRecord {
+  return { recordTime, medication, dosage, schedule };
 }
 
 const Summary: React.FC = () => {
   const [day, setDate] = useState(moment());
   const [currentTime, setCurrentTime] = useState(moment());
   const [bottleRowsState, setBottleRowsState] = useState(bottleRows);
-  const [sevenPmMedicationRowsState] = useState<MedicationRow[]>([]);
-  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
-  const [sevenAmMedicationRowsState] = useState(sevenAmMedicationRows);
-  const [threePmMedicationRowsState] = useState(threePmMedicationRows);
-
+  const [medicationRowsState, setMedicationRowsState] = useState([...sevenAmMedicationRows, ...threePmMedicationRows]);
   const [nappyRowsState] = useState(nappyRows);
   const [solidRowsState] = useState(solidRows);
-  const [noteRowsState] = useState(noteRows); 
+  const [noteRowsState] = useState(noteRows);
+  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
+  const [openMedsRecordDialog, setMedsRecordDialogOpen] = useState(false);
 
   const handleRecordBottle = useCallback((data: { bottleTime: string; bottleSize: number }) => {
     const newBottle = createBottleData(
@@ -103,13 +119,24 @@ const Summary: React.FC = () => {
     setBottleRowsState(prevRows => [...prevRows, newBottle]);
   }, []);
 
-
   const handleBottleRecordClickOpen = () => {
     setBottleRecordDialogOpen(true);
   };
 
   const handleBottleRecordClose = useCallback(() => {
     setBottleRecordDialogOpen(false);
+  }, []);
+
+  const handleMedsRecordClickOpen = () => {
+    setMedsRecordDialogOpen(true);
+  };
+
+  const handleRecordMeds = useCallback((data: MedicationRecord) => {
+    setMedicationRowsState(prev => [...prev, data]);
+  }, []);
+
+  const handleMedsRecordClose = useCallback(() => {
+    setMedsRecordDialogOpen(false);
   }, []);
 
   return (
@@ -197,119 +224,41 @@ const Summary: React.FC = () => {
           </Stack>
         </AccordionSummary>
         <AccordionDetails>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-7am-panel-content"
-              id="medication-7am-panel-header"
-            >
-            <Typography component="span" sx={{marginRight: 1}}>7am</Typography>
-              <Chip label="07:30am" size="small" color="success"/>
-            </AccordionSummary>
-            <AccordionDetails>
-            </AccordionDetails>
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="seven am meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
+              <AccentedTableHead>
+                <TableRow>
+                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Dosage</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Schedule</VerticallyBorderedCell>
+                </TableRow>
+              </AccentedTableHead>
+              <TableBody>
+                {medicationRowsState.map((row) => (
+                  <TableRow key={`${row.recordTime}-${row.medication}`}>
+                    <VerticallyBorderedCell component="th" scope="row">
+                      {row.recordTime}
+                    </VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.medication}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.dosage}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.schedule}</VerticallyBorderedCell>
                   </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {sevenAmMedicationRowsState.map((row) => (
-                    <TableRow key={row.medication}>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>          
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-3pm-panel-content"
-              id="medication-3pm-panel-header"
-            >
-            <Typography component="span" sx={{marginRight: 1}}>3pm</Typography>
-              <Chip label="03:15pm" size="small" color="success"/>
-            </AccordionSummary>
-            <AccordionDetails>
-            </AccordionDetails>
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="three pm meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
-                  </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {threePmMedicationRowsState.map((row) => (
-                    <TableRow key={row.medication}>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>          
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-7pm-panel-content"
-              id="medication-7pm-panel-header"
-            >
-              <Typography component="span" sx={{marginRight: 1}}>7pm</Typography>
-            </AccordionSummary>
-            {sevenPmMedicationRowsState.length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 100 }} size="small" aria-label="seven pm meds table">
-                <AccentedTableHead>
-                  <TableRow>
-                    <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">Dosage</VerticallyBorderedCell>
-                  </TableRow>
-                </AccentedTableHead>
-                <TableBody>
-                  {sevenPmMedicationRowsState.map((row) => (
-                    <TableRow key={row.medication}>
-                      <VerticallyBorderedCell component="th" scope="row">
-                        {row.medication}
-                      </VerticallyBorderedCell>
-                      <VerticallyBorderedCell align="right">{row.dosage}</VerticallyBorderedCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>) : (          
-            <AccordionActions>
-              <Button variant="contained" size="small">Record 7pm Meds</Button>
-            </AccordionActions>
-            )}
-          </Accordion>
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="medication-10pm-panel-content"
-              id="medication-10pm-panel-header"
-            >
-              <Typography component="span" sx={{marginRight: 1}}>10pm</Typography>
-            </AccordionSummary>
-            <AccordionActions>
-              <Button variant="contained" size="small">Record 10pm Meds</Button>
-            </AccordionActions>
-          </Accordion>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </AccordionDetails>
         <AccordionActions>
-          <Button variant="contained" size="small">Record Ad-hoc Meds</Button>
+      <RecordDialog<MedicationRecord>
+        open={openMedsRecordDialog}
+        onClose={handleMedsRecordClose}
+        onRecord={handleRecordMeds}
+        formId="medication-form"
+        title="Record Medication"
+        ContentComponent={RecordMedicationDialogContent}
+      />
+          <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record Medication</Button>
         </AccordionActions>
       </Accordion>
       <Accordion>
@@ -440,7 +389,7 @@ const Summary: React.FC = () => {
         </AccordionDetails>
       </Accordion>
     </Box>
-  )
-}
+  );
+};
 
 export default Summary;
