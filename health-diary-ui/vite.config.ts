@@ -10,9 +10,10 @@ export default defineConfig({
     strictPort: true,
   },
   server: {
+    host: true,
+    allowedHosts: [ "health-diary.me" ],
     port: 8080,
     strictPort: true,
-    host: true,
     origin: "http://0.0.0.0:8080",
   },
 })
