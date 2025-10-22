@@ -254,6 +254,7 @@ const Summary: React.FC = () => {
         open={openMedsRecordDialog}
         onClose={handleMedsRecordClose}
         onRecord={handleRecordMeds}
+        formId="medication-form"
         title="Record Medication"
         ContentComponent={RecordMedicationDialogContent}
       />

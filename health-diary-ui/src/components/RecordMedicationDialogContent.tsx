@@ -3,7 +3,6 @@ import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useState } from "react";
-import type { RecordDialogContentProps } from "./RecordDialog";
 
 export interface MedicationRecord {
   recordTime: string;
@@ -13,15 +12,33 @@ export interface MedicationRecord {
 }
 
 export const RecordMedicationDialogContent = ({
-  onSubmit,
   formId,
-  ...dialogContentProps
-}: RecordDialogContentProps<MedicationRecord>) => {
+  onRecord,
+}: { formId: string; onRecord: (data: MedicationRecord) => void }) => {
   const [currentTime, setCurrentTime] = useState(moment());
 
+  const handleLocalSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    const recordTime = formData.get('recordTime')?.toString() || currentTime.format();
+    const medication = (formData.get('medication0') || formData.get('medication1') || '') as string;
+    const dosage = (formData.get('dosage0') || formData.get('dosage1') || '') as string;
+    const schedule = (formData.get('schedule') as any) || 'adhoc';
+
+    const record: MedicationRecord = {
+      recordTime: recordTime.toString(),
+      medication: medication.toString(),
+      dosage: dosage.toString(),
+      schedule: schedule as MedicationRecord['schedule'],
+    };
+
+    onRecord(record);
+  };
+
   return (
-    <DialogContent sx={{ pt: 1 }} {...dialogContentProps}>
-      <form onSubmit={onSubmit} id={formId}>
+    <DialogContent sx={{ pt: 1 }}>
+      <form onSubmit={handleLocalSubmit} id={formId}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
           <TimePicker
             sx={{ width: '100%', mb: 2 }}
