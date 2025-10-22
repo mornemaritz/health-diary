@@ -28,7 +28,10 @@ export const RecordDialog = <T,>({
       <DialogTitle>{title}</DialogTitle>
       <ContentComponent
         formId={formId}
-        onRecord={(data: T) => onRecord(data)}
+        onRecord={(data: T) => {
+          onRecord(data);
+          onClose();
+      }}
       />
       <DialogActions>
         <Button color="error" variant="contained" onClick={onClose}>
