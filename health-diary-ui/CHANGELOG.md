@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.10.0] - 2025-10-22
+### :sparkles: New Features
+- [`13166fe`](https://github.com/mornemaritz/health-diary/commit/13166fef195aace796dc42e95f6a3eb3ae8a63b4) - app user. allowed host *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`c5cb38b`](https://github.com/mornemaritz/health-diary/commit/c5cb38b283c16e30e3324e9b411ab7d4ff341b00) - ssl. hardcode image *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.9.1] - 2025-10-22
 ### :bug: Bug Fixes
 - [`fbbb1b5`](https://github.com/mornemaritz/health-diary/commit/fbbb1b505b00a6f66a4352e2bd64ca1d4494115b) - close dialog on save *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -72,3 +78,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.8.1]: https://github.com/mornemaritz/health-diary/compare/v0.8.0...v0.8.1
 [v0.9.0]: https://github.com/mornemaritz/health-diary/compare/v0.8.1...v0.9.0
 [v0.9.1]: https://github.com/mornemaritz/health-diary/compare/v0.9.0...v0.9.1
+[v0.10.0]: https://github.com/mornemaritz/health-diary/compare/v0.9.1...v0.10.0
