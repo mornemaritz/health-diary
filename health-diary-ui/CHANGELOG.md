@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.11.0] - 2025-10-23
+### :sparkles: New Features
+- [`bd85f09`](https://github.com/mornemaritz/health-diary/commit/bd85f09dae50ab80c508d34ff06662e075d85d86) - medication save *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.10.0] - 2025-10-22
 ### :sparkles: New Features
 - [`13166fe`](https://github.com/mornemaritz/health-diary/commit/13166fef195aace796dc42e95f6a3eb3ae8a63b4) - app user. allowed host *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -79,3 +84,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.9.0]: https://github.com/mornemaritz/health-diary/compare/v0.8.1...v0.9.0
 [v0.9.1]: https://github.com/mornemaritz/health-diary/compare/v0.9.0...v0.9.1
 [v0.10.0]: https://github.com/mornemaritz/health-diary/compare/v0.9.1...v0.10.0
+[v0.11.0]: https://github.com/mornemaritz/health-diary/compare/v0.10.0...v0.11.0
