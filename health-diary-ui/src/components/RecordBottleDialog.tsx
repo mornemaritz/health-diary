@@ -46,7 +46,6 @@ export const RecordBottleDialog = ({ onRecordBottle, ...dialogProps }: RecordBot
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <TimePicker
               sx={{ width: '100%', mt: 1 }}
-              autoFocus
               name="bottleTime"
               label="Time"
               value={currentTime}

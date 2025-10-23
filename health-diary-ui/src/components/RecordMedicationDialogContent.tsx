@@ -1,4 +1,4 @@
-import { DialogContent } from "@mui/material";
+import { Box, Container, DialogContent, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DataGrid, type GridRowsProp, type GridColDef } from '@mui/x-data-grid';
@@ -75,16 +75,29 @@ export const RecordMedicationDialogContent = ({
   return (
     <DialogContent sx={{ pt: 1 }}>
       <form onSubmit={handleLocalSubmit} id={formId}>
+      <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
-          <TimePicker
-            sx={{ width: '100%', mb: 2 }}
-            name="recordTime"
-            label="Time"
-            value={recordTime}
-            onChange={(newValue) => setRecordTime(newValue || moment())}
-            slotProps={{ textField: { fullWidth: true } }}
-          />
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr 1fr', // 2 columns on extra small devices
+                md: '1fr 1fr 1fr 1fr' // 4 columns on medium and larger devices
+              },
+              gap: 2,
+              alignItems: 'center'
+            }}
+          >
+            <TimePicker
+              name="recordTime"
+              label="Time"
+              value={recordTime}
+              onChange={(newValue) => setRecordTime(newValue || moment())}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </Box>
         </LocalizationProvider>
+      </Container>
         <DataGrid
           hideFooter
           disableColumnMenu
