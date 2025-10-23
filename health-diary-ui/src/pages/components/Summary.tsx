@@ -108,8 +108,8 @@ const Summary: React.FC = () => {
   const [nappyRowsState] = useState(nappyRows);
   const [solidRowsState] = useState(solidRows);
   const [noteRowsState] = useState(noteRows);
-  const [openBottleRecordDialog, setBottleRecordDialogOpen] = useState(false);
-  const [openMedsRecordDialog, setMedsRecordDialogOpen] = useState(false);
+  const [bottleRecordDialogOpen, setBottleRecordDialogOpen] = useState(false);
+  const [medsRecordDialogOpen, setMedsRecordDialogOpen] = useState(false);
 
   const handleRecordBottle = useCallback((data: { bottleTime: string; bottleSize: number }) => {
     const newBottle = createBottleData(
@@ -131,8 +131,8 @@ const Summary: React.FC = () => {
     setMedsRecordDialogOpen(true);
   };
 
-  const handleRecordMeds = useCallback((data: MedicationRecord) => {
-    setMedicationRowsState(prev => [...prev, data]);
+  const handleRecordMeds = useCallback((data: MedicationRecord[]) => {
+    setMedicationRowsState(prev => [...prev, ...data]);
   }, []);
 
   const handleMedsRecordClose = useCallback(() => {
@@ -203,7 +203,7 @@ const Summary: React.FC = () => {
             </Table>
           </TableContainer>
         </AccordionDetails>
-        <RecordBottleDialog open={openBottleRecordDialog} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
+        <RecordBottleDialog open={bottleRecordDialogOpen} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
         <AccordionActions>
           <Button variant="contained" size="small" onClick={handleBottleRecordClickOpen}>Record Bottle</Button>
         </AccordionActions>
@@ -250,8 +250,8 @@ const Summary: React.FC = () => {
           </TableContainer>
         </AccordionDetails>
         <AccordionActions>
-      <RecordDialog<MedicationRecord>
-        open={openMedsRecordDialog}
+      <RecordDialog<MedicationRecord[]>
+        open={medsRecordDialogOpen}
         onClose={handleMedsRecordClose}
         onRecord={handleRecordMeds}
         formId="medication-form"

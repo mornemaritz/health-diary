@@ -1,6 +1,7 @@
-import { DialogContent, TextField } from "@mui/material";
+import { DialogContent } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { DataGrid, type GridRowsProp, type GridColDef } from '@mui/x-data-grid';
 import moment from "moment";
 import { useState } from "react";
 
@@ -9,29 +10,64 @@ export interface MedicationRecord {
   medication: string;
   dosage: string;
   schedule: '7am' | '3pm' | '7pm' | '10pm' | 'adhoc';
+};
+
+const medications = {
+  '7am' : [
+    'Epilim - 4ml',
+    'Gabapentin - 300mg',
+    'Risperidone - 1mg',
+    'Nexium - 20mg',
+    'Movicol - 0.5 sachet',
+    'Hyfibre - 15ml',
+    'Purmycin (125) - 3.2ml',
+    'Panado - 10ml'
+  ],
+  '3pm' : [
+    'Epilim - 4ml',
+    'Gabapentin - 300mg',
+    'Movicol - 0.5 sachet',
+    'Hyfibre - 15ml',
+    'Purmycin (125) - 3.2ml'
+  ],
+  '7pm' : [
+    'Menograine - 4 tablets',
+    'Urbanol - 5mg'
+  ],
+  '10pm' : [
+    'Epilim - 4ml',
+    'Gabapentin - 300mg',
+    'Senokot - 0.5 tablet',
+    'Probiotics - 1 capsule',
+    'Slippery Elm - 5 drops',
+    'Liquorice Root - 5 drops'
+  ],
+  'adhoc': ['Panado - 10ml', 'Neurofen - 5ml']
 }
+
+const columns: GridColDef[] = [
+  { field: 'medication', flex: 1, headerName: 'Medication' }
+];
 
 export const RecordMedicationDialogContent = ({
   formId,
   onRecord,
-}: { formId: string; onRecord: (data: MedicationRecord) => void }) => {
-  const [currentTime, setCurrentTime] = useState(moment());
+}: { formId: string; onRecord: (data: MedicationRecord[]) => void }) => {
+  const [recordTime, setRecordTime] = useState(moment());
+  const [schedule] = useState<MedicationRecord['schedule']>('adhoc');
+  const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
+  const [gridRows] = useState<GridRowsProp>([
+    ...medications[schedule].map((med) => ({ id: med, medication: med })),
+  ]);
 
   const handleLocalSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
 
-    const recordTime = formData.get('recordTime')?.toString() || currentTime.format();
-    const medication = (formData.get('medication0') || formData.get('medication1') || '') as string;
-    const dosage = (formData.get('dosage0') || formData.get('dosage1') || '') as string;
-    const schedule = (formData.get('schedule') as any) || 'adhoc';
+    const record = selectedMedications.map(selectedMedication => {
+      var [medication, dosage] = selectedMedication.split(' - ');
 
-    const record: MedicationRecord = {
-      recordTime: recordTime.toString(),
-      medication: medication.toString(),
-      dosage: dosage.toString(),
-      schedule: schedule as MedicationRecord['schedule'],
-    };
+      return { recordTime: recordTime.format('hh:mma'), medication, dosage, schedule };
+    })
 
     onRecord(record);
   };
@@ -44,41 +80,22 @@ export const RecordMedicationDialogContent = ({
             sx={{ width: '100%', mb: 2 }}
             name="recordTime"
             label="Time"
-            value={currentTime}
-            onChange={(newValue) => setCurrentTime(newValue || moment())}
+            value={recordTime}
+            onChange={(newValue) => setRecordTime(newValue || moment())}
             slotProps={{ textField: { fullWidth: true } }}
           />
         </LocalizationProvider>
-        {/* Example with two medication inputs - you could make this dynamic */}
-        <TextField
-          required
-          margin="dense"
-          name="medication0"
-          label="Medication"
-          fullWidth
-          variant="standard"
-        />
-        <TextField
-          required
-          margin="dense"
-          name="dosage0"
-          label="Dosage"
-          fullWidth
-          variant="standard"
-        />
-        <TextField
-          margin="dense"
-          name="medication1"
-          label="Medication"
-          fullWidth
-          variant="standard"
-        />
-        <TextField
-          margin="dense"
-          name="dosage1"
-          label="Dosage"
-          fullWidth
-          variant="standard"
+        <DataGrid
+          hideFooter
+          disableColumnMenu
+          disableColumnFilter
+          disableColumnSelector
+          disableRowSelectionExcludeModel
+          density='compact'
+          columns={columns}
+          rows={gridRows}
+          checkboxSelection
+          onRowSelectionModelChange={(newSelection) => setSelectedMedications(Array.from(newSelection.ids.values(), id => id.toString()))}
         />
       </form>
     </DialogContent>
