@@ -1,9 +1,9 @@
-import { Box, Container, DialogContent, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
+import { Box, Chip, Container, DialogContent, Stack } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DataGrid, type GridRowsProp, type GridColDef } from '@mui/x-data-grid';
 import moment from "moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface MedicationRecord {
   recordTime: string;
@@ -54,11 +54,16 @@ export const RecordMedicationDialogContent = ({
   onRecord,
 }: { formId: string; onRecord: (data: MedicationRecord[]) => void }) => {
   const [recordTime, setRecordTime] = useState(moment());
-  const [schedule] = useState<MedicationRecord['schedule']>('adhoc');
+  const [schedule, setSchedule] = useState<MedicationRecord['schedule']>('adhoc');
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
-  const [gridRows] = useState<GridRowsProp>([
+  const [gridRows, setGridRows] = useState<GridRowsProp>([
     ...medications[schedule].map((med) => ({ id: med, medication: med })),
   ]);
+
+  useEffect(() => {
+    setGridRows([...medications[schedule].map((med) => ({ id: med, medication: med }))]);
+    setSelectedMedications([]);
+  }, [schedule]);
 
   const handleLocalSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,29 +80,36 @@ export const RecordMedicationDialogContent = ({
   return (
     <DialogContent sx={{ pt: 1 }}>
       <form onSubmit={handleLocalSubmit} id={formId}>
-      <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
-        <LocalizationProvider dateAdapter={AdapterMoment}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr 1fr', // 2 columns on extra small devices
-                md: '1fr 1fr 1fr 1fr' // 4 columns on medium and larger devices
-              },
-              gap: 2,
-              alignItems: 'center'
-            }}
-          >
-            <TimePicker
-              name="recordTime"
-              label="Time"
-              value={recordTime}
-              onChange={(newValue) => setRecordTime(newValue || moment())}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Box>
-        </LocalizationProvider>
-      </Container>
+        <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2, paddingLeft: 0, paddingRight: 0 }}>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr', // 1 column on extra small devices
+                  md: '1fr 1fr' // 2 columns on medium and larger devices
+                },
+                gap: 2,
+                alignItems: 'center'
+              }}
+            >
+              <TimePicker
+                name="recordTime"
+                label="Time"
+                value={recordTime}
+                onChange={(newValue) => setRecordTime(newValue || moment())}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+              <Stack direction="row" spacing={1}>
+                <Chip label="adhoc" size="small" color="primary" variant={schedule === 'adhoc' ? 'filled' : 'outlined'} onClick={() => setSchedule('adhoc')} />
+                <Chip label="7am" size="small" color="primary" variant={schedule === '7am' ? 'filled' : 'outlined'} onClick={() => setSchedule('7am')} />
+                <Chip label="3pm" size="small" color="primary" variant={schedule === '3pm' ? 'filled' : 'outlined'} onClick={() => setSchedule('3pm')} />
+                <Chip label="7pm" size="small" color="primary" variant={schedule === '7pm' ? 'filled' : 'outlined'} onClick={() => setSchedule('7pm')} />
+                <Chip label="10pm" size="small" color="primary" variant={schedule === '10pm' ? 'filled' : 'outlined'} onClick={() => setSchedule('10pm')} />
+              </Stack>
+            </Box>
+          </LocalizationProvider>
+        </Container>
         <DataGrid
           hideFooter
           disableColumnMenu

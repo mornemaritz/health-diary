@@ -25,7 +25,7 @@ export const RecordDialog = <T,>({
       keepMounted={false}
       disablePortal={false}
     >
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle sx={{ textAlign: 'center', padding: '10px' }}>{title}</DialogTitle>
       <ContentComponent
         formId={formId}
         onRecord={(data: T) => {

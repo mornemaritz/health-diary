@@ -40,7 +40,7 @@ export const RecordBottleDialog = ({ onRecordBottle, ...dialogProps }: RecordBot
       {...dialogProps}
       keepMounted={false}
       disablePortal={false}>
-      <DialogTitle>Record Bottle</DialogTitle>
+      <DialogTitle sx={{ textAlign: 'center', padding: '10px' }}>Record Bottle</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <form onSubmit={handleSubmit} id="bottle-form">
           <LocalizationProvider dateAdapter={AdapterMoment}>
