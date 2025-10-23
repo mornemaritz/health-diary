@@ -230,7 +230,6 @@ const Summary: React.FC = () => {
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
                   <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Dosage</VerticallyBorderedCell>
                   <VerticallyBorderedCell>Schedule</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
@@ -240,8 +239,7 @@ const Summary: React.FC = () => {
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.recordTime}
                     </VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.medication}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.dosage}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{`${row.medication} (${row.dosage})`}</VerticallyBorderedCell>
                     <VerticallyBorderedCell>{row.schedule}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
