@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.12.0] - 2025-10-23
+### :sparkles: New Features
+- [`9cc6c45`](https://github.com/mornemaritz/health-diary/commit/9cc6c455a5c8135124f637639e0f62d6f442ef0a) - med schedule toggle *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+### :bug: Bug Fixes
+- [`af682d2`](https://github.com/mornemaritz/health-diary/commit/af682d2f85cf70e5304f3a08a620cb4b43024f5d) - prep for schedule select *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
+
+
 ## [v0.11.0] - 2025-10-23
 ### :sparkles: New Features
 - [`bd85f09`](https://github.com/mornemaritz/health-diary/commit/bd85f09dae50ab80c508d34ff06662e075d85d86) - medication save *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -85,3 +93,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.9.1]: https://github.com/mornemaritz/health-diary/compare/v0.9.0...v0.9.1
 [v0.10.0]: https://github.com/mornemaritz/health-diary/compare/v0.9.1...v0.10.0
 [v0.11.0]: https://github.com/mornemaritz/health-diary/compare/v0.10.0...v0.11.0
+[v0.12.0]: https://github.com/mornemaritz/health-diary/compare/v0.11.0...v0.12.0
