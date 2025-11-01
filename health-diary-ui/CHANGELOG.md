@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.13.0] - 2025-10-23
+### :sparkles: New Features
+- [`926b93b`](https://github.com/mornemaritz/health-diary/commit/926b93b8516735f116c7755d894fda154e5258a3) - summary combine med + dosage *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.12.0] - 2025-10-23
 ### :sparkles: New Features
 - [`9cc6c45`](https://github.com/mornemaritz/health-diary/commit/9cc6c455a5c8135124f637639e0f62d6f442ef0a) - med schedule toggle *(commit by [@mornemaritz-eb](https://github.com/mornemaritz-eb))*
@@ -94,3 +99,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.10.0]: https://github.com/mornemaritz/health-diary/compare/v0.9.1...v0.10.0
 [v0.11.0]: https://github.com/mornemaritz/health-diary/compare/v0.10.0...v0.11.0
 [v0.12.0]: https://github.com/mornemaritz/health-diary/compare/v0.11.0...v0.12.0
+[v0.13.0]: https://github.com/mornemaritz/health-diary/compare/v0.12.0...v0.13.0
