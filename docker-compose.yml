@@ -5,7 +5,7 @@ services:
     build:
       context: ./health-diary-ui
       dockerfile: Dockerfile
-    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.9.1
+    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.13.0
     container_name: health-diary-ui
     restart: unless-stopped
     expose:
