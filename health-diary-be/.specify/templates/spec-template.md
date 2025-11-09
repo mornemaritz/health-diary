@@ -8,11 +8,12 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
+
 **Constitution Alignment:**
-- Code Quality: Are requirements clear, testable, and maintainable?
-- Testing Standards: Does each story have independent, automatable acceptance tests?
-- User Experience Consistency: Are error/response formats and flows consistent with project standards?
-- Performance Requirements: Are performance/latency/scale goals explicit for each story?
+- **Code Quality:** Are requirements clear, maintainable, and documented? Will code changes follow style guides and require review?
+- **Testing Standards:** Does each story have independent, automatable acceptance tests? Are coverage and pass criteria explicit?
+- **User Experience Consistency:** Are error/response formats and flows consistent and standardized? Is backward compatibility preserved unless a major version is planned?
+- **Performance Requirements:** Are performance, latency, and scale goals explicit and measurable for each story? Will regressions be blocked?
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.

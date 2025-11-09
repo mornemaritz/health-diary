@@ -9,11 +9,12 @@ description: "Task list template for feature implementation"
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
 
-**Constitution Principles**: Tasks should be mapped to the following where relevant:
-- Code Quality (linting, documentation, code review)
-- Testing Standards (unit, integration, regression tests)
-- User Experience Consistency (API/UX review, error/response format checks)
-- Performance Requirements (profiling, performance regression checks)
+
+**Constitution Principles**: Map tasks to these principles where relevant:
+- **Code Quality:** Linting, documentation, and code review are required for all code changes.
+- **Testing Standards:** Unit, integration, and regression tests MUST be implemented for all critical paths. All tests MUST pass before merge.
+- **User Experience Consistency:** API/UX review, error/response format checks, and backward compatibility MUST be enforced unless a major version is planned.
+- **Performance Requirements:** Profiling and performance regression checks MUST be performed. Performance targets MUST be met before release.
 
 **Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
 
