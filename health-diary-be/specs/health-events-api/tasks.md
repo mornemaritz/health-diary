@@ -15,9 +15,9 @@ description: "Task list for Health Events REST API implementation"
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize .NET Minimal API project with EF Core and Npgsql
-- [ ] T003 Configure PostgreSQL connection and migrations
+- [x] T001 Create project structure per implementation plan
+- [x] T002 Initialize .NET Minimal API project with EF Core and Npgsql
+- [x] T003 Configure PostgreSQL connection and migrations
 - [ ] T004 [P] Configure linting and formatting tools
 - [ ] T005 [P] Set up CI pipeline for build, test, and code quality checks
 
@@ -25,26 +25,26 @@ description: "Task list for Health Events REST API implementation"
 
 ## Phase 2: Data Model & Contracts
 
-- [ ] T101 Define Event/Action models based on modelexamples.ts
-- [ ] T102 Implement EF Core entities and DbContext
-- [ ] T103 Create API contracts for event/action creation, retrieval, and summary
-- [ ] T104 Document API endpoints and expected responses (including error codes)
+- [x] T101 Define Event/Action models based on modelexamples.ts
+- [x] T102 Implement EF Core entities and DbContext
+- [x] T103 Create API contracts for event/action creation, retrieval, and summary
+- [x] T104 Document API endpoints and expected responses (including error codes)
 
 ---
 
 ## Phase 3: Core API Implementation
 
-- [ ] T201 Implement POST endpoint to add event/action for a date
-- [ ] T202 Implement GET endpoint to retrieve events/actions by date
-- [ ] T203 Implement GET endpoint to retrieve summary by date
-- [ ] T204 Handle edge cases: valid date range, duplicate events (409), missing fields (400), invalid date format (400)
-- [ ] T205 Ensure standardized error responses
+- [x] T201 Implement POST endpoint to add event/action for a date
+- [x] T202 Implement GET endpoint to retrieve events/actions by date
+- [x] T203 Implement GET endpoint to retrieve summary by date
+- [x] T204 Handle edge cases: valid date range, duplicate events (409), missing fields (400), invalid date format (400)
+- [x] T205 Ensure standardized error responses
 
 ---
 
 ## Phase 4: Testing
 
-- [ ] T301 Write unit tests for models and validation logic
+- [x] T301 Write unit tests for models and validation logic
 - [ ] T302 Write integration tests for API endpoints
 - [ ] T303 Write regression tests for edge cases and error handling
 - [ ] T304 Achieve coverage threshold for all critical paths
