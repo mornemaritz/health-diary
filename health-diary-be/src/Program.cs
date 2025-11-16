@@ -28,7 +28,7 @@ app.UseHttpsRedirection();
 /// <summary>
 /// POST: Add a medication record for a date.
 /// </summary>
-app.MapPost("/api/health/medication", async (MedicationRecord record, IHealthRecordService service) =>
+app.MapPost("/api/health/medication", async (MedicationAdministration record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -37,7 +37,7 @@ app.MapPost("/api/health/medication", async (MedicationRecord record, IHealthRec
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddMedicationRecordAsync(record);
+    var (success, message, recordId) = await service.AddMedicationAdministrationAsync(record);
     return success 
         ? Results.Created($"/api/health/medication/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -47,7 +47,7 @@ app.MapPost("/api/health/medication", async (MedicationRecord record, IHealthRec
 /// <summary>
 /// POST: Add a bottle/hydration record for a date.
 /// </summary>
-app.MapPost("/api/health/bottle", async (BottleRecord record, IHealthRecordService service) =>
+app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -56,7 +56,7 @@ app.MapPost("/api/health/bottle", async (BottleRecord record, IHealthRecordServi
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddBottleRecordAsync(record);
+    var (success, message, recordId) = await service.AddBottleConsumptionAsync(record);
     return success 
         ? Results.Created($"/api/health/bottle/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -66,7 +66,7 @@ app.MapPost("/api/health/bottle", async (BottleRecord record, IHealthRecordServi
 /// <summary>
 /// POST: Add a bowel movement record for a date.
 /// </summary>
-app.MapPost("/api/health/bowel-movement", async (BowelMovementRecord record, IHealthRecordService service) =>
+app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -75,7 +75,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovementRecord record, IHe
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddBowelMovementRecordAsync(record);
+    var (success, message, recordId) = await service.AddBowelMovementAsync(record);
     return success 
         ? Results.Created($"/api/health/bowel-movement/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -85,7 +85,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovementRecord record, IHe
 /// <summary>
 /// POST: Add a solid food record for a date.
 /// </summary>
-app.MapPost("/api/health/solid-food", async (SolidFoodRecord record, IHealthRecordService service) =>
+app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -94,7 +94,7 @@ app.MapPost("/api/health/solid-food", async (SolidFoodRecord record, IHealthReco
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddSolidFoodRecordAsync(record);
+    var (success, message, recordId) = await service.AddSolidFoodIntakeAsync(record);
     return success 
         ? Results.Created($"/api/health/solid-food/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -104,7 +104,7 @@ app.MapPost("/api/health/solid-food", async (SolidFoodRecord record, IHealthReco
 /// <summary>
 /// POST: Add a note/observation record for a date.
 /// </summary>
-app.MapPost("/api/health/note", async (NoteRecord record, IHealthRecordService service) =>
+app.MapPost("/api/health/note", async (Observation record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -113,7 +113,7 @@ app.MapPost("/api/health/note", async (NoteRecord record, IHealthRecordService s
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddNoteRecordAsync(record);
+    var (success, message, recordId) = await service.AddObservationAsync(record);
     return success 
         ? Results.Created($"/api/health/note/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });

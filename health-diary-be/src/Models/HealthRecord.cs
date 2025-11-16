@@ -5,19 +5,40 @@ namespace HealthDiary.Api.Models;
 /// </summary>
 public abstract record HealthRecord
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public DateOnly Date { get; set; }
-    public TimeOnly Time { get; set; }
+  public Guid Id { get; set; } = Guid.NewGuid();
+  public DateOnly Date { get; set; }
+  public TimeOnly Time { get; set; }
 }
 
 /// <summary>
 /// Medication administration record.
 /// </summary>
-public record MedicationRecord : HealthRecord
+public record MedicationAdministration : HealthRecord
 {
-    public required string Medication { get; set; }
-    public required string Dosage { get; set; }
-    public required MedicationSchedule Schedule { get; set; }
+  public required string Medication { get; set; }
+  public required string Dosage { get; set; }
+  public required MedicationSchedule Schedule { get; set; }
+}
+
+/// <summary>
+/// Medication Dosage.
+/// </summary>
+public record MedicationDosage
+{
+  public Guid Id { get; set; } = Guid.NewGuid();
+  public required string Medication { get; set; }
+  public required string Dosage { get; set; }
+}
+
+/// <summary>
+/// Medication Dosage Group.
+/// </summary>
+public record MedicationDosageGroup
+{
+  public Guid Id { get; set; } = Guid.NewGuid();
+  public required string Medication { get; set; }
+  public required string Dosage { get; set; }
+  public required MedicationSchedule Schedule { get; set; }
 }
 
 /// <summary>
@@ -25,45 +46,45 @@ public record MedicationRecord : HealthRecord
 /// </summary>
 public enum MedicationSchedule
 {
-    SevenAm,
-    ThreePm,
-    SevenPm,
-    TenPm,
-    AdHoc
+  SevenAm,
+  ThreePm,
+  SevenPm,
+  TenPm,
+  AdHoc
 }
 
 /// <summary>
-/// Hydration/bottle record.
+/// Hydration/bottle consumption record.
 /// </summary>
-public record BottleRecord : HealthRecord
+public record BottleConsumption : HealthRecord
 {
-    public int BottleSize { get; set; }
+  public int BottleSize { get; set; }
 }
 
 /// <summary>
 /// Bowel movement record with details.
 /// </summary>
-public record BowelMovementRecord : HealthRecord
+public record BowelMovement : HealthRecord
 {
-    public required string Size { get; set; }
-    public required string Consistency { get; set; }
-    public required string Color { get; set; }
+  public required string Size { get; set; }
+  public required string Consistency { get; set; }
+  public required string Color { get; set; }
 }
 
 /// <summary>
 /// Solid food intake record.
 /// </summary>
-public record SolidFoodRecord : HealthRecord
+public record SolidFoodConsumption : HealthRecord
 {
-    public required string Item { get; set; }
-    public required string Size { get; set; }
-    public string? Notes { get; set; }
+  public required string Item { get; set; }
+  public required string Size { get; set; }
+  public string? Notes { get; set; }
 }
 
 /// <summary>
 /// General note/observation record.
 /// </summary>
-public record NoteRecord : HealthRecord
+public record Observation : HealthRecord
 {
-    public required string Note { get; set; }
+  public required string Note { get; set; }
 }
