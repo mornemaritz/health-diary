@@ -13,17 +13,17 @@ The Health Diary REST API tracks daily healthcare events and actions, grouping t
 ### 1. Start PostgreSQL (if using Docker)
 ```bash
 docker run --name postgres-health-diary \
-  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_PASSWORD=env.HD_POSTGRES_PASSWORD \
   -e POSTGRES_DB=health_diary \
   -p 5432:5432 \
   -d postgres:15
 ```
 
 ### 2. Update Database Connection (optional)
-Edit `src/appsettings.Development.json` to set your PostgreSQL connection:
+Edit `user-secrets` to set your PostgreSQL connection in the following format (with credentials supplied of course):
 ```json
-"ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Port=5432;Database=health_diary;Username=postgres;Password=postgres"
+{
+ "ConnectionStrings:DefaultConnection": "Host=localhost;Port=5432;Database=health_diary;Username=;Password="
 }
 ```
 
