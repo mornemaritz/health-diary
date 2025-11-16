@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.14.2] - 2025-11-16
+### :bug: Bug Fixes
+- [`19edfa8`](https://github.com/mornemaritz/health-diary/commit/19edfa8caaf44721861b4f87bd39e544fbcdf5eb) - add usersecrets *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.14.1] - 2025-11-16
 ### :bug: Bug Fixes
 - [`cee19a3`](https://github.com/mornemaritz/health-diary/commit/cee19a3698fe6e5caac6324f39a92d1965824c79) - remove recycled credentials *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -116,3 +121,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.13.0]: https://github.com/mornemaritz/health-diary/compare/v0.12.0...v0.13.0
 [v0.14.0]: https://github.com/mornemaritz/health-diary/compare/v0.13.0...v0.14.0
 [v0.14.1]: https://github.com/mornemaritz/health-diary/compare/v0.14.0...v0.14.1
+[v0.14.2]: https://github.com/mornemaritz/health-diary/compare/v0.14.1...v0.14.2
