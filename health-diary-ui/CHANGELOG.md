@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.14.0] - 2025-11-15
+### :sparkles: New Features
+- [`6e4826e`](https://github.com/mornemaritz/health-diary/commit/6e4826e8455f6942ac53044dcdb9f94873ea72e1) - initial api implementation *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+### :wrench: Chores
+- [`6ee3db1`](https://github.com/mornemaritz/health-diary/commit/6ee3db1e0d22d0297f5f6bafb347aed5b6478820) - add web cert. bump version in docker-compose *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`8752067`](https://github.com/mornemaritz/health-diary/commit/875206725a431f0d847e16a910448a3e46edc07a) - add health-diary-rest-api skeleton *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.13.0] - 2025-10-23
 ### :sparkles: New Features
 - [`926b93b`](https://github.com/mornemaritz/health-diary/commit/926b93b8516735f116c7755d894fda154e5258a3) - summary combine med + dosage *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -100,3 +109,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.11.0]: https://github.com/mornemaritz/health-diary/compare/v0.10.0...v0.11.0
 [v0.12.0]: https://github.com/mornemaritz/health-diary/compare/v0.11.0...v0.12.0
 [v0.13.0]: https://github.com/mornemaritz/health-diary/compare/v0.12.0...v0.13.0
+[v0.14.0]: https://github.com/mornemaritz/health-diary/compare/v0.13.0...v0.14.0
