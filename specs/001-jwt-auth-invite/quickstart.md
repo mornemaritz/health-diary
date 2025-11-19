@@ -2,40 +2,53 @@
 
 ## Prerequisites
 
-- .NET SDK installed
-- Database configured (see data-model.md)
-- Environment variables for JWT secret, token expiry, etc.
+- .NET 9 SDK
+- PostgreSQL database
+- Entity Framework Core
+- AspNetCore.Authentication.JwtBearer
+- AspNetCoreRateLimit (for rate limiting)
 
 ## Setup
 
-1. Clone the repository and checkout branch `001-jwt-auth-invite`
-2. Install dependencies: `dotnet restore`
-3. Apply database migrations: `dotnet ef database update`
-4. Configure environment variables:
-   - JWT_SECRET
-   - ACCESS_TOKEN_EXPIRY
-   - REFRESH_TOKEN_EXPIRY
-   - RATE_LIMIT_SETTINGS
+1. Clone the repository and checkout the feature branch:
+   ```bash
+   git clone <repo-url>
+   cd health-diary
+   git checkout 001-jwt-auth-invite
+   ```
+2. Configure database connection in `appsettings.json`.
+3. Apply EF Core migrations:
+   ```bash
+   dotnet ef database update --project health-diary-be/src/HealthDiary.Api.csproj
+   ```
+4. Build and run the backend API:
+   ```bash
+   dotnet run --project health-diary-be/src/HealthDiary.Api.csproj
+   ```
 
 ## Running the API
 
-- Start the API: `dotnet run --project src/HealthDiary.Api.csproj`
-- API will be available at `http://localhost:5000`
+API will be available at `http://localhost:5000`
 
 ## Usage
 
 - Admin generates invite link via `/admin/invite`
-- Invited user registers via `/auth/register` with invite token
-- User logs in via `/auth/login` to receive access and refresh tokens
-- User refreshes access token via `/auth/refresh`
+- Invited user registers via `/register` with invite token
+- User logs in via `/login` to receive access and refresh tokens
+- User refreshes access token via `/token/refresh`
 - Authenticated user accesses protected endpoints with access token
+- Password reset via `/password-reset` and `/password-reset/confirm` endpoints
 
 ## Testing
 
-- Run unit tests: `dotnet test tests/HealthDiary.Tests.csproj`
-- Ensure all tests pass before merging changes
+- Run unit tests:
+   ```bash
+   dotnet test health-diary-be/tests/Unit/
+   dotnet test health-diary-be/tests/Integration/
+   ```
+Ensure all tests pass before merging changes
 
 ## Reference
 
 - See [data-model.md](./data-model.md) for entities
-- See [contracts/api-contracts.md](./contracts/api-contracts.md) for API details
+- See [contracts/auth.yaml](./contracts/auth.yaml) for OpenAPI contract and API details
