@@ -22,6 +22,7 @@ Implement user authentication using JWTs with access and refresh tokens. Users a
 ## User Scenarios & Testing
 
 1. **Registration via Invite Link**
+   - System Admin creates a user in the system with an email address and the system generates a unique registration link 
    - Invited user receives a unique registration link (delivery mechanism out of scope).
    - User opens the link, sets username and password, and completes registration.
    - System validates the link and creates the account.
@@ -39,6 +40,9 @@ Implement user authentication using JWTs with access and refresh tokens. Users a
 
 5. **Invalid/Expired Invite Link**
    - User attempts to register with an invalid or expired link; system denies registration and provides a clear error message.
+6. **Passowrd reset
+   - System Admin generates a unique, expiring reset password link for a user.
+   - User uses unique reset password link to specify a new password.
 
 ## Functional Requirements
 
