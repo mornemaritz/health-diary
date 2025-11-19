@@ -22,7 +22,7 @@ namespace HealthDiary.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("HealthDiary.Api.Models.BottleRecord", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.BottleConsumption", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -41,10 +41,10 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
-                    b.ToTable("BottleRecords");
+                    b.ToTable("Bottles");
                 });
 
-            modelBuilder.Entity("HealthDiary.Api.Models.BowelMovementRecord", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.BowelMovement", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,10 +72,10 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
-                    b.ToTable("BowelMovementRecords");
+                    b.ToTable("BowelMovements");
                 });
 
-            modelBuilder.Entity("HealthDiary.Api.Models.MedicationRecord", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.MedicationAdministration", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -103,10 +103,10 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
-                    b.ToTable("MedicationRecords");
+                    b.ToTable("MedicationAdministrations");
                 });
 
-            modelBuilder.Entity("HealthDiary.Api.Models.NoteRecord", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.Observation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -126,10 +126,10 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
-                    b.ToTable("NoteRecords");
+                    b.ToTable("Observations");
                 });
 
-            modelBuilder.Entity("HealthDiary.Api.Models.SolidFoodRecord", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.SolidFoodConsumption", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -156,7 +156,7 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
-                    b.ToTable("SolidFoodRecords");
+                    b.ToTable("SolidFoods");
                 });
 #pragma warning restore 612, 618
         }

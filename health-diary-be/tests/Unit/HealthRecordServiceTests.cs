@@ -33,7 +33,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
     {
         // Arrange
         var service = new HealthRecordService(_context);
-        var record = new MedicationRecord
+        var record = new MedicationAdministration
         {
             Medication = "Aspirin",
             Dosage = "100mg",
@@ -43,7 +43,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
         };
 
         // Act
-        var (success, message, recordId) = await service.AddMedicationRecordAsync(record);
+        var (success, message, recordId) = await service.AddMedicationAdministrationAsync(record);
 
         // Assert
         success.Should().BeTrue();
@@ -59,7 +59,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
         var date = DateOnly.FromDateTime(DateTime.Now);
         var time = new TimeOnly(7, 0);
 
-        var record1 = new MedicationRecord
+        var record1 = new MedicationAdministration
         {
             Medication = "Aspirin",
             Dosage = "100mg",
@@ -68,7 +68,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
             Time = time
         };
 
-        var record2 = new MedicationRecord
+        var record2 = new MedicationAdministration
         {
             Medication = "Ibuprofen",
             Dosage = "200mg",
@@ -78,8 +78,8 @@ public class HealthRecordServiceTests : IAsyncLifetime
         };
 
         // Act
-        await service.AddMedicationRecordAsync(record1);
-        var (success, message, _) = await service.AddMedicationRecordAsync(record2);
+        await service.AddMedicationAdministrationAsync(record1);
+        var (success, message, _) = await service.AddMedicationAdministrationAsync(record2);
 
         // Assert
         success.Should().BeFalse();
@@ -93,7 +93,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
         var service = new HealthRecordService(_context);
         var date = DateOnly.FromDateTime(DateTime.Now);
 
-        var record1 = new MedicationRecord
+        var record1 = new MedicationAdministration
         {
             Medication = "Aspirin",
             Dosage = "100mg",
@@ -102,7 +102,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
             Time = new TimeOnly(7, 0)
         };
 
-        var record2 = new MedicationRecord
+        var record2 = new MedicationAdministration
         {
             Medication = "Ibuprofen",
             Dosage = "200mg",
@@ -111,11 +111,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
             Time = new TimeOnly(15, 0)
         };
 
-        await service.AddMedicationRecordAsync(record1);
-        await service.AddMedicationRecordAsync(record2);
+        await service.AddMedicationAdministrationAsync(record1);
+        await service.AddMedicationAdministrationAsync(record2);
 
         // Act
-        var records = await service.GetMedicationRecordsByDateAsync(date);
+        var records = await service.GetMedicationAdministrationsByDateAsync(date);
 
         // Assert
         records.Should().HaveCount(2);
@@ -129,7 +129,7 @@ public class HealthRecordServiceTests : IAsyncLifetime
         var service = new HealthRecordService(_context);
         var date = DateOnly.FromDateTime(DateTime.Now);
 
-        var med = new MedicationRecord
+        var med = new MedicationAdministration
         {
             Medication = "Aspirin",
             Dosage = "100mg",
@@ -138,23 +138,23 @@ public class HealthRecordServiceTests : IAsyncLifetime
             Time = new TimeOnly(7, 0)
         };
 
-        var bottle = new BottleRecord
+        var bottle = new BottleConsumption
         {
             BottleSize = 250,
             Date = date,
             Time = new TimeOnly(8, 0)
         };
 
-        var note = new NoteRecord
+        var note = new Observation
         {
             Note = "Feeling good",
             Date = date,
             Time = new TimeOnly(9, 0)
         };
 
-        await service.AddMedicationRecordAsync(med);
-        await service.AddBottleRecordAsync(bottle);
-        await service.AddNoteRecordAsync(note);
+        await service.AddMedicationAdministrationAsync(med);
+        await service.AddBottleConsumptionAsync(bottle);
+        await service.AddObservationAsync(note);
 
         // Act
         var summary = await service.GetDailySummaryAsync(date);

@@ -10,47 +10,47 @@ public class HealthDiaryContext : DbContext
 {
     public HealthDiaryContext(DbContextOptions<HealthDiaryContext> options) : base(options) { }
 
-    public DbSet<MedicationRecord> MedicationRecords { get; set; } = null!;
-    public DbSet<BottleRecord> BottleRecords { get; set; } = null!;
-    public DbSet<BowelMovementRecord> BowelMovementRecords { get; set; } = null!;
-    public DbSet<SolidFoodRecord> SolidFoodRecords { get; set; } = null!;
-    public DbSet<NoteRecord> NoteRecords { get; set; } = null!;
+    public DbSet<MedicationAdministration> MedicationAdministrations { get; set; } = null!;
+    public DbSet<BottleConsumption> Bottles { get; set; } = null!;
+    public DbSet<BowelMovement> BowelMovements { get; set; } = null!;
+    public DbSet<SolidFoodConsumption> SolidFoods { get; set; } = null!;
+    public DbSet<Observation> Observations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Configure MedicationRecord
-        modelBuilder.Entity<MedicationRecord>()
+        modelBuilder.Entity<MedicationAdministration>()
             .HasKey(m => m.Id);
-        modelBuilder.Entity<MedicationRecord>()
+        modelBuilder.Entity<MedicationAdministration>()
             .Property(m => m.Schedule)
             .HasConversion<string>();
-        modelBuilder.Entity<MedicationRecord>()
+        modelBuilder.Entity<MedicationAdministration>()
             .HasIndex(m => m.Date);
 
         // Configure BottleRecord
-        modelBuilder.Entity<BottleRecord>()
+        modelBuilder.Entity<BottleConsumption>()
             .HasKey(b => b.Id);
-        modelBuilder.Entity<BottleRecord>()
+        modelBuilder.Entity<BottleConsumption>()
             .HasIndex(b => b.Date);
 
         // Configure BowelMovementRecord
-        modelBuilder.Entity<BowelMovementRecord>()
+        modelBuilder.Entity<BowelMovement>()
             .HasKey(b => b.Id);
-        modelBuilder.Entity<BowelMovementRecord>()
+        modelBuilder.Entity<BowelMovement>()
             .HasIndex(b => b.Date);
 
         // Configure SolidFoodRecord
-        modelBuilder.Entity<SolidFoodRecord>()
+        modelBuilder.Entity<SolidFoodConsumption>()
             .HasKey(s => s.Id);
-        modelBuilder.Entity<SolidFoodRecord>()
+        modelBuilder.Entity<SolidFoodConsumption>()
             .HasIndex(s => s.Date);
 
         // Configure NoteRecord
-        modelBuilder.Entity<NoteRecord>()
+        modelBuilder.Entity<Observation>()
             .HasKey(n => n.Id);
-        modelBuilder.Entity<NoteRecord>()
+        modelBuilder.Entity<Observation>()
             .HasIndex(n => n.Date);
     }
 }

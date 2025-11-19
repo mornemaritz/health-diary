@@ -12,7 +12,7 @@ namespace HealthDiary.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "BottleRecords",
+                name: "Bottles",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -22,11 +22,11 @@ namespace HealthDiary.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BottleRecords", x => x.Id);
+                    table.PrimaryKey("PK_Bottles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "BowelMovementRecords",
+                name: "BowelMovements",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -38,11 +38,11 @@ namespace HealthDiary.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BowelMovementRecords", x => x.Id);
+                    table.PrimaryKey("PK_BowelMovements", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "MedicationRecords",
+                name: "MedicationAdministrations",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -54,11 +54,11 @@ namespace HealthDiary.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MedicationRecords", x => x.Id);
+                    table.PrimaryKey("PK_MedicationAdministrations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "NoteRecords",
+                name: "Observations",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -68,11 +68,11 @@ namespace HealthDiary.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NoteRecords", x => x.Id);
+                    table.PrimaryKey("PK_Observations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "SolidFoodRecords",
+                name: "SolidFoods",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -84,32 +84,32 @@ namespace HealthDiary.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SolidFoodRecords", x => x.Id);
+                    table.PrimaryKey("PK_SolidFoods", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BottleRecords_Date",
-                table: "BottleRecords",
+                name: "IX_Bottles_Date",
+                table: "Bottles",
                 column: "Date");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BowelMovementRecords_Date",
-                table: "BowelMovementRecords",
+                name: "IX_BowelMovements_Date",
+                table: "BowelMovements",
                 column: "Date");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicationRecords_Date",
-                table: "MedicationRecords",
+                name: "IX_MedicationAdministrations_Date",
+                table: "MedicationAdministrations",
                 column: "Date");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NoteRecords_Date",
-                table: "NoteRecords",
+                name: "IX_Observations_Date",
+                table: "Observations",
                 column: "Date");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SolidFoodRecords_Date",
-                table: "SolidFoodRecords",
+                name: "IX_SolidFoods_Date",
+                table: "SolidFoods",
                 column: "Date");
         }
 
@@ -117,19 +117,19 @@ namespace HealthDiary.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BottleRecords");
+                name: "Bottles");
 
             migrationBuilder.DropTable(
-                name: "BowelMovementRecords");
+                name: "BowelMovements");
 
             migrationBuilder.DropTable(
-                name: "MedicationRecords");
+                name: "MedicationAdministrations");
 
             migrationBuilder.DropTable(
-                name: "NoteRecords");
+                name: "Observations");
 
             migrationBuilder.DropTable(
-                name: "SolidFoodRecords");
+                name: "SolidFoods");
         }
     }
 }

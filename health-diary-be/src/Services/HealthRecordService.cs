@@ -9,17 +9,17 @@ namespace HealthDiary.Api.Services;
 /// </summary>
 public interface IHealthRecordService
 {
-    Task<(bool Success, string Message, Guid? RecordId)> AddMedicationRecordAsync(MedicationRecord record);
-    Task<(bool Success, string Message, Guid? RecordId)> AddBottleRecordAsync(BottleRecord record);
-    Task<(bool Success, string Message, Guid? RecordId)> AddBowelMovementRecordAsync(BowelMovementRecord record);
-    Task<(bool Success, string Message, Guid? RecordId)> AddSolidFoodRecordAsync(SolidFoodRecord record);
-    Task<(bool Success, string Message, Guid? RecordId)> AddNoteRecordAsync(NoteRecord record);
+    Task<(bool Success, string Message, Guid? RecordId)> AddMedicationAdministrationAsync(MedicationAdministration record);
+    Task<(bool Success, string Message, Guid? RecordId)> AddBottleConsumptionAsync(BottleConsumption record);
+    Task<(bool Success, string Message, Guid? RecordId)> AddBowelMovementAsync(BowelMovement record);
+    Task<(bool Success, string Message, Guid? RecordId)> AddSolidFoodIntakeAsync(SolidFoodConsumption record);
+    Task<(bool Success, string Message, Guid? RecordId)> AddObservationAsync(Observation record);
     
-    Task<List<MedicationRecord>> GetMedicationRecordsByDateAsync(DateOnly date);
-    Task<List<BottleRecord>> GetBottleRecordsByDateAsync(DateOnly date);
-    Task<List<BowelMovementRecord>> GetBowelMovementRecordsByDateAsync(DateOnly date);
-    Task<List<SolidFoodRecord>> GetSolidFoodRecordsByDateAsync(DateOnly date);
-    Task<List<NoteRecord>> GetNoteRecordsByDateAsync(DateOnly date);
+    Task<List<MedicationAdministration>> GetMedicationAdministrationsByDateAsync(DateOnly date);
+    Task<List<BottleConsumption>> GetBottleConsumptionsByDateAsync(DateOnly date);
+    Task<List<BowelMovement>> GetBowelMovementsByDateAsync(DateOnly date);
+    Task<List<SolidFoodConsumption>> GetSolidFoodIntakesByDateAsync(DateOnly date);
+    Task<List<Observation>> GetObservationsByDateAsync(DateOnly date);
     
     Task<DailySummary> GetDailySummaryAsync(DateOnly date);
 }
@@ -36,97 +36,97 @@ public class HealthRecordService : IHealthRecordService
     /// <summary>
     /// Checks if a duplicate record already exists for the date, time, and type.
     /// </summary>
-    private async Task<bool> RecordExistsAsync<T>(DateOnly date, TimeOnly time) where T : HealthRecord
+    private async Task<bool> HealthRecordExistsAsync<T>(DateOnly date, TimeOnly time) where T : HealthRecord
     {
         return await _context.Set<T>()
             .AnyAsync(r => r.Date == date && r.Time == time);
     }
 
-    public async Task<(bool Success, string Message, Guid? RecordId)> AddMedicationRecordAsync(MedicationRecord record)
+    public async Task<(bool Success, string Message, Guid? RecordId)> AddMedicationAdministrationAsync(MedicationAdministration record)
     {
-        if (await RecordExistsAsync<MedicationRecord>(record.Date, record.Time))
+        if (await HealthRecordExistsAsync<MedicationAdministration>(record.Date, record.Time))
             return (false, "A medication record already exists for this date and time.", null);
 
-        _context.MedicationRecords.Add(record);
+        _context.MedicationAdministrations.Add(record);
         await _context.SaveChangesAsync();
         return (true, "Medication record created successfully.", record.Id);
     }
 
-    public async Task<(bool Success, string Message, Guid? RecordId)> AddBottleRecordAsync(BottleRecord record)
+    public async Task<(bool Success, string Message, Guid? RecordId)> AddBottleConsumptionAsync(BottleConsumption record)
     {
-        if (await RecordExistsAsync<BottleRecord>(record.Date, record.Time))
+        if (await HealthRecordExistsAsync<BottleConsumption>(record.Date, record.Time))
             return (false, "A bottle record already exists for this date and time.", null);
 
-        _context.BottleRecords.Add(record);
+        _context.Bottles.Add(record);
         await _context.SaveChangesAsync();
         return (true, "Bottle record created successfully.", record.Id);
     }
 
-    public async Task<(bool Success, string Message, Guid? RecordId)> AddBowelMovementRecordAsync(BowelMovementRecord record)
+    public async Task<(bool Success, string Message, Guid? RecordId)> AddBowelMovementAsync(BowelMovement record)
     {
-        if (await RecordExistsAsync<BowelMovementRecord>(record.Date, record.Time))
+        if (await HealthRecordExistsAsync<BowelMovement>(record.Date, record.Time))
             return (false, "A bowel movement record already exists for this date and time.", null);
 
-        _context.BowelMovementRecords.Add(record);
+        _context.BowelMovements.Add(record);
         await _context.SaveChangesAsync();
         return (true, "Bowel movement record created successfully.", record.Id);
     }
 
-    public async Task<(bool Success, string Message, Guid? RecordId)> AddSolidFoodRecordAsync(SolidFoodRecord record)
+    public async Task<(bool Success, string Message, Guid? RecordId)> AddSolidFoodIntakeAsync(SolidFoodConsumption record)
     {
-        if (await RecordExistsAsync<SolidFoodRecord>(record.Date, record.Time))
+        if (await HealthRecordExistsAsync<SolidFoodConsumption>(record.Date, record.Time))
             return (false, "A solid food record already exists for this date and time.", null);
 
-        _context.SolidFoodRecords.Add(record);
+        _context.SolidFoods.Add(record);
         await _context.SaveChangesAsync();
         return (true, "Solid food record created successfully.", record.Id);
     }
 
-    public async Task<(bool Success, string Message, Guid? RecordId)> AddNoteRecordAsync(NoteRecord record)
+    public async Task<(bool Success, string Message, Guid? RecordId)> AddObservationAsync(Observation record)
     {
-        if (await RecordExistsAsync<NoteRecord>(record.Date, record.Time))
+        if (await HealthRecordExistsAsync<Observation>(record.Date, record.Time))
             return (false, "A note record already exists for this date and time.", null);
 
-        _context.NoteRecords.Add(record);
+        _context.Observations.Add(record);
         await _context.SaveChangesAsync();
         return (true, "Note record created successfully.", record.Id);
     }
 
-    public async Task<List<MedicationRecord>> GetMedicationRecordsByDateAsync(DateOnly date)
+    public async Task<List<MedicationAdministration>> GetMedicationAdministrationsByDateAsync(DateOnly date)
     {
-        return await _context.MedicationRecords
+        return await _context.MedicationAdministrations
             .Where(r => r.Date == date)
             .OrderBy(r => r.Time)
             .ToListAsync();
     }
 
-    public async Task<List<BottleRecord>> GetBottleRecordsByDateAsync(DateOnly date)
+    public async Task<List<BottleConsumption>> GetBottleConsumptionsByDateAsync(DateOnly date)
     {
-        return await _context.BottleRecords
+        return await _context.Bottles
             .Where(r => r.Date == date)
             .OrderBy(r => r.Time)
             .ToListAsync();
     }
 
-    public async Task<List<BowelMovementRecord>> GetBowelMovementRecordsByDateAsync(DateOnly date)
+    public async Task<List<BowelMovement>> GetBowelMovementsByDateAsync(DateOnly date)
     {
-        return await _context.BowelMovementRecords
+        return await _context.BowelMovements
             .Where(r => r.Date == date)
             .OrderBy(r => r.Time)
             .ToListAsync();
     }
 
-    public async Task<List<SolidFoodRecord>> GetSolidFoodRecordsByDateAsync(DateOnly date)
+    public async Task<List<SolidFoodConsumption>> GetSolidFoodIntakesByDateAsync(DateOnly date)
     {
-        return await _context.SolidFoodRecords
+        return await _context.SolidFoods
             .Where(r => r.Date == date)
             .OrderBy(r => r.Time)
             .ToListAsync();
     }
 
-    public async Task<List<NoteRecord>> GetNoteRecordsByDateAsync(DateOnly date)
+    public async Task<List<Observation>> GetObservationsByDateAsync(DateOnly date)
     {
-        return await _context.NoteRecords
+        return await _context.Observations
             .Where(r => r.Date == date)
             .OrderBy(r => r.Time)
             .ToListAsync();
@@ -134,11 +134,11 @@ public class HealthRecordService : IHealthRecordService
 
     public async Task<DailySummary> GetDailySummaryAsync(DateOnly date)
     {
-        var medications = await GetMedicationRecordsByDateAsync(date);
-        var bottles = await GetBottleRecordsByDateAsync(date);
-        var bowelMovements = await GetBowelMovementRecordsByDateAsync(date);
-        var solidFoods = await GetSolidFoodRecordsByDateAsync(date);
-        var notes = await GetNoteRecordsByDateAsync(date);
+        var medications = await GetMedicationAdministrationsByDateAsync(date);
+        var bottles = await GetBottleConsumptionsByDateAsync(date);
+        var bowelMovements = await GetBowelMovementsByDateAsync(date);
+        var solidFoods = await GetSolidFoodIntakesByDateAsync(date);
+        var notes = await GetObservationsByDateAsync(date);
 
         var allRecords = new List<HealthRecordDto>();
         allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication" }));
