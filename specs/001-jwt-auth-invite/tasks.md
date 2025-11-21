@@ -2,7 +2,7 @@
 # Tasks: JWT Auth & Invite-Only Registration
 
 ## Phase 1: Setup
-- [ ] T001 Create project structure per plan.md
+- [X] T001 Create project structure per plan.md
 - [X] T002 Configure PostgreSQL connection in health-diary-be/src/appsettings.json
 - [X] T003 [P] Install dependencies in health-diary-be/src/HealthDiary.Api.csproj
 - [X] T004 [P] Add EF Core migration for initial schema in health-diary-be/src/Data/
@@ -47,8 +47,8 @@
 
 ## Phase 9: API Itegration.
 - [ ] T031 Add an Admin indicator to the User
-- [ ] T032 Implement API Endpoints for JWT Auth & Invite-Only Registration as per the API contracts in 'contracts.yam'
-- [ ] T033 Apply Authentication and Authorization to existing Endpoints in 'Program.cs'.
+- [ ] T032 Implement API Endpoints for JWT Auth & Invite-Only Registration alongside the existing API endpoints in 'src/Program.cs' as per the API contracts in 'specs/001-jwt-auth-invite/contracts/auth.yaml'
+- [ ] T033 Apply Authentication and Authorization to existing Endpoints in 'src/Program.cs'.
 
 
 ## Final Phase: Polish & Cross-Cutting Concerns
