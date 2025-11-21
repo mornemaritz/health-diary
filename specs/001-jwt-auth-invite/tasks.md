@@ -45,6 +45,12 @@
 - [X] T027 [P] [US6] Validate password reset link (single-use, expiration) in health-diary-be/src/Services/HealthRecordService.cs
 - [X] T028 [P] [US6] Unit test password reset flow in health-diary-be/tests/Unit/HealthRecordServiceTests.cs
 
+## Phase 9: API Itegration.
+- [ ] T031 Add an Admin indicator to the User
+- [ ] T032 Implement API Endpoints for JWT Auth & Invite-Only Registration as per the API contracts in 'contracts.yam'
+- [ ] T033 Apply Authentication and Authorization to existing Endpoints in 'Program.cs'.
+
+
 ## Final Phase: Polish & Cross-Cutting Concerns
 - [X] T029 Update OpenAPI contract in specs/001-jwt-auth-invite/contracts/auth.yaml
 - [X] T030 Update quickstart.md and README.md with endpoint documentation
