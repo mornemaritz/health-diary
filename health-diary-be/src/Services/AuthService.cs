@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using HealthDiary.Api.Models;
+using HealthDiary.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthDiary.Api.Services;

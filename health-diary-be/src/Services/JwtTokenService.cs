@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using HealthDiary.Api.Models;
+using HealthDiary.Api.Data;
 
 namespace HealthDiary.Api.Services;
 

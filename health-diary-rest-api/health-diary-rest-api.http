@@ -1,6 +1,0 @@
-@health_diary_rest_api_HostAddress = http://localhost:5157
-
-GET {{health_diary_rest_api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
