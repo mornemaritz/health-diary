@@ -1,0 +1,672 @@
+openapi: 3.0.0
+info:
+  title: Health Diary API
+  description: Health tracking API with JWT authentication, invite-only registration, and health record management
+  version: 1.0.0
+  contact:
+    name: Health Diary Team
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+  - url: https://api.healthdiary.example.com
+    description: Production server
+
+paths:
+  /api/auth/admin/invite:
+    post:
+      summary: Generate an invite link for a new user (Admin only)
+      operationId: generateInviteLink
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          description: Email address for the invite
+      responses:
+        '201':
+          description: Invite link successfully generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  token:
+                    type: string
+                    description: Unique invite token
+                  email:
+                    type: string
+                    format: email
+                  expiresAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/register:
+    post:
+      summary: Register a new user via invite link
+      operationId: registerUser
+      tags:
+        - Authentication
+      parameters:
+        - name: inviteToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Unique invite token
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          description: User email address
+        - name: username
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 3
+            maxLength: 50
+            pattern: '^[a-zA-Z0-9_-]+$'
+          description: Unique username
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: User's full name
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+          description: Password (min 8 characters)
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: Invalid request or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/login:
+    post:
+      summary: Authenticate user and issue tokens
+      operationId: login
+      tags:
+        - Authentication
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+          description: User email address
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+          description: User password
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: JWT access token
+                  accessTokenExpiresAt:
+                    type: string
+                    format: date-time
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                  refreshTokenExpiresAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          description: Invalid credentials or rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/token/refresh:
+    post:
+      summary: Refresh access token using refresh token
+      operationId: refreshAccessToken
+      tags:
+        - Authentication
+      parameters:
+        - name: refreshToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Refresh token
+      responses:
+        '200':
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: New JWT access token
+                  expiresAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/admin/password-reset:
+    post:
+      summary: Request a password reset link (Admin generates for user)
+      operationId: generatePasswordResetLink
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID of user requesting password reset
+      responses:
+        '200':
+          description: Password reset link generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Reset token
+                  expiresAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/password-reset/confirm:
+    post:
+      summary: Reset password using reset link
+      operationId: resetPassword
+      tags:
+        - Authentication
+      parameters:
+        - name: resetToken
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Password reset token
+        - name: newPassword
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+          description: New password (min 8 characters)
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid reset token or password validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/medication:
+    post:
+      summary: Add a medication administration record
+      operationId: createMedicationRecord
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MedicationAdministration'
+      responses:
+        '201':
+          description: Medication record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+        '400':
+          description: Date and Time are required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - Record could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/bottle:
+    post:
+      summary: Add a bottle/hydration consumption record
+      operationId: createBottleRecord
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BottleConsumption'
+      responses:
+        '201':
+          description: Bottle record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+        '400':
+          description: Date and Time are required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - Record could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/bowel-movement:
+    post:
+      summary: Add a bowel movement record
+      operationId: createBowelMovementRecord
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BowelMovement'
+      responses:
+        '201':
+          description: Bowel movement record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+        '400':
+          description: Date and Time are required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - Record could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/solid-food:
+    post:
+      summary: Add a solid food consumption record
+      operationId: createSolidFoodRecord
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolidFoodConsumption'
+      responses:
+        '201':
+          description: Solid food record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+        '400':
+          description: Date and Time are required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - Record could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/note:
+    post:
+      summary: Add a note/observation record
+      operationId: createNoteRecord
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Observation'
+      responses:
+        '201':
+          description: Note record created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+        '400':
+          description: Date and Time are required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - Record could not be created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/health/summary/{date}:
+    get:
+      summary: Retrieve daily summary for a given date
+      operationId: getSummaryByDate
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Date in yyyy-MM-dd format
+      responses:
+        '200':
+          description: Daily summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySummary'
+        '400':
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    MedicationAdministration:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of medication
+        time:
+          type: string
+          format: time
+          description: Time of medication administration
+        medication:
+          type: string
+          description: Name of medication
+        dosage:
+          type: string
+          description: Dosage amount
+
+    BottleConsumption:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of consumption
+        time:
+          type: string
+          format: time
+          description: Time of consumption
+        quantity:
+          type: number
+          description: Amount consumed in ml or oz
+
+    BowelMovement:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of bowel movement
+        time:
+          type: string
+          format: time
+          description: Time of bowel movement
+        consistency:
+          type: string
+          enum:
+            - Hard
+            - Normal
+            - Soft
+            - Diarrhea
+          description: Consistency of bowel movement
+
+    SolidFoodConsumption:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of food consumption
+        time:
+          type: string
+          format: time
+          description: Time of food consumption
+        food:
+          type: string
+          description: Description of food consumed
+        quantity:
+          type: string
+          description: Amount consumed
+
+    Observation:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of observation
+        time:
+          type: string
+          format: time
+          description: Time of observation
+        notes:
+          type: string
+          description: Observation notes/text
+        category:
+          type: string
+          description: Category of observation
+
+    DailySummary:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        medications:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationAdministration'
+        bottles:
+          type: array
+          items:
+            $ref: '#/components/schemas/BottleConsumption'
+        bowelMovements:
+          type: array
+          items:
+            $ref: '#/components/schemas/BowelMovement'
+        solidFood:
+          type: array
+          items:
+            $ref: '#/components/schemas/SolidFoodConsumption'
+        observations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Observation'
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        details:
+          type: object
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token for authenticated endpoints
+
+tags:
+  - name: Authentication
+    description: User registration, login, and token management
+  - name: Health Records
+    description: Health tracking records and summaries

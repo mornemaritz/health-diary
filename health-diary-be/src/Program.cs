@@ -2,17 +2,79 @@ using HealthDiary.Api.Data;
 using HealthDiary.Api.Models;
 using HealthDiary.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddScoped<IHealthRecordService, HealthRecordService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IRateLimitService, InMemoryRateLimitService>();
+
+// Configure JSON serialization to handle DateOnly and TimeOnly
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Configure EF Core with PostgreSQL
 builder.Services.AddDbContext<HealthDiaryContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Configure JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["SecretKey"];
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new InvalidOperationException("JWT SecretKey is not configured. Please set it in appsettings.json");
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"] ?? "HealthDiary",
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"] ?? "HealthDiaryUsers",
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+// Add global exception handling middleware
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Exception caught: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        if (!context.Response.HasStarted)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = ex.Message, stackTrace = ex.StackTrace });
+        }
+    }
+});
 
 // Apply migrations
 using (var scope = app.Services.CreateScope())
@@ -21,7 +83,147 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
-app.UseHttpsRedirection();
+// Only redirect to HTTPS in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// ============== Authentication API Endpoints ==============
+
+/// <summary>
+/// POST: Generate an invite link for a new user (Admin only).
+/// </summary>
+app.MapPost("/api/auth/admin/invite", async (string email, IAuthService authService, HttpContext context) =>
+{
+    // Check if user is admin
+    // var userId = context.User.FindFirst("sub")?.Value;
+    // if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var adminId))
+    //     return Results.Unauthorized();
+
+    var inviteLink = await authService.GenerateInviteLinkAsync(email, Guid.Parse("00000000-0000-0000-0000-000000000001"));
+    return Results.Created($"/api/auth/invite/{inviteLink.Id}", new 
+    {
+      inviteLink.Id,
+      inviteLink.Token,
+      inviteLink.Email,
+      inviteLink.ExpiresAt,
+      Message = "Invite link generated successfully"
+    });
+})
+.WithName("GenerateInviteLink")
+.Produces(201)
+.Produces(401);
+
+/// <summary>
+/// GET: Validate an invite link token.
+/// </summary>
+app.MapGet("/api/auth/invite/validate", async (string token, IAuthService authService) =>
+{
+    var (success, message) = await authService.ValidateInviteLinkAsync(token);
+    return success
+        ? Results.Ok(new { Message = message })
+        : Results.BadRequest(new { Message = message });
+})
+.WithName("ValidateInviteLink")
+.Produces(200)
+.Produces(400);
+
+/// <summary>
+/// POST: Register a new user via invite link.
+/// </summary>
+app.MapPost("/api/auth/register", async (
+    string inviteToken, string email, string username, string name, string password,
+    IAuthService authService) =>
+{
+    var (success, message, user) = await authService.RegisterUserAsync(inviteToken, email, username, name, password);
+    return success
+        ? Results.Created($"/api/auth/users/{user!.Id}", new { Id = user.Id, Email = user.Email, Message = message })
+        : Results.BadRequest(new { Message = message });
+})
+.WithName("RegisterUser")
+.Produces(201)
+.Produces(400);
+
+/// <summary>
+/// POST: Login with email and password.
+/// </summary>
+app.MapPost("/api/auth/login", async (string email, string password, IAuthService authService, HttpContext context) =>
+{
+    var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    var (success, message, accessToken, refreshToken) = await authService.LoginAsync(email, password, clientIp);
+    
+    return success
+        ? Results.Ok(new 
+        { 
+            AccessToken = accessToken!.Jwt,
+            AccessTokenExpiresAt = accessToken.ExpiresAt,
+            RefreshToken = refreshToken!.Token,
+            RefreshTokenExpiresAt = refreshToken.ExpiresAt,
+            Message = message
+        })
+        : Results.Unauthorized();
+})
+.WithName("Login")
+.Produces(200)
+.Produces(401);
+
+/// <summary>
+/// POST: Refresh access token using refresh token.
+/// </summary>
+app.MapPost("/api/auth/token/refresh", async (string refreshToken, IAuthService authService) =>
+{
+    var (success, accessToken) = await authService.RefreshAccessTokenAsync(refreshToken);
+    return success
+        ? Results.Ok(new 
+        { 
+            AccessToken = accessToken!.Jwt,
+            ExpiresAt = accessToken.ExpiresAt,
+            Message = "Access token refreshed"
+        })
+        : Results.Unauthorized();
+})
+.WithName("RefreshAccessToken")
+.Produces(200)
+.Produces(401);
+
+/// <summary>
+/// POST: Request a password reset link (Admin generates for user).
+/// </summary>
+app.MapPost("/api/auth/admin/password-reset", async (Guid userId, IAuthService authService, HttpContext context) =>
+{
+    // Check if user is admin
+    if (!context.User.IsInRole("Admin"))
+        return Results.Forbid();
+
+    var resetLink = await authService.GeneratePasswordResetLinkAsync(userId);
+    return Results.Ok(new 
+    { 
+        Token = resetLink.Token,
+        ExpiresAt = resetLink.ExpiresAt,
+        Message = "Password reset link generated"
+    });
+})
+.WithName("GeneratePasswordResetLink")
+.Produces(200)
+.Produces(403);
+
+/// <summary>
+/// POST: Reset password using reset link.
+/// </summary>
+app.MapPost("/api/auth/password-reset/confirm", async (string resetToken, string newPassword, IAuthService authService) =>
+{
+    var (success, message) = await authService.ResetPasswordAsync(resetToken, newPassword);
+    return success
+        ? Results.Ok(new { Message = message })
+        : Results.BadRequest(new { Message = message });
+})
+.WithName("ResetPassword")
+.Produces(200)
+.Produces(400);
 
 // API Endpoints
 
@@ -42,7 +244,8 @@ app.MapPost("/api/health/medication", async (MedicationAdministration record, IH
         ? Results.Created($"/api/health/medication/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
-.WithName("CreateMedicationRecord");
+.WithName("CreateMedicationRecord")
+.RequireAuthorization();
 
 /// <summary>
 /// POST: Add a bottle/hydration record for a date.
@@ -61,7 +264,8 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
         ? Results.Created($"/api/health/bottle/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
-.WithName("CreateBottleRecord");
+.WithName("CreateBottleRecord")
+.RequireAuthorization();
 
 /// <summary>
 /// POST: Add a bowel movement record for a date.
@@ -80,7 +284,8 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
         ? Results.Created($"/api/health/bowel-movement/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
-.WithName("CreateBowelMovementRecord");
+.WithName("CreateBowelMovementRecord")
+.RequireAuthorization();
 
 /// <summary>
 /// POST: Add a solid food record for a date.
@@ -99,7 +304,8 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
         ? Results.Created($"/api/health/solid-food/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
-.WithName("CreateSolidFoodRecord");
+.WithName("CreateSolidFoodRecord")
+.RequireAuthorization();
 
 /// <summary>
 /// POST: Add a note/observation record for a date.
@@ -118,24 +324,26 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
         ? Results.Created($"/api/health/note/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
-.WithName("CreateNoteRecord");
+.WithName("CreateNoteRecord")
+.RequireAuthorization();
 
-/// <summary>
-/// GET: Retrieve all records for a given date.
-/// </summary>
-app.MapGet("/api/health/records/{date}", async (string date, IHealthRecordService service) =>
-{
-    if (!DateOnly.TryParse(date, out var parsedDate))
-        return Results.BadRequest(new ErrorResponse 
-        { 
-            StatusCode = 400, 
-            Message = "Invalid date format. Use yyyy-MM-dd." 
-        });
+// /// <summary>
+// /// GET: Retrieve all records for a given date.
+// /// </summary>
+// app.MapGet("/api/health/records/{date}", async (string date, IHealthRecordService service) =>
+// {
+//     if (!DateOnly.TryParse(date, out var parsedDate))
+//         return Results.BadRequest(new ErrorResponse 
+//         { 
+//             StatusCode = 400, 
+//             Message = "Invalid date format. Use yyyy-MM-dd." 
+//         });
 
-    var summary = await service.GetDailySummaryAsync(parsedDate);
-    return Results.Ok(summary);
-})
-.WithName("GetRecordsByDate");
+//     var records = await service.GetRecordsByDateAsync(parsedDate);
+//     return Results.Ok(records);
+// })
+// .WithName("GetRecordsByDate")
+// .RequireAuthorization();
 
 /// <summary>
 /// GET: Retrieve summary for a given date.
@@ -152,6 +360,7 @@ app.MapGet("/api/health/summary/{date}", async (string date, IHealthRecordServic
     var summary = await service.GetDailySummaryAsync(parsedDate);
     return Results.Ok(summary);
 })
-.WithName("GetSummaryByDate");
+.WithName("GetSummaryByDate")
+.RequireAuthorization();
 
 app.Run();

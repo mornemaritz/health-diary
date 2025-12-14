@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: JWT Auth & Invite Registration API
+  version: 1.0.0
+paths:
+  /register:
+    post:
+      summary: Register a new user via invite link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inviteToken:
+                  type: string
+                email:
+                  type: string
+                username:
+                  type: string
+                name:
+                  type: string
+                password:
+                  type: string
+              required:
+                - inviteToken
+                - email
+                - username
+                - name
+                - password
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Invalid or expired invite link
+  /login:
+    post:
+      summary: Authenticate user and issue tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Authenticated, tokens issued
+        '401':
+          description: Invalid credentials
+  /token/refresh:
+    post:
+      summary: Refresh access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        '200':
+          description: New access token issued
+        '401':
+          description: Invalid or expired refresh token
+  /password-reset:
+    post:
+      summary: Request password reset link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Password reset link generated
+        '404':
+          description: User not found
+  /password-reset/confirm:
+    post:
+      summary: Reset password using reset link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resetToken:
+                  type: string
+                newPassword:
+                  type: string
+              required:
+                - resetToken
+                - newPassword
+      responses:
+        '200':
+          description: Password reset successful
+        '400':
+          description: Invalid or expired reset link
+  /protected-resource:
+    get:
+      summary: Access protected resource
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Resource returned
+        '401':
+          description: Invalid or missing access token
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

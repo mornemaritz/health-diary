@@ -44,8 +44,13 @@ public class HealthRecordService : IHealthRecordService
 
     public async Task<(bool Success, string Message, Guid? RecordId)> AddMedicationAdministrationAsync(MedicationAdministration record)
     {
-        if (await HealthRecordExistsAsync<MedicationAdministration>(record.Date, record.Time))
-            return (false, "A medication record already exists for this date and time.", null);
+        if (await _context.MedicationAdministrations.AnyAsync(r =>
+            r.Date == record.Date
+            && r.Time == record.Time
+            && r.Medication == record.Medication
+            && r.Schedule == record.Schedule))
+
+            return (false, $"A medication record already exists for {record.Medication} at this date and time.", null);
 
         _context.MedicationAdministrations.Add(record);
         await _context.SaveChangesAsync();

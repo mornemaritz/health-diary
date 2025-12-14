@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HealthDiary.Api.Models;
 
 /// <summary>
@@ -6,8 +8,46 @@ namespace HealthDiary.Api.Models;
 public abstract record HealthRecord
 {
   public Guid Id { get; set; } = Guid.NewGuid();
+  
+  [JsonPropertyName("date")]
+  [JsonConverter(typeof(JsonDateOnlyConverter))]
   public DateOnly Date { get; set; }
+  
+  [JsonPropertyName("time")]
+  [JsonConverter(typeof(JsonTimeOnlyConverter))]
   public TimeOnly Time { get; set; }
+}
+
+/// <summary>
+/// JSON converter for DateOnly
+/// </summary>
+public class JsonDateOnlyConverter : System.Text.Json.Serialization.JsonConverter<DateOnly>
+{
+  public override DateOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+  {
+    return DateOnly.ParseExact(reader.GetString()!, "yyyy-MM-dd");
+  }
+
+  public override void Write(System.Text.Json.Utf8JsonWriter writer, DateOnly value, System.Text.Json.JsonSerializerOptions options)
+  {
+    writer.WriteStringValue(value.ToString("yyyy-MM-dd"));
+  }
+}
+
+/// <summary>
+/// JSON converter for TimeOnly
+/// </summary>
+public class JsonTimeOnlyConverter : System.Text.Json.Serialization.JsonConverter<TimeOnly>
+{
+  public override TimeOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
+  {
+    return TimeOnly.ParseExact(reader.GetString()!, "HH:mm");
+  }
+
+  public override void Write(System.Text.Json.Utf8JsonWriter writer, TimeOnly value, System.Text.Json.JsonSerializerOptions options)
+  {
+    writer.WriteStringValue(value.ToString("HH:mm"));
+  }
 }
 
 /// <summary>
@@ -86,5 +126,6 @@ public record SolidFoodConsumption : HealthRecord
 /// </summary>
 public record Observation : HealthRecord
 {
+  [JsonPropertyName("note")]
   public required string Note { get; set; }
 }

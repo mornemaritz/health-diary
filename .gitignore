@@ -23,6 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# dontnet
+# .NET
 bin/
 obj/
+*.user
+*.userprefs
+.vs/
+packages/
+*.dll
+*.exe
+appsettings.Development.json
+.env
+.env.local
