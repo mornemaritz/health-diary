@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.16.0] - 2025-12-14
+### :sparkles: New Features
+- [`c1a9f6e`](https://github.com/mornemaritz/health-diary/commit/c1a9f6e9cccdf52ada5556b7464ecb1372df4f96) - implementation minus API endpoints *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`7532d02`](https://github.com/mornemaritz/health-diary/commit/7532d02cb7c5ca4024b939ca8f3799a38765e8fc) - JWT Auth and Persistence *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.15.0] - 2025-11-19
 ### :sparkles: New Features
 - [`6ef4944`](https://github.com/mornemaritz/health-diary/commit/6ef49443a76a812dc071f8b4c5384a9227742d2e) - better domain model names *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -129,3 +135,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.14.1]: https://github.com/mornemaritz/health-diary/compare/v0.14.0...v0.14.1
 [v0.14.2]: https://github.com/mornemaritz/health-diary/compare/v0.14.1...v0.14.2
 [v0.15.0]: https://github.com/mornemaritz/health-diary/compare/v0.14.2...v0.15.0
+[v0.16.0]: https://github.com/mornemaritz/health-diary/compare/v0.15.0...v0.16.0
