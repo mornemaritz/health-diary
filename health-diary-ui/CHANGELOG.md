@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.17.0] - 2026-01-02
+### :sparkles: New Features
+- [`335869f`](https://github.com/mornemaritz/health-diary/commit/335869f6088675956ee98e98c065bf01cbb69280) - daily summary *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.16.0] - 2025-12-14
 ### :sparkles: New Features
 - [`c1a9f6e`](https://github.com/mornemaritz/health-diary/commit/c1a9f6e9cccdf52ada5556b7464ecb1372df4f96) - implementation minus API endpoints *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -136,3 +141,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.14.2]: https://github.com/mornemaritz/health-diary/compare/v0.14.1...v0.14.2
 [v0.15.0]: https://github.com/mornemaritz/health-diary/compare/v0.14.2...v0.15.0
 [v0.16.0]: https://github.com/mornemaritz/health-diary/compare/v0.15.0...v0.16.0
+[v0.17.0]: https://github.com/mornemaritz/health-diary/compare/v0.16.0...v0.17.0
