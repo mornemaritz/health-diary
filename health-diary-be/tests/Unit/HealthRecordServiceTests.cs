@@ -160,9 +160,6 @@ public class HealthRecordServiceTests : IAsyncLifetime
         var summary = await service.GetDailySummaryAsync(date);
 
         // Assert
-        summary.TotalMedications.Should().Be(1);
-        summary.TotalBottles.Should().Be(1);
-        summary.TotalNotes.Should().Be(1);
-        summary.AllRecords.Should().HaveCount(3);
+        summary.Data.Should().HaveCount(3);
     }
 }

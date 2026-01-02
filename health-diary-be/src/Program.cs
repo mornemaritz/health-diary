@@ -327,24 +327,6 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
 .WithName("CreateNoteRecord")
 .RequireAuthorization();
 
-// /// <summary>
-// /// GET: Retrieve all records for a given date.
-// /// </summary>
-// app.MapGet("/api/health/records/{date}", async (string date, IHealthRecordService service) =>
-// {
-//     if (!DateOnly.TryParse(date, out var parsedDate))
-//         return Results.BadRequest(new ErrorResponse 
-//         { 
-//             StatusCode = 400, 
-//             Message = "Invalid date format. Use yyyy-MM-dd." 
-//         });
-
-//     var records = await service.GetRecordsByDateAsync(parsedDate);
-//     return Results.Ok(records);
-// })
-// .WithName("GetRecordsByDate")
-// .RequireAuthorization();
-
 /// <summary>
 /// GET: Retrieve summary for a given date.
 /// </summary>
