@@ -146,21 +146,16 @@ public class HealthRecordService : IHealthRecordService
         var notes = await GetObservationsByDateAsync(date);
 
         var allRecords = new List<HealthRecordDto>();
-        allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication" }));
-        allRecords.AddRange(bottles.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "Bottle" }));
-        allRecords.AddRange(bowelMovements.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "BowelMovement" }));
-        allRecords.AddRange(solidFoods.Select(s => new HealthRecordDto { Id = s.Id, Date = s.Date, Time = s.Time, RecordType = "SolidFood" }));
-        allRecords.AddRange(notes.Select(n => new HealthRecordDto { Id = n.Id, Date = n.Date, Time = n.Time, RecordType = "Note" }));
+        allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication", Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" }));
+        allRecords.AddRange(bottles.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "Bottle", Summary = $"{b.BottleSize}ml" }));
+        allRecords.AddRange(bowelMovements.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "BowelMovement", Summary = $"{b.Size} {b.Color} {b.Consistency}" }));
+        allRecords.AddRange(solidFoods.Select(s => new HealthRecordDto { Id = s.Id, Date = s.Date, Time = s.Time, RecordType = "SolidFood", Summary = $"{s.Size} - {s.Item} {s.Notes}" }));
+        allRecords.AddRange(notes.Select(n => new HealthRecordDto { Id = n.Id, Date = n.Date, Time = n.Time, RecordType = "Note", Summary = n.Note }));
 
         return new DailySummary
         {
             Date = date,
-            TotalMedications = medications.Count,
-            TotalBottles = bottles.Count,
-            TotalBowelMovements = bowelMovements.Count,
-            TotalFoodIntakes = solidFoods.Count,
-            TotalNotes = notes.Count,
-            AllRecords = allRecords.OrderBy(r => r.Time).ToList()
+            Data = [.. allRecords.OrderBy(r => r.Time)]
         };
     }
 }
