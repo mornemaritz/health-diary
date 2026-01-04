@@ -1,5 +1,6 @@
 # health-diary-ui
 
+
 A React-based web application for tracking daily health and care activities.
 
 ## Features
