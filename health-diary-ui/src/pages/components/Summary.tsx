@@ -187,7 +187,7 @@ const Summary: React.FC = () => {
               <AccentedTableHead>
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell align="right">Size (ml)</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
@@ -196,7 +196,7 @@ const Summary: React.FC = () => {
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
                     </VerticallyBorderedCell>
-                    <VerticallyBorderedCell align="right">{row.size}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{row.size}ml</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -229,8 +229,7 @@ const Summary: React.FC = () => {
               <AccentedTableHead>
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Medication</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Schedule</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
@@ -239,8 +238,7 @@ const Summary: React.FC = () => {
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.recordTime}
                     </VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{`${row.medication} (${row.dosage})`}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.schedule}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{`${row.dosage} ${row.medication} (${row.schedule})`}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -274,9 +272,7 @@ const Summary: React.FC = () => {
               <AccentedTableHead>
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Item</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Size</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Notes</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
@@ -285,9 +281,7 @@ const Summary: React.FC = () => {
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
                     </VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.item}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.size}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.notes}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{`${row.size} ${row.item} (${row.notes})`}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -314,9 +308,7 @@ const Summary: React.FC = () => {
               <AccentedTableHead>
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Size</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Consistency</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Color</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
@@ -325,9 +317,7 @@ const Summary: React.FC = () => {
                     <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
                     </VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.size}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.consistency}</VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.color}</VerticallyBorderedCell>
+                    <VerticallyBorderedCell>{`${row.size} ${row.color} ${row.consistency}`}</VerticallyBorderedCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -353,7 +343,7 @@ const Summary: React.FC = () => {
               <AccentedTableHead>
                 <TableRow>
                   <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Note</VerticallyBorderedCell>
+                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                 </TableRow>
               </AccentedTableHead>
               <TableBody>
