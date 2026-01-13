@@ -10,6 +10,7 @@ public class HealthDiaryContext : DbContext
 {
     public HealthDiaryContext(DbContextOptions<HealthDiaryContext> options) : base(options) { }
 
+    public DbSet<MedicationDosageGroup> MedicationDosageGroups { get; set; } = null!;
     public DbSet<MedicationAdministration> MedicationAdministrations { get; set; } = null!;
     public DbSet<BottleConsumption> Bottles { get; set; } = null!;
     public DbSet<BowelMovement> BowelMovements { get; set; } = null!;
@@ -25,6 +26,12 @@ public class HealthDiaryContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<MedicationDosageGroup>()
+            .HasKey(m => m.Id);
+        modelBuilder.Entity<MedicationDosageGroup>()
+            .HasIndex(m => new { m.Medication, m.Dosage })
+            .IsUnique();
 
         // Configure MedicationRecord
         modelBuilder.Entity<MedicationAdministration>()
