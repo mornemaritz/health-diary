@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.18.0] - 2026-01-13
+### :sparkles: New Features
+- [`226c8e6`](https://github.com/mornemaritz/health-diary/commit/226c8e6a53e15f8cd54f62bfdbfa9bde9457c711) - MedicationAdministrationGroup API endpoint *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.17.2] - 2026-01-04
 ### :bug: Bug Fixes
 - [`8149d5f`](https://github.com/mornemaritz/health-diary/commit/8149d5fb79ebf9aa342f4e0a2a9fe7d17cc4aeee) - bump version *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -148,3 +153,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.16.0]: https://github.com/mornemaritz/health-diary/compare/v0.15.0...v0.16.0
 [v0.17.0]: https://github.com/mornemaritz/health-diary/compare/v0.16.0...v0.17.0
 [v0.17.2]: https://github.com/mornemaritz/health-diary/compare/v0.17.1...v0.17.2
+[v0.18.0]: https://github.com/mornemaritz/health-diary/compare/v0.17.2...v0.18.0
