@@ -327,6 +327,35 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
 .RequireAuthorization();
 
 /// <summary>
+/// GET: Retrieve all medication dosage groups.
+/// </summary>
+app.MapGet("/api/health/medications/dosage-groups", async (IHealthRecordService service) =>
+{
+    var dosageGroups = await service.GetAllMedicationDosageGroupsAsync();
+    return Results.Ok(dosageGroups);
+})
+.WithName("GetAllMedicationDosageGroups")
+.RequireAuthorization();
+
+/// <summary>
+/// GET: Retrieve medication dosage groups by schedule.
+/// </summary>
+app.MapGet("/api/health/medications/dosage-groups/schedule/{schedule}", async (string schedule, IHealthRecordService service) =>
+{
+    if (!Enum.TryParse<MedicationSchedule>(schedule, ignoreCase: true, out var parsedSchedule))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Invalid schedule. Valid values are: sevenAm, threePm, sevenPm, tenPm, adHoc" 
+        });
+
+    var dosageGroups = await service.GetMedicationDosageGroupsByScheduleAsync(parsedSchedule);
+    return Results.Ok(dosageGroups);
+})
+.WithName("GetMedicationDosageGroupsBySchedule")
+.RequireAuthorization();
+
+/// <summary>
 /// GET: Retrieve summary for a given date.
 /// </summary>
 app.MapGet("/api/health/summary/{date}", async (string date, IHealthRecordService service) =>
