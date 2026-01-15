@@ -3,6 +3,7 @@ using System;
 using HealthDiary.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HealthDiary.Api.Migrations
 {
     [DbContext(typeof(HealthDiaryContext))]
-    partial class HealthDiaryContextModelSnapshot : ModelSnapshot
+    [Migration("20260115143922_ReferenceData")]
+    partial class ReferenceData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,7 +172,7 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Medication", "Dosage", "Schedule")
+                    b.HasIndex("Medication", "Dosage")
                         .IsUnique();
 
                     b.ToTable("MedicationDosageGroups");

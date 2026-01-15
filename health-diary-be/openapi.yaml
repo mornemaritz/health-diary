@@ -16,43 +16,58 @@ paths:
   /api/auth/admin/invite:
     post:
       summary: Generate an invite link for a new user (Admin only)
+      description: Creates a new invite link that can be sent to a user for registration. Only admin users can perform this operation.
       operationId: generateInviteLink
       tags:
         - Authentication
       security:
         - BearerAuth: []
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-            format: email
-          description: Email address for the invite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateInviteRequest'
       responses:
         '201':
           description: Invite link successfully generated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  token:
-                    type: string
-                    description: Unique invite token
-                  email:
-                    type: string
-                    format: email
-                  expiresAt:
-                    type: string
-                    format: date-time
-                  message:
-                    type: string
+                $ref: '#/components/schemas/GenerateInviteResponse'
         '401':
           description: Unauthorized - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/invite/validate:
+    get:
+      summary: Validate an invite link token
+      description: Checks if an invite link token is valid, not expired, and has not been used already.
+      operationId: validateInviteLink
+      tags:
+        - Authentication
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Invite token to validate
+      responses:
+        '200':
+          description: Invite link is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid or expired invite link
           content:
             application/json:
               schema:
@@ -61,60 +76,23 @@ paths:
   /api/auth/register:
     post:
       summary: Register a new user via invite link
+      description: Creates a new user account using a valid invite link. The invite link must be valid and unused. Username must be unique and password must meet security requirements.
       operationId: registerUser
       tags:
         - Authentication
-      parameters:
-        - name: inviteToken
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Unique invite token
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-            format: email
-          description: User email address
-        - name: username
-          in: query
-          required: true
-          schema:
-            type: string
-            minLength: 3
-            maxLength: 50
-            pattern: '^[a-zA-Z0-9_-]+$'
-          description: Unique username
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
-          description: User's full name
-        - name: password
-          in: query
-          required: true
-          schema:
-            type: string
-            minLength: 8
-          description: Password (min 8 characters)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
           description: User successfully registered
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  email:
-                    type: string
-                  message:
-                    type: string
+                $ref: '#/components/schemas/RegisterResponse'
         '400':
           description: Invalid request or validation failed
           content:
@@ -125,45 +103,23 @@ paths:
   /api/auth/login:
     post:
       summary: Authenticate user and issue tokens
+      description: Authenticates a user with email and password, returning both an access token and refresh token. Rate limiting is applied to prevent brute force attacks.
       operationId: login
       tags:
         - Authentication
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-            format: email
-          description: User email address
-        - name: password
-          in: query
-          required: true
-          schema:
-            type: string
-          description: User password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
           description: Successfully authenticated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    description: JWT access token
-                  accessTokenExpiresAt:
-                    type: string
-                    format: date-time
-                  refreshToken:
-                    type: string
-                    description: JWT refresh token
-                  refreshTokenExpiresAt:
-                    type: string
-                    format: date-time
-                  message:
-                    type: string
+                $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid credentials or rate limit exceeded
           content:
@@ -174,32 +130,23 @@ paths:
   /api/auth/token/refresh:
     post:
       summary: Refresh access token using refresh token
+      description: Issues a new access token using a valid refresh token. The refresh token must not be expired or revoked.
       operationId: refreshAccessToken
       tags:
         - Authentication
-      parameters:
-        - name: refreshToken
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
       responses:
         '200':
           description: New access token issued
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  accessToken:
-                    type: string
-                    description: New JWT access token
-                  expiresAt:
-                    type: string
-                    format: date-time
-                  message:
-                    type: string
+                $ref: '#/components/schemas/RefreshTokenResponse'
         '401':
           description: Invalid or expired refresh token
           content:
@@ -210,6 +157,7 @@ paths:
   /api/auth/admin/password-reset:
     post:
       summary: Request a password reset link (Admin generates for user)
+      description: Generates a password reset link for a user. Only admin users can perform this operation. The link is sent to the user for password reset confirmation.
       operationId: generatePasswordResetLink
       tags:
         - Authentication
@@ -229,16 +177,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    description: Reset token
-                  expiresAt:
-                    type: string
-                    format: date-time
-                  message:
-                    type: string
+                $ref: '#/components/schemas/PasswordResetLinkResponse'
         '403':
           description: Forbidden - Admin access required
           content:
@@ -249,23 +188,16 @@ paths:
   /api/auth/password-reset/confirm:
     post:
       summary: Reset password using reset link
+      description: Resets a user's password using a valid password reset token. The token must not be expired or already used.
       operationId: resetPassword
       tags:
         - Authentication
-      parameters:
-        - name: resetToken
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Password reset token
-        - name: newPassword
-          in: query
-          required: true
-          schema:
-            type: string
-            minLength: 8
-          description: New password (min 8 characters)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
       responses:
         '200':
           description: Password successfully reset
@@ -286,6 +218,7 @@ paths:
   /api/health/medication:
     post:
       summary: Add a medication administration record
+      description: Records a medication administration event with the date, time, medication name, and dosage. Requires authentication.
       operationId: createMedicationRecord
       tags:
         - Health Records
@@ -322,10 +255,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/health/bottle:
     post:
       summary: Add a bottle/hydration consumption record
+      description: Records a hydration event including the date, time, and quantity consumed. Helps track daily fluid intake. Requires authentication.
       operationId: createBottleRecord
       tags:
         - Health Records
@@ -362,10 +302,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/health/bowel-movement:
     post:
       summary: Add a bowel movement record
+      description: Records a bowel movement event with the date, time, and consistency level (Hard, Normal, Soft, or Diarrhea). Requires authentication.
       operationId: createBowelMovementRecord
       tags:
         - Health Records
@@ -402,10 +349,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/health/solid-food:
     post:
       summary: Add a solid food consumption record
+      description: Records solid food consumption with the date, time, food description, and quantity. Tracks dietary intake. Requires authentication.
       operationId: createSolidFoodRecord
       tags:
         - Health Records
@@ -442,10 +396,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/health/note:
     post:
       summary: Add a note/observation record
+      description: Records a general note or observation with the date, time, notes content, and optional category. Allows free-form health tracking. Requires authentication.
       operationId: createNoteRecord
       tags:
         - Health Records
@@ -482,10 +443,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/health/summary/{date}:
     get:
       summary: Retrieve daily summary for a given date
+      description: Retrieves all health records for a specific date, organized by record type (medications, hydration, bowel movements, food, observations). Requires authentication.
       operationId: getSummaryByDate
       tags:
         - Health Records
@@ -512,9 +480,165 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
+    # Authentication Request/Response Schemas
+    GenerateInviteRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for the invite
+
+    GenerateInviteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        token:
+          type: string
+          description: Unique invite token
+        email:
+          type: string
+          format: email
+        expiresAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    RegisterRequest:
+      type: object
+      required:
+        - inviteToken
+        - email
+        - username
+        - name
+        - password
+      properties:
+        inviteToken:
+          type: string
+          description: Unique invite token
+        email:
+          type: string
+          format: email
+          description: User email address
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9_-]+$'
+          description: Unique username
+        name:
+          type: string
+          description: User's full name
+        password:
+          type: string
+          minLength: 8
+          description: Password (min 8 characters)
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        message:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+        password:
+          type: string
+          description: User password
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        accessTokenExpiresAt:
+          type: string
+          format: date-time
+        refreshToken:
+          type: string
+          description: JWT refresh token
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Refresh token
+
+    RefreshTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+        expiresAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    PasswordResetLinkResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Reset token
+        expiresAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - resetToken
+        - newPassword
+      properties:
+        resetToken:
+          type: string
+          description: Password reset token
+        newPassword:
+          type: string
+          minLength: 8
+          description: New password (min 8 characters)
+
+    # Health Record Schemas
     MedicationAdministration:
       type: object
       required:
@@ -625,26 +749,27 @@ components:
         date:
           type: string
           format: date
-        medications:
+        data:
           type: array
           items:
-            $ref: '#/components/schemas/MedicationAdministration'
-        bottles:
-          type: array
-          items:
-            $ref: '#/components/schemas/BottleConsumption'
-        bowelMovements:
-          type: array
-          items:
-            $ref: '#/components/schemas/BowelMovement'
-        solidFood:
-          type: array
-          items:
-            $ref: '#/components/schemas/SolidFoodConsumption'
-        observations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Observation'
+            $ref: '#/components/schemas/HealthRecord'
+
+    HealthRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+          format: time
+        recordType:
+          type: string
+        summary:
+          type: string
 
     Error:
       type: object
@@ -670,3 +795,4 @@ tags:
     description: User registration, login, and token management
   - name: Health Records
     description: Health tracking records and summaries
+

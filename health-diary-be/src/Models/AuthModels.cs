@@ -84,3 +84,40 @@ public class AccessToken
     public Guid UserId { get; set; }
     public DateTime ExpiresAt { get; set; }
 }
+
+/// <summary>
+/// Request DTO for user registration.
+/// </summary>
+public record RegisterRequest
+{
+    public required string InviteToken { get; set; }
+    public required string Email { get; set; }
+    public required string Username { get; set; }
+    public required string Name { get; set; }
+    public required string Password { get; set; }
+}
+
+/// <summary>
+/// Request DTO for user login.
+/// </summary>
+public record LoginRequest
+{
+    public required string Email { get; set; }
+    public required string Password { get; set; }
+}
+
+/// <summary>
+/// Request DTO for token refresh.
+/// </summary>
+public record RefreshTokenRequest
+{
+    public required string RefreshToken { get; set; }
+}
+
+/// <summary>
+/// Request DTO for invite link generation.
+/// </summary>
+public record GenerateInviteRequest
+{
+    public required string Email { get; set; }
+}
