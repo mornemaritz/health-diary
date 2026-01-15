@@ -30,7 +30,7 @@ public class HealthDiaryContext : DbContext
         modelBuilder.Entity<MedicationDosageGroup>()
             .HasKey(m => m.Id);
         modelBuilder.Entity<MedicationDosageGroup>()
-            .HasIndex(m => new { m.Medication, m.Dosage })
+            .HasIndex(m => new { m.Medication, m.Dosage, m.Schedule })
             .IsUnique();
 
         // Configure MedicationRecord

@@ -450,75 +450,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/health/medications/dosage-groups:
-    get:
-      summary: Retrieve all medication dosage groups
-      description: Retrieves a list of all configured medication dosage groups. Used to display available medication schedules and dosages. Requires authentication.
-      operationId: getAllMedicationDosageGroups
-      tags:
-        - Health Records
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of medication dosage groups retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MedicationDosageGroup'
-        '401':
-          description: Unauthorized - Valid access token required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /api/health/medications/dosage-groups/schedule/{schedule}:
-    get:
-      summary: Retrieve medication dosage groups by schedule
-      description: Retrieves medication dosage groups filtered by a specific schedule (sevenAm, threePm, sevenPm, tenPm, adHoc). Requires authentication.
-      operationId: getMedicationDosageGroupsBySchedule
-      tags:
-        - Health Records
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: schedule
-          in: path
-          required: true
-          schema:
-            type: string
-            enum:
-              - sevenAm
-              - threePm
-              - sevenPm
-              - tenPm
-              - adHoc
-          description: Medication schedule to filter by
-      responses:
-        '200':
-          description: Medication dosage groups for the schedule retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MedicationDosageGroup'
-        '400':
-          description: Invalid schedule parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized - Valid access token required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /api/health/summary/{date}:
     get:
       summary: Retrieve daily summary for a given date
@@ -728,37 +659,6 @@ components:
         dosage:
           type: string
           description: Dosage amount
-        schedule:
-          type: string
-          enum:
-            - sevenAm
-            - threePm
-            - sevenPm
-            - tenPm
-            - adHoc
-          description: Medication administration schedule
-
-    MedicationDosageGroup:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        medication:
-          type: string
-          description: Name of medication
-        dosage:
-          type: string
-          description: Dosage amount
-        schedule:
-          type: string
-          enum:
-            - sevenAm
-            - threePm
-            - sevenPm
-            - tenPm
-            - adHoc
-          description: Medication administration schedule
 
     BottleConsumption:
       type: object

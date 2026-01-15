@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,14 +96,14 @@ app.UseAuthorization();
 /// <summary>
 /// POST: Generate an invite link for a new user (Admin only).
 /// </summary>
-app.MapPost("/api/auth/admin/invite", async (string email, IAuthService authService, HttpContext context) =>
+app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAuthService authService, HttpContext context) =>
 {
     // Check if user is admin
     // var userId = context.User.FindFirst("sub")?.Value;
     // if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var adminId))
     //     return Results.Unauthorized();
 
-    var inviteLink = await authService.GenerateInviteLinkAsync(email, Guid.Parse("00000000-0000-0000-0000-000000000001"));
+    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, Guid.Parse("00000000-0000-0000-0000-000000000001"));
     return Results.Created($"/api/auth/invite/{inviteLink.Id}", new 
     {
       inviteLink.Id,
@@ -136,10 +135,10 @@ app.MapGet("/api/auth/invite/validate", async (string token, IAuthService authSe
 /// POST: Register a new user via invite link.
 /// </summary>
 app.MapPost("/api/auth/register", async (
-    string inviteToken, string email, string username, string name, string password,
+    RegisterRequest request,
     IAuthService authService) =>
 {
-    var (success, message, user) = await authService.RegisterUserAsync(inviteToken, email, username, name, password);
+    var (success, message, user) = await authService.RegisterUserAsync(request.InviteToken, request.Email, request.Username, request.Name, request.Password);
     return success
         ? Results.Created($"/api/auth/users/{user!.Id}", new { Id = user.Id, Email = user.Email, Message = message })
         : Results.BadRequest(new { Message = message });
@@ -151,10 +150,10 @@ app.MapPost("/api/auth/register", async (
 /// <summary>
 /// POST: Login with email and password.
 /// </summary>
-app.MapPost("/api/auth/login", async (string email, string password, IAuthService authService, HttpContext context) =>
+app.MapPost("/api/auth/login", async (LoginRequest request, IAuthService authService, HttpContext context) =>
 {
     var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-    var (success, message, accessToken, refreshToken) = await authService.LoginAsync(email, password, clientIp);
+    var (success, message, accessToken, refreshToken) = await authService.LoginAsync(request.Email, request.Password, clientIp);
     
     return success
         ? Results.Ok(new 
@@ -174,9 +173,9 @@ app.MapPost("/api/auth/login", async (string email, string password, IAuthServic
 /// <summary>
 /// POST: Refresh access token using refresh token.
 /// </summary>
-app.MapPost("/api/auth/token/refresh", async (string refreshToken, IAuthService authService) =>
+app.MapPost("/api/auth/token/refresh", async (RefreshTokenRequest request, IAuthService authService) =>
 {
-    var (success, accessToken) = await authService.RefreshAccessTokenAsync(refreshToken);
+    var (success, accessToken) = await authService.RefreshAccessTokenAsync(request.RefreshToken);
     return success
         ? Results.Ok(new 
         { 
@@ -325,6 +324,35 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
 })
 .WithName("CreateNoteRecord")
+.RequireAuthorization();
+
+/// <summary>
+/// GET: Retrieve all medication dosage groups.
+/// </summary>
+app.MapGet("/api/health/medications/dosage-groups", async (IHealthRecordService service) =>
+{
+    var dosageGroups = await service.GetAllMedicationDosageGroupsAsync();
+    return Results.Ok(dosageGroups);
+})
+.WithName("GetAllMedicationDosageGroups")
+.RequireAuthorization();
+
+/// <summary>
+/// GET: Retrieve medication dosage groups by schedule.
+/// </summary>
+app.MapGet("/api/health/medications/dosage-groups/schedule/{schedule}", async (string schedule, IHealthRecordService service) =>
+{
+    if (!Enum.TryParse<MedicationSchedule>(schedule, ignoreCase: true, out var parsedSchedule))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Invalid schedule. Valid values are: sevenAm, threePm, sevenPm, tenPm, adHoc" 
+        });
+
+    var dosageGroups = await service.GetMedicationDosageGroupsByScheduleAsync(parsedSchedule);
+    return Results.Ok(dosageGroups);
+})
+.WithName("GetMedicationDosageGroupsBySchedule")
 .RequireAuthorization();
 
 /// <summary>
