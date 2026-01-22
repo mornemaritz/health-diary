@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: health-diary-dep
-        image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.0
+        image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.1
         imagePullPolicy: Always
         resources:
           requests:
