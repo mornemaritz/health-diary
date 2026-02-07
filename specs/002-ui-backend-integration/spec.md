@@ -44,7 +44,7 @@ A user logs in with their email and password, receives authentication tokens (ac
 
 ### User Story 3 - Record a Medication Administration (Priority: P2)
 
-A user records when they took medication by entering the date, time, medication name, and dosage. The UI sends this data to the API, which creates the record and returns a confirmation. The medication is added to the user's health history.
+A user records when medication was taken by entering the date, time, medication name, and dosage. The UI sends this data to the API, which creates the record and returns a confirmation. The medication is added to the health diary.
 
 **Why this priority**: Medication tracking is a core health diary feature. While users can access the app with just login and registration, medication tracking delivers immediate value. It's the first health record type most users will interact with.
 
@@ -55,13 +55,13 @@ A user records when they took medication by entering the date, time, medication 
 1. **Given** an authenticated user accesses the medication recording interface, **When** they enter date, time, medication name, and dosage, **Then** a form validates all required fields are present
 2. **Given** the user submits valid medication data, **When** the API creates the record, **Then** the UI displays a success message and the record appears in the daily summary
 3. **Given** the user submits medication data missing required fields (date or time), **When** they attempt submission, **Then** they see a validation error indicating what's missing
-4. **Given** a medication record is created, **When** the user views their daily summary, **Then** the medication record is displayed with date, time, name, and dosage
+4. **Given** a medication record is created, **When** the user views the daily summary, **Then** the medication record is displayed with date, time, name, and dosage
 
 ---
 
 ### User Story 4 - Record Hydration (Bottle Consumption) (Priority: P2)
 
-A user tracks their water intake by recording a bottle/hydration event with date, time, and quantity consumed. Multiple records can be created throughout the day to track cumulative fluid intake.
+A user tracks water intake by recording a bottle/hydration event with date, time, and quantity consumed. Multiple records can be created throughout the day to track cumulative fluid intake.
 
 **Why this priority**: Hydration tracking is a key health metric that complements medication tracking. Users benefit from being able to record multiple hydration events throughout the day.
 
@@ -112,26 +112,25 @@ A user records solid food intake by entering date, time, food description, and q
 
 ### User Story 7 - Record Observations and Notes (Priority: P2)
 
-A user can record general observations or notes with date, time, notes content, and an optional category. This allows free-form health tracking for items that don't fit other categories.
+A user can record general observations or notes with date, time, notes content. This allows free-form health tracking for items that don't fit other categories.
 
 **Why this priority**: Notes provide flexibility for users to record health observations outside structured categories. It's valuable for capturing important health events but is supplementary to the core record types.
 
-**Independent Test**: Can be fully tested by recording a note with content and an optional category, and verifying it appears in the daily summary.
+**Independent Test**: Can be fully tested by recording a note with content and verifying it appears in the daily summary.
 
 **Acceptance Scenarios**:
 
 1. **Given** an authenticated user accesses the notes recording interface, **When** they enter date, time, and notes content, **Then** the UI validates that date and time are required
-2. **Given** the user optionally adds a category to their notes, **When** they submit the record, **Then** the category is stored and displayed with the note
-3. **Given** the user submits a note without a category, **When** the record is saved, **Then** it is still created and displayed successfully
-4. **Given** a user has recorded multiple notes on the same day, **When** they view the daily summary, **Then** all notes are displayed together with their content and categories
+2. **Given** the user submits a note, **When** the record is saved, **Then** it is created and displayed successfully
+3. **Given** a user has recorded multiple notes on the same day, **When** they view the daily summary, **Then** all notes are displayed together with content
 
 ---
 
 ### User Story 8 - View Daily Summary (Priority: P1)
 
-A user can view all their health records for a specific date organized by record type (medications, hydration, bowel movements, food, observations). The summary provides a comprehensive view of their daily health tracking.
+A user can view all health records for a specific date organized by record type (medications, hydration, bowel movements, food, observations). The summary provides a comprehensive view of daily health tracking.
 
-**Why this priority**: The daily summary is the primary way users view and understand their health records. It's the central hub for reviewing recorded data and seeing health patterns.
+**Why this priority**: The daily summary is the primary way users view and understand health records. It's the central hub for reviewing recorded data and seeing health patterns.
 
 **Independent Test**: Can be fully tested by recording multiple types of records on the same day and verifying the daily summary displays all records organized by type.
 
@@ -146,7 +145,7 @@ A user can view all their health records for a specific date organized by record
 
 ### Edge Cases
 
-- What happens when a user tries to record data for a future date? (Allow it - users may pre-log planned events)
+- What happens when a user tries to record data for a future date? (for not this is not allowed)
 - What happens when a user's access token expires during a long session? (Automatic refresh using the refresh token)
 - What happens if both access and refresh tokens are invalid? (Force re-authentication and redirect to login)
 - What happens if the API is unreachable when recording? (Display an offline/connection error message)
@@ -159,6 +158,7 @@ A user can view all their health records for a specific date organized by record
 ### Functional Requirements
 
 **Authentication Requirements**:
+
 - **FR-001**: System MUST provide a user registration endpoint that validates invite tokens and creates new user accounts with email, username, name, and password
 - **FR-002**: System MUST provide a login endpoint that authenticates users with email and password, returning both an access token and refresh token
 - **FR-003**: System MUST support automatic token refresh when an access token expires, using the refresh token
@@ -167,6 +167,7 @@ A user can view all their health records for a specific date organized by record
 - **FR-006**: System MUST clear authentication state when a user logs out (UI-side token removal)
 
 **Health Record Creation Requirements**:
+
 - **FR-007**: System MUST provide endpoints for creating health records of the following types: medication administration, hydration (bottle), bowel movement, solid food, and observations/notes
 - **FR-008**: System MUST require date and time for all health record types
 - **FR-009**: System MUST validate that bowel movement records include a consistency level from the allowed enum (Hard, Normal, Soft, Diarrhea)
@@ -177,12 +178,14 @@ A user can view all their health records for a specific date organized by record
 - **FR-014**: System MUST return the created record ID in the response when a health record is successfully created
 
 **Health Record Retrieval Requirements**:
+
 - **FR-015**: System MUST provide a daily summary endpoint that retrieves all health records for a specified date
 - **FR-016**: System MUST organize retrieved records by type (medications, hydration, bowel movements, food, observations)
 - **FR-017**: System MUST only return records for the authenticated user (no cross-user data exposure)
 - **FR-018**: System MUST accept dates in yyyy-MM-dd format for the daily summary endpoint
 
 **UI Integration Requirements**:
+
 - **FR-019**: UI MUST securely store authentication tokens (access and refresh) in localStorage or sessionStorage
 - **FR-020**: UI MUST automatically include the access token in the Authorization header for all authenticated API requests
 - **FR-021**: UI MUST intercept 401 Unauthorized responses and attempt token refresh before retrying the request
