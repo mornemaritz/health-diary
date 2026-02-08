@@ -1,62 +1,40 @@
 # Implementation Plan: Frontend-Backend API Integration
 
-**Branch**: `002-ui-backend-integration` | **Date**: 2026-02-06 | **Spec**: [spec.md](spec.md)  
-**Input**: Feature specification from `specs/002-ui-backend-integration/spec.md`
+**Branch**: `002-ui-backend-integration` | **Date**: 2026-02-08 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/002-ui-backend-integration/spec.md`
 
 ## Summary
 
-Integrate the health-diary-ui (Vite + vanilla JavaScript) frontend with the health-diary-be (C# .NET9 REST API) by implementing:
+Integrate the health-diary-ui React/TypeScript frontend with the health-diary-be .NET backend API by implementing authenticated API communication, token management, and UI forms for all health record types (medication, hydration, bowel movement, food, observations). The backend provides a complete OpenAPI 3.0 specification; the UI will consume these endpoints securely using JWT tokens stored in localStorage with automatic refresh token handling.
 
-1. **Authentication client module**: Login/register/token refresh using native Fetch API
-2. **Health record forms**: Five record types (medication, hydration, bowel movement, food, observations) with client-side validation
-3. **Daily summary view**: Display all health records for a selected date organized by type
-4. **Session management**: Secure token storage in localStorage with automatic 401 refresh flow
-5. **Error handling**: Centralized error handler mapping API responses to user-friendly messages
-
-**Technical approach**: Use vanilla JavaScript with HTML5 native APIs (Fetch, localStorage, input validation, date/time inputs) and minimal external dependencies. Follow OpenAPI 3.0 specification for all API contracts. Implement unit tests for critical paths (token refresh, validation, error handling) using Vitest.
+**Technical Approach**: Use React hooks (`useEffect`, `useContext`) and native Fetch API with interceptor pattern for authentication headers. Implement a custom Auth context for session management rather than external dependencies. Create reusable form components for each health record type that are already partially implemented (RecordDialog, RecordMedicationDialogContent patterns exist). UI will validate form input before API submission and display OpenAPI error responses to users.
 
 ## Technical Context
 
-**Frontend Language/Framework**: JavaScript (vanilla ES6+) with Vite bundler
-**Primary Frontend Dependencies**: None (uses HTML5 Fetch, localStorage, native form validation)
-**Backend Language/Version**: C# 13, .NET 9
-**Backend Dependencies**: Entity Framework Core, PostgreSQL, JWT authentication (already implemented)
-**API Contract**: OpenAPI 3.0.0 specification (openapi.yaml)
-**Storage**: PostgreSQL (backend only; frontend uses localStorage for tokens)
-**Testing**: Vitest (frontend unit tests), xUnit (backend integration tests)
-**Target Platform**: Linux server with separate frontend/backend deployment
-**Performance Goals**: SC-006 requires 95% of API requests complete within 2 seconds
-**Constraints**: Sub-2-second response times per success criteria; <2 seconds for daily summary load (SC-004)
-**Scale/Scope**: 1k users, 8 API endpoints, 5 form types
+**Frontend Stack**: React 19.1.1, TypeScript, Vite, MUI 7.3.2, react-router-dom 7.9.1
+**Backend Stack**: .NET 9, Entity Framework Core, PostgreSQL
+**API Specification**: OpenAPI 3.0.0 (openapi.yaml, 799 lines, fully defines auth + health record endpoints)
+**Authentication**: JWT (Bearer tokens), access token + refresh token pattern
+**Storage**: Frontend: localStorage for tokens | Backend: PostgreSQL
+**Testing**: Frontend: Vitest (existing setup via Vite), Backend: xUnit
+**Target Platform**: Docker containers (docker-compose.yml at root)
+**Performance Goals**: <2s API response, <1min form submission to summary display, 95% requests <2s
+**Constraints**: Minimize external dependencies; use native APIs where feasible; leverage MUI for UI consistency
+**Scale/Scope**: Single authenticated user initially (multi-user in backend design, single-user UI focus)
 
 ## Constitution Check
 
-✅ **Code Quality**: 
-- Planned code will use consistent naming conventions (camelCase for JS, PascalCase for C#)
-- Will document API client methods and form components with JSDoc comments
-- No anti-patterns (e.g., global state pollution, inline DOM manipulation without structure)
-- Code review required for all merges to 002-ui-backend-integration branch
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-✅ **Testing Standards**:
-- Unit tests planned for: tokenService.js, validation.js, errorHandler.js, authInterceptor.js
-- Critical paths covered: token refresh on 401, form validation against OpenAPI schema, error message mapping
-- Integration tests (manual) for: registration flow, login flow, recording all 5 health record types, daily summary view
-- Target coverage: 80%+ for critical path code; all tests must pass before merge
+✅ **Code Quality**: React components will use TypeScript strict mode, follow functional component patterns with proper prop typing, include JSDoc comments on utility functions. All API client code will be extracted to services/ directory for testability and reusability. Code review required for all PRs.
 
-✅ **User Experience Consistency**:
-- All error responses mapped to consistent user messages via centralized errorHandler
-- Form validation errors display field-specific messages (e.g., "Date is required" not "Validation failed") per SC-008
-- Success messages consistent across all 5 record types
-- API response format standardized (all errors include statusCode + message per OpenAPI contract)
-- Session persistence maintained across browser refresh/close via localStorage per SC-005
-- Backward compatibility: No breaking changes to OpenAPI contracts; frontend adapts to existing backend
+✅ **Testing Standards**: Will plan integration tests using Vitest to verify API contract compliance (mocked requests). Unit tests for Auth context provider. E2E scenarios (register → login → create record → view summary) will be testable via manual/automated UI testing. Test coverage planned for auth service, form validation, error handling.
 
-✅ **Performance Requirements**:
-- SC-004: Daily summary loads within 2 seconds
-- SC-006: 95% of API requests complete within 2 seconds
-- Token refresh on 401 is transparent (no UX impact per SC-005)
-- Measured at: Network tab in browser DevTools during integration testing
-- Regression blocking: Any changes increasing summary load time or request latency require performance justification
+✅ **User Experience Consistency**: All forms use MUI for consistent styling (matches existing components). API error messages from OpenAPI responses are displayed to users unchanged. Form validation provides field-specific feedback matching OpenAPI schemas. Token expiration handling is transparent to user (automatic refresh).
+
+✅ **Performance Requirements**: API response time targets <2s are inherited from OpenAPI endpoints. Form submission validated client-side before API call (no wasted requests). LocalStorage operations are O(1). No performance regression expected; localStorage adds <10ms overhead.
+
+**Constitution Compliance Status**: ✅ **PASS** - All four principles can be upheld with planned React patterns (context for auth, service layer for API calls, native APIs to minimize dependencies).
 
 ## Project Structure
 
@@ -64,147 +42,60 @@ Integrate the health-diary-ui (Vite + vanilla JavaScript) frontend with the heal
 
 ```text
 specs/002-ui-backend-integration/
-├── spec.md              # Feature specification
-├── plan.md              # This file
-├── research.md          # Phase 0 research findings ✓
-├── data-model.md        # Phase 1 output (in progress)
-├── quickstart.md        # Phase 1 output (in progress)
-├── contracts/           # Phase 1 API contracts (in progress)
-│   ├── auth.md
-│   ├── health-records.md
-│   ├── summary.md
-│   └── errors.md
-├── checklists/
-│   └── requirements.md
-└── tasks.md             # Phase 2 output (generated by /speckit.tasks)
+├── spec.md                # Feature specification
+├── plan.md                # This file
+├── research.md            # Phase 0 (to be generated)
+├── data-model.md          # Phase 1 (to be generated)
+├── quickstart.md          # Phase 1 (to be generated)
+├── contracts/             # Phase 1 (to be generated)
+│   ├── api-client.ts      # Generated TypeScript types from OpenAPI
+│   └── service-interface.ts
+└── checklists/
+    └── requirements.md
 ```
 
-### Frontend Source Code
+### Source Code (repository root)
 
+**Frontend (health-diary-ui/)**:
 ```text
 health-diary-ui/src/
-├── index.html                    # Entry point
-├── main.tsx                       # App bootstrap (existing)
-├── App.tsx                        # Root component (existing)
-├── api/
-│   ├── client.js                 # Base fetch wrapper with auth header, 401 handling
-│   ├── auth.js                   # POST register, login, refresh token endpoints
-│   └── health.js                 # POST medication, bottle, bowel, food, note; GET summary
-├── services/
-│   ├── authState.js              # Auth state singleton (login, logout, getState)
-│   ├── tokenService.js           # Token storage/retrieval (localStorage)
-│   ├── errorHandler.js           # Map status codes to user messages
-│   └── dateService.js            # Date/time formatting utilities
-├── utils/
-│   ├── validation.js             # Form validators (email, password, username, enum)
-│   └── constants.js              # API base URL, error messages, validation rules
-├── components/
-│   ├── LoginPage.js              # Login form + submit
-│   ├── RegisterPage.js           # Register form + invite token validation
-│   ├── HomePage.js               # Date picker + daily summary view
-│   ├── RecordMedicationForm.js   # Medication record form
-│   ├── RecordBottleForm.js       # Hydration record form
-│   ├── RecordBowelForm.js        # Bowel movement form (consistency enum)
-│   ├── RecordFoodForm.js         # Food record form
-│   ├── RecordNoteForm.js         # Observation/notes form
-│   ├── DailySummary.js           # Display records grouped by type
-│   ├── NotificationManager.js    # Toast/modal error/success messages
-│   └── Navigation.js             # Hash-based router + nav bar
-├── styles/                       # CSS files (existing)
-└── __tests__/
-    ├── tokenService.test.js
-    ├── validation.test.js
-    ├── errorHandler.test.js
-    └── authInterceptor.test.js
+├── services/              # API client, auth service, health record service
+│   ├── apiClient.ts       # HTTP client with JWT auth interceptor
+│   ├── authService.ts     # Login, register, token refresh logic
+│   └── healthRecordService.ts  # CRUD operations for all record types
+├── contexts/              # React context providers
+│   └── AuthContext.tsx    # User auth state, token storage/retrieval
+├── pages/                 # Page components (Login, Register, Dashboard)
+│   ├── LoginPage.tsx
+│   ├── RegisterPage.tsx
+│   └── DashboardPage.tsx
+├── components/            # Reusable form/UI components
+│   ├── RecordDialog.tsx   # (existing, generic dialog wrapper)
+│   ├── RecordMedicationDialogContent.tsx  # (existing, extend with API call)
+│   ├── RecordBottleDialog.tsx             # (existing, extend with API call)
+│   ├── BowelMovementForm.tsx              # (new)
+│   ├── FoodConsumptionForm.tsx            # (new)
+│   ├── ObservationForm.tsx                # (new)
+│   └── DailySummary.tsx   # (new) Display all records for a date
+├── hooks/                 # Custom React hooks
+│   ├── useAuth.ts         # Access auth context
+│   └── useApi.ts          # Handle API calls with error + loading state
+├── types/                 # TypeScript interfaces (generated from OpenAPI)
+│   └── index.ts
+└── main.tsx, App.tsx      # Entry point
+
+tests/
+├── integration/           # Test API interactions
+│   └── authFlow.test.ts   # Register → Login → Authenticated request flow
+└── unit/
+    ├── authService.test.ts
+    └── AuthContext.test.tsx
 ```
 
-### Backend Integration Points
+**Backend** (health-diary-be/): Already has API endpoints; this plan focuses on frontend consumption only.
 
-No new backend code required; feature uses existing:
-- C# API endpoints (openapi.yaml) - already implemented
-- JWT authentication - already implemented
-- Database models - already implemented
-
-**Structure Decision**: Frontend and backend remain separate projects. Frontend (Vite + vanilla JS) communicates with backend (C# .NET9 REST API) via HTTP using native Fetch API. No monorepo changes needed. Separate deployment: UI to static hosting (or nginx), API to .NET server.
-
-## Phase 0: Research Complete ✓
-
-**research.md** generated with 8 key decisions:
-1. Native Fetch API (no axios/wrapper library)
-2. localStorage for token persistence with 401 auto-refresh
-3. HTML5 validation + custom validators for forms
-4. ISO 8601 date/time strings, local timezone (no conversion)
-5. Vanilla state management with closures + CustomEvent
-6. Centralized error handler for consistent messaging
-7. Hash-based manual routing (no router library)
-8. Vitest unit tests + manual integration testing
-
-All decisions aligned with project philosophy (minimal dependencies) and OpenAPI contract.
-
-## Phase 1: Design & Contracts (Next Steps)
-
-### 1.1 Data Model (data-model.md)
-
-Extract DTOs from OpenAPI schemas:
-- `User` (id, email, username, name) - from registration response
-- `AuthTokens` (accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt) - from login response
-- `HealthRecord` (id, date, time, recordType) - base type
-- `MedicationRecord` (extends HealthRecord: medication, dosage)
-- `HydrationRecord` (extends HealthRecord: quantity)
-- `BowelRecord` (extends HealthRecord: consistency - enum Hard/Normal/Soft/Diarrhea)
-- `FoodRecord` (extends HealthRecord: food, quantity)
-- `ObservationRecord` (extends HealthRecord: notes, category)
-- `DailySummary` (date, medications[], hydrations[], bowels[], foods[], observations[])
-
-Validation rules extracted from OpenAPI:
-- email: valid email format (type: email)
-- password: minimum 8 characters
-- username: 3-50 chars, pattern `^[a-zA-Z0-9_-]+$`
-- date: yyyy-MM-dd format
-- time: HH:mm format
-- bowel consistency: one of Hard, Normal, Soft, Diarrhea
-
-### 1.2 API Contracts (contracts/)
-
-Four contract documents:
-
-**contracts/auth.md**:
-- POST /api/auth/register - request/response schemas, validation rules, error cases (400, 409)
-- POST /api/auth/login - request/response, error cases (401)
-- POST /api/auth/token/refresh - request/response, error cases (401)
-
-**contracts/health-records.md**:
-- POST /api/health/medication - MedicationAdministration schema
-- POST /api/health/bottle - BottleConsumption schema
-- POST /api/health/bowel-movement - BowelMovement schema
-- POST /api/health/solid-food - SolidFoodConsumption schema
-- POST /api/health/note - Observation schema
-- All require Authorization header, return { id, message } on 201
-
-**contracts/summary.md**:
-- GET /api/health/summary/{date} - path param yyyy-MM-dd, returns DailySummary
-
-**contracts/errors.md**:
-- Error response format: { statusCode, message, details? }
-- Status code meanings: 400 (validation), 401 (auth), 409 (conflict), 500 (server error)
-- UI handling: Centralized errorHandler.js maps codes to user messages
-
-### 1.3 Quickstart Guide (quickstart.md)
-
-Setup and development workflow:
-- Prerequisites: Node.js 18+, npm/yarn
-- Install dependencies: `npm install`
-- Environment variables: API base URL (e.g., http://localhost:5000)
-- Run dev server: `npm run dev`
-- Run tests: `npm run test`
-- Build for production: `npm run build`
-- Test workflow: Manual registration → login → record health events → view summary
-
-### 1.4 Agent Context Update
-
-Run `.specify/scripts/bash/update-agent-context.sh copilot` to add Vite + vanilla JS context to agent instructions.
+**Structure Decision**: Monorepo structure (health-diary-ui + health-diary-be side by side). Frontend uses service layer pattern (apiClient → authService/healthRecordService) for separation of concerns. Context API for global auth state avoids Redux/Zustand complexity. Custom Fetch-based HTTP client avoids axios/tanstack-query overhead. TypeScript types generated from OpenAPI for type-safe API calls.
 
 ## Complexity Tracking
 
-No Constitution violations. All code quality, testing, UX consistency, and performance requirements are met by the planned approach. No additional complexity beyond standard web app patterns.
-
+No Constitution Check violations. Structure is minimal and leverages existing MUI + React Router setup.

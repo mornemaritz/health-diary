@@ -1,584 +1,757 @@
-# Quickstart Guide: UI-Backend Integration Development
+# Quickstart: Frontend-Backend API Integration
 
-**Date**: 2026-02-06  
-**Feature**: Frontend-Backend API Integration (002-ui-backend-integration)  
-**Branch**: `002-ui-backend-integration`
+**Feature**: Frontend-Backend API Integration (002-ui-backend-integration)
+**Date**: 2026-02-08
+**For**: Frontend developers implementing React components
 
-## Quick Links
+## Overview
 
-- **Feature Spec**: [spec.md](spec.md)
-- **Implementation Plan**: [plan.md](plan.md)
-- **Research**: [research.md](research.md)
-- **Data Models**: [data-model.md](data-model.md)
-- **API Contracts**: [contracts/](contracts/)
+This quickstart shows how to integrate the health-diary-ui React frontend with the health-diary-be API. The integration covers:
 
----
+1. **Authentication**: User registration, login, token storage, and refresh
+2. **API Communication**: Secure requests with JWT tokens
+3. **Health Records**: Create and view medication, hydration, bowel movement, food, and observation records
+4. **Token Management**: Automatic token refresh on expiration
 
-## Development Environment Setup
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ and npm
+- React 19.1.1 with TypeScript
+- Vite as build tool
+- MUI (Material-UI) 7.3.2 for components
+- Backend API running on `http://localhost:5000` (development)
 
-- **Node.js**: 18+ (required for Vite and npm)
-- **npm** or **yarn**: Package manager
-- **Git**: Version control
-- **Postman** or **curl**: For manual API testing (optional)
-- **.NET 9 runtime**: If running backend locally (already running if using existing API)
+## Architecture Overview
 
-### Quick Check
+```
+User Interaction (React Component)
+        ↓
+React Context (AuthContext) - Global auth state
+        ↓
+Services (authService, healthRecordService)
+        ↓
+API Client (apiClient.ts) - HTTP wrapper with JWT interceptor
+        ↓
+Fetch API - Native browser HTTP
+        ↓
+Backend API (openapi.yaml)
+        ↓
+Database (PostgreSQL)
+```
+
+## Step-by-Step Integration
+
+### Step 1: Set Up Project Structure
+
+Create the required directories in `health-diary-ui/src/`:
 
 ```bash
-# Verify Node.js version
-node --version  # Should be v18.0.0 or higher
-
-# Verify npm version
-npm --version   # Should be v8.0.0 or higher
+mkdir -p src/services
+mkdir -p src/contexts
+mkdir -p src/hooks
+mkdir -p src/types
+mkdir -p src/pages
+mkdir -p tests/unit
+mkdir -p tests/integration
 ```
 
----
+### Step 2: Generate TypeScript Types from OpenAPI
 
-## Frontend Setup
-
-### Step 1: Navigate to Frontend Directory
+Install the type generator:
 
 ```bash
-cd /work/health-diary/health-diary-ui
+npm install --save-dev openapi-typescript
 ```
 
-### Step 2: Install Dependencies
+Add to `package.json` scripts:
 
-```bash
-npm install
-# or
-yarn install
-```
-
-### Step 3: Configure Environment Variables
-
-Create a `.env` file in the `health-diary-ui` root directory:
-
-```env
-# API Configuration
-VITE_API_BASE_URL=http://localhost:5000
-
-# Optional: Development features
-VITE_DEBUG_MODE=false
-VITE_LOG_API_CALLS=true
-```
-
-**Note**: Adjust `VITE_API_BASE_URL` based on your backend server location:
-- Local development: `http://localhost:5000`
-- Remote API: `https://api.example.com`
-- Docker: `http://health-diary-be:5000` (if using docker-compose)
-
-### Step 4: Update vite.config.ts (if needed)
-
-Ensure Vite configuration includes the API base URL:
-
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  define: {
-    'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || 'http://localhost:5000')
+```json
+{
+  "scripts": {
+    "generate:types": "openapi-typescript ../health-diary-be/openapi.yaml -o src/types/api.ts"
   }
-})
-```
-
----
-
-## Running the Frontend
-
-### Development Server
-
-```bash
-cd /work/health-diary/health-diary-ui
-npm run dev
-```
-
-Output:
-```
-  VITE v5.0.0  ready in 123 ms
-
-  ➜  Local:   http://localhost:5173/
-  ➜  press h to show help
-```
-
-Open your browser and navigate to `http://localhost:5173/`
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-Output:
-```
-vite v5.0.0 building for production...
-✓ 1234 modules transformed.
-dist/index.html                   0.45 kB │ gzip:  0.30 kB
-dist/assets/main.abc123.js      245.67 kB │ gzip: 78.90 kB
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
----
-
-## Running Tests
-
-### Unit Tests
-
-```bash
-npm run test
-```
-
-Tests use Vitest and run all files matching `**/*.test.js` or `**/*.test.ts`.
-
-### Watch Mode (Auto-rerun on changes)
-
-```bash
-npm run test:watch
-```
-
-### Coverage Report
-
-```bash
-npm run test:coverage
-```
-
-Generates coverage report in `coverage/` directory.
-
-### Run Specific Test File
-
-```bash
-npm run test -- tokenService.test.js
-```
-
----
-
-## Backend Setup
-
-### Using Existing Backend
-
-If the C# .NET9 backend is already running:
-
-```bash
-# Check if backend is accessible
-curl http://localhost:5000/api/health/summary/2026-02-06 \
-  -H "Authorization: Bearer test-token"
-```
-
-If you get a 401 error, that's expected (token is invalid). The key is receiving a response, not a connection error.
-
-### Running Backend Locally
-
-If you need to run the backend yourself:
-
-```bash
-# Navigate to backend directory
-cd /work/health-diary/health-diary-be
-
-# Install dependencies
-dotnet restore
-
-# Build
-dotnet build
-
-# Run
-dotnet run
-
-# Output should show:
-# Listening on http://localhost:5000
-```
-
-### Using Docker Compose
-
-```bash
-cd /work/health-diary
-
-# Start all services
-docker-compose up -d
-
-# Verify services are running
-docker-compose ps
-
-# View logs
-docker-compose logs -f health-diary-be
-```
-
----
-
-## Testing Workflow
-
-### 1. Register a New User (Manual)
-
-**Prerequisite**: Get an invite token from an admin.
-
-```bash
-# In Postman or curl:
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "inviteToken": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "testuser@example.com",
-    "username": "testuser",
-    "name": "Test User",
-    "password": "TestPassword123"
-  }'
-```
-
-### 2. Login
-
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "testuser@example.com",
-    "password": "TestPassword123"
-  }'
-
-# Response includes:
-# {
-#   "accessToken": "eyJ0eXAiOiJKV1QiLC...",
-#   "accessTokenExpiresAt": "2026-02-06T13:00:00Z",
-#   "refreshToken": "eyJ0eXAiOiJKV1QiLC...",
-#   "refreshTokenExpiresAt": "2026-02-13T12:00:00Z"
-# }
-```
-
-### 3. Create a Health Record
-
-```bash
-curl -X POST http://localhost:5000/api/health/medication \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {accessToken}" \
-  -d '{
-    "date": "2026-02-06",
-    "time": "09:00",
-    "medication": "Aspirin",
-    "dosage": "100mg"
-  }'
-
-# Response:
-# {
-#   "id": "550e8400-e29b-41d4-a716-446655440001",
-#   "message": "Medication record created successfully"
-# }
-```
-
-### 4. View Daily Summary
-
-```bash
-curl -X GET http://localhost:5000/api/health/summary/2026-02-06 \
-  -H "Authorization: Bearer {accessToken}"
-
-# Response includes all records for the date organized by type
-```
-
----
-
-## UI Testing in Browser
-
-### Scenario 1: Complete Registration and Login
-
-1. Open `http://localhost:5173/`
-2. Navigate to register page (should show if not logged in)
-3. Enter:
-   - Invite token (from URL or pasted)
-   - Email: `testuser@example.com`
-   - Username: `testuser`
-   - Name: `Test User`
-   - Password: `TestPassword123`
-4. Click Register
-5. Should redirect to login page
-6. Enter email and password
-7. Should redirect to dashboard/summary page
-
-### Scenario 2: Record a Medication
-
-1. Logged in on dashboard
-2. Click "Record Medication" button
-3. Enter:
-   - Date: Today's date
-   - Time: Current time
-   - Medication: "Ibuprofen"
-   - Dosage: "200mg"
-4. Click Submit
-5. Should show success message
-6. Daily summary should update to show the record
-
-### Scenario 3: View Daily Summary
-
-1. Logged in on dashboard
-2. Select a date using date picker
-3. All records for that date should display organized by type
-4. Empty state should show "No records for this date" if none exist
-
-### Scenario 4: Token Refresh
-
-1. Logged in on dashboard
-2. Open browser DevTools → Application → localStorage
-3. Note the `health_diary_access_token` value
-4. Wait for it to expire (or use a short-lived test token)
-5. Make an API call (record something or navigate)
-6. Observe automatic token refresh (should not require re-login)
-
-### Scenario 5: Session Persistence
-
-1. Logged in on dashboard
-2. Close browser or refresh page
-3. Should remain logged in (localStorage persists tokens)
-4. Dashboard should load without returning to login
-
----
-
-## Project Structure Overview
-
-### Frontend Organization
-
-```
-health-diary-ui/
-├── src/
-│   ├── api/
-│   │   ├── client.js           # Fetch wrapper with auth + 401 handling
-│   │   ├── auth.js             # Login, register, token refresh
-│   │   └── health.js           # Health record endpoints
-│   ├── services/
-│   │   ├── authState.js        # Auth state management
-│   │   ├── tokenService.js     # Token storage (localStorage)
-│   │   ├── errorHandler.js     # Centralized error handling
-│   │   └── dateService.js      # Date/time utilities
-│   ├── utils/
-│   │   ├── validation.js       # Form validators
-│   │   └── constants.js        # Config, messages
-│   ├── components/
-│   │   ├── LoginPage.js
-│   │   ├── RegisterPage.js
-│   │   ├── HomePage.js
-│   │   ├── RecordMedicationForm.js
-│   │   ├── RecordBottleForm.js
-│   │   ├── RecordBowelForm.js
-│   │   ├── RecordFoodForm.js
-│   │   ├── RecordNoteForm.js
-│   │   ├── DailySummary.js
-│   │   ├── NotificationManager.js
-│   │   └── Navigation.js
-│   ├── styles/
-│   │   ├── main.css
-│   │   └── components.css
-│   ├── __tests__/
-│   │   ├── tokenService.test.js
-│   │   ├── validation.test.js
-│   │   ├── errorHandler.test.js
-│   │   └── authInterceptor.test.js
-│   ├── App.tsx                # Root component
-│   ├── main.tsx               # Entry point
-│   └── vite-env.d.ts          # Vite type definitions
-├── index.html                 # HTML template
-├── vite.config.ts             # Vite configuration
-├── tsconfig.json              # TypeScript config
-├── package.json               # Dependencies
-└── .env                       # Environment variables
-```
-
----
-
-## Debugging Tips
-
-### Browser DevTools
-
-**Network Tab**:
-- View all API requests
-- Check request/response headers
-- Verify Authorization header includes access token
-- Monitor response times (should be <2 seconds)
-
-**Console Tab**:
-- Check for JavaScript errors
-- View API error responses
-- Use `console.log()` in code for debugging
-
-**Application Tab**:
-- View localStorage contents
-- Check stored tokens and expiration times
-- Clear localStorage to simulate logout
-
-### Debugging API Client
-
-Add logging to `src/api/client.js`:
-
-```javascript
-async function fetchWithAuth(url, options = {}) {
-  console.log(`[API] ${options.method || 'GET'} ${url}`);
-  
-  const token = getAccessToken();
-  if (token) {
-    console.log('[API] Including access token');
-  }
-  
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  
-  console.log(`[API] Response: ${response.status}`);
-  return response;
 }
 ```
 
-### Testing Token Refresh
+Run to generate types:
 
-Manually trigger token refresh to verify it works:
+```bash
+npm run generate:types
+```
 
-```javascript
-// In browser console:
-import { refreshAccessToken } from './services/tokenService.js';
+This creates `src/types/api.ts` with all request/response types from the OpenAPI spec.
 
-refreshAccessToken().then(token => {
-  console.log('New token:', token);
-}).catch(error => {
-  console.error('Refresh failed:', error);
+### Step 3: Create API Client Wrapper
+
+File: `src/services/apiClient.ts`
+
+```typescript
+/**
+ * API client wrapper around native Fetch API
+ * Handles JWT token injection, error responses, and token refresh
+ */
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const TOKEN_KEY = 'healthDiary_accessToken';
+const REFRESH_TOKEN_KEY = 'healthDiary_refreshToken';
+
+export interface ApiResponse<T> {
+  data?: T;
+  statusCode?: number;
+  message?: string;
+  details?: unknown;
+}
+
+/**
+ * Get stored access token from localStorage
+ */
+function getAccessToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+/**
+ * Get stored refresh token from localStorage
+ */
+function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+/**
+ * Make authenticated API request with JWT token in Authorization header
+ */
+export async function apiFetch<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const accessToken = getAccessToken();
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  // Handle 401: Token may be expired, attempt refresh
+  if (response.status === 401 && accessToken) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      // Retry original request with new token
+      return apiFetch<T>(endpoint, options);
+    }
+  }
+
+  // Parse response
+  const contentType = response.headers.get('content-type');
+  let responseData: ApiResponse<T> = {};
+
+  if (contentType?.includes('application/json')) {
+    responseData = await response.json();
+  } else {
+    responseData = { message: response.statusText };
+  }
+
+  // Non-2xx responses are errors
+  if (!response.ok) {
+    throw {
+      statusCode: response.status,
+      message: responseData.message || 'API request failed',
+      details: responseData.details,
+    };
+  }
+
+  return responseData;
+}
+
+/**
+ * Refresh access token using refresh token
+ */
+export async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/token/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) return false;
+
+    const data = (await response.json()) as {
+      accessToken?: string;
+      expiresAt?: string;
+    };
+
+    if (data.accessToken) {
+      localStorage.setItem(TOKEN_KEY, data.accessToken);
+      if (data.expiresAt) {
+        localStorage.setItem('healthDiary_accessTokenExpiresAt', data.expiresAt);
+      }
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Clear stored tokens (on logout)
+ */
+export function clearTokens(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem('healthDiary_accessTokenExpiresAt');
+  localStorage.removeItem('healthDiary_refreshTokenExpiresAt');
+}
+
+/**
+ * Store tokens in localStorage (called after login/registration)
+ */
+export function storeTokens(
+  accessToken: string,
+  refreshToken: string,
+  accessTokenExpiresAt: string,
+  refreshTokenExpiresAt: string
+): void {
+  localStorage.setItem(TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  localStorage.setItem('healthDiary_accessTokenExpiresAt', accessTokenExpiresAt);
+  localStorage.setItem('healthDiary_refreshTokenExpiresAt', refreshTokenExpiresAt);
+}
+```
+
+### Step 4: Create Auth Service
+
+File: `src/services/authService.ts`
+
+```typescript
+/**
+ * Authentication service: login, register, token management
+ */
+import { apiFetch, storeTokens, clearTokens } from './apiClient';
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  accessToken: string;
+  accessTokenExpiresAt: string;
+  refreshToken: string;
+  refreshTokenExpiresAt: string;
+  message: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  name: string;
+}
+
+export const authService = {
+  /**
+   * Register a new user with an invite token
+   */
+  async register(
+    email: string,
+    username: string,
+    name: string,
+    password: string,
+    inviteToken: string
+  ): Promise<User> {
+    const response = await apiFetch<{ id: string; email: string }>(
+      '/api/auth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          inviteToken,
+          email,
+          username,
+          name,
+          password,
+        }),
+      }
+    );
+
+    if (!response.data?.id) {
+      throw new Error(response.message || 'Registration failed');
+    }
+
+    return {
+      id: response.data.id,
+      email,
+      username,
+      name,
+    };
+  },
+
+  /**
+   * Login user and store tokens
+   */
+  async login(email: string, password: string): Promise<User> {
+    const response = await apiFetch<LoginResponse>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.data?.accessToken) {
+      throw new Error(response.message || 'Login failed');
+    }
+
+    storeTokens(
+      response.data.accessToken,
+      response.data.refreshToken,
+      response.data.accessTokenExpiresAt,
+      response.data.refreshTokenExpiresAt
+    );
+
+    // Parse user info from JWT or return basic info
+    return { id: '', email, username: '', name: '' };
+  },
+
+  /**
+   * Logout user and clear tokens
+   */
+  logout(): void {
+    clearTokens();
+  },
+
+  /**
+   * Validate an invite link
+   */
+  async validateInvite(token: string): Promise<boolean> {
+    try {
+      await apiFetch('/api/auth/invite/validate', {
+        method: 'GET',
+        headers: {},
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+};
+```
+
+### Step 5: Create Health Record Service
+
+File: `src/services/healthRecordService.ts`
+
+```typescript
+/**
+ * Health record service: CRUD operations for all record types
+ */
+import { apiFetch } from './apiClient';
+
+export interface MedicationRecord {
+  date: string;
+  time: string;
+  medication?: string;
+  dosage?: string;
+}
+
+export interface HydrationRecord {
+  date: string;
+  time: string;
+  quantity?: number;
+}
+
+export interface BowelMovementRecord {
+  date: string;
+  time: string;
+  consistency?: 'Hard' | 'Normal' | 'Soft' | 'Diarrhea';
+}
+
+export interface FoodRecord {
+  date: string;
+  time: string;
+  food?: string;
+  quantity?: string;
+}
+
+export interface ObservationRecord {
+  date: string;
+  time: string;
+  notes?: string;
+  category?: string;
+}
+
+export interface DailySummaryResponse {
+  date: string;
+  data: Array<Record<string, unknown>>;
+}
+
+export const healthRecordService = {
+  async createMedication(
+    record: MedicationRecord
+  ): Promise<{ id: string; message: string }> {
+    const response = await apiFetch<{ id: string; message: string }>(
+      '/api/health/medication',
+      { method: 'POST', body: JSON.stringify(record) }
+    );
+    return response.data || { id: '', message: '' };
+  },
+
+  async createHydration(
+    record: HydrationRecord
+  ): Promise<{ id: string; message: string }> {
+    const response = await apiFetch<{ id: string; message: string }>(
+      '/api/health/bottle',
+      { method: 'POST', body: JSON.stringify(record) }
+    );
+    return response.data || { id: '', message: '' };
+  },
+
+  async createBowelMovement(
+    record: BowelMovementRecord
+  ): Promise<{ id: string; message: string }> {
+    const response = await apiFetch<{ id: string; message: string }>(
+      '/api/health/bowel-movement',
+      { method: 'POST', body: JSON.stringify(record) }
+    );
+    return response.data || { id: '', message: '' };
+  },
+
+  async createFood(
+    record: FoodRecord
+  ): Promise<{ id: string; message: string }> {
+    const response = await apiFetch<{ id: string; message: string }>(
+      '/api/health/solid-food',
+      { method: 'POST', body: JSON.stringify(record) }
+    );
+    return response.data || { id: '', message: '' };
+  },
+
+  async createObservation(
+    record: ObservationRecord
+  ): Promise<{ id: string; message: string }> {
+    const response = await apiFetch<{ id: string; message: string }>(
+      '/api/health/note',
+      { method: 'POST', body: JSON.stringify(record) }
+    );
+    return response.data || { id: '', message: '' };
+  },
+
+  async getDailySummary(date: string): Promise<DailySummaryResponse> {
+    const response = await apiFetch<DailySummaryResponse>(
+      `/api/health/summary/${date}`
+    );
+    return response.data || { date, data: [] };
+  },
+};
+```
+
+### Step 6: Create Auth Context
+
+File: `src/contexts/AuthContext.tsx`
+
+```typescript
+/**
+ * Global auth state context for managing user login, tokens, and session
+ */
+import React, { createContext, useState, useCallback } from 'react';
+import { authService, type User } from '../services/authService';
+
+export interface AuthContextValue {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  register: (
+    email: string,
+    username: string,
+    name: string,
+    password: string,
+    inviteToken: string
+  ) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const register = useCallback(
+    async (
+      email: string,
+      username: string,
+      name: string,
+      password: string,
+      inviteToken: string
+    ) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const newUser = await authService.register(
+          email,
+          username,
+          name,
+          password,
+          inviteToken
+        );
+        setUser(newUser);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Registration failed';
+        setError(message);
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const loginUser = await authService.login(email, password);
+      setUser(loginUser);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    authService.logout();
+    setUser(null);
+    setError(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        error,
+        register,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
+
+### Step 7: Create useAuth Hook
+
+File: `src/hooks/useAuth.ts`
+
+```typescript
+/**
+ * Hook to access auth context
+ */
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+```
+
+### Step 8: Update App Component
+
+Wrap your app with `AuthProvider`:
+
+```typescript
+import { AuthProvider } from './contexts/AuthContext';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      {/* Your routes/pages */}
+    </AuthProvider>
+  );
+}
+```
+
+### Step 9: Create Login Page Example
+
+File: `src/pages/LoginPage.tsx`
+
+```typescript
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import {
+  Container,
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Box,
+  Typography,
+} from '@mui/material';
+
+export const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { login, isLoading, error } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch {
+      // Error is handled by context
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h4">Login</Typography>
+        <form onSubmit={handleSubmit}>
+          {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            margin="normal"
+            disabled={isLoading}
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            margin="normal"
+            disabled={isLoading}
+          />
+          <Button
+            fullWidth
+            variant="contained"
+            type="submit"
+            disabled={isLoading}
+            sx={{ mt: 2 }}
+          >
+            {isLoading ? <CircularProgress size={24} /> : 'Login'}
+          </Button>
+        </form>
+      </Box>
+    </Container>
+  );
+};
+```
+
+## Testing
+
+Create integration tests in `tests/integration/authFlow.test.ts`:
+
+```typescript
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { authService } from '../../src/services/authService';
+
+describe('Auth Flow', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    global.fetch = vi.fn();
+  });
+
+  it('should login and store tokens', async () => {
+    const mockResponse = {
+      accessToken: 'test-token',
+      refreshToken: 'test-refresh',
+      accessTokenExpiresAt: '2026-02-09T12:00:00Z',
+      refreshTokenExpiresAt: '2026-02-15T12:00:00Z',
+      message: 'Success',
+    };
+
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockResponse), { status: 200 })
+      );
+
+    await authService.login('test@example.com', 'password123');
+
+    expect(localStorage.getItem('healthDiary_accessToken')).toBe('test-token');
+    expect(localStorage.getItem('healthDiary_refreshToken')).toBe(
+      'test-refresh'
+    );
+  });
 });
 ```
 
----
+## Environment Variables
 
-## Common Issues & Solutions
+Create `.env.local`:
 
-### Issue: CORS Error
-
-**Error**: `Access to XMLHttpRequest at 'http://localhost:5000/...' from origin 'http://localhost:5173' has been blocked by CORS policy`
-
-**Solution**:
-- Verify backend CORS configuration includes `localhost:5173`
-- Update backend to allow requests from UI origin
-- Check `openapi.yaml` for CORS settings
-
-### Issue: 401 Unauthorized on Every Request
-
-**Error**: "Unauthorized - Valid access token required"
-
-**Solution**:
-- Verify token is stored in localStorage correctly
-- Check Authorization header is being sent: `Authorization: Bearer {token}`
-- Ensure token hasn't expired
-- Verify token format is valid JWT
-
-### Issue: Token Refresh Loop
-
-**Symptom**: Page keeps refreshing tokens repeatedly
-
-**Solution**:
-- Add max retry limit (1-2 refresh attempts per request)
-- Check refresh token hasn't expired
-- Verify refresh endpoint is returning valid token
-- Add rate limiting to refresh requests
-
-### Issue: Form Submission Hangs
-
-**Symptom**: Form doesn't respond after clicking submit
-
-**Solution**:
-- Check browser console for errors
-- Verify API is reachable (ping endpoint)
-- Check network timeout isn't too short
-- Ensure form validation passes before submit
-
-### Issue: Data Not Persisting
-
-**Symptom**: Records created but don't appear in summary
-
-**Solution**:
-- Verify 201 response received from API
-- Check daily summary uses correct date format
-- Ensure authenticated (token valid)
-- Check browser console for errors
-
----
-
-## Performance Optimization
-
-### Bundle Size
-
-Check bundle size before building for production:
-
-```bash
-npm run build
-# Examine size in dist/ folder
 ```
-
-Target: Keep main JS bundle under 100KB (gzipped).
-
-### API Response Time
-
-Monitor API response times in Network tab:
-- Target: 95% of requests < 2 seconds (SC-006)
-- If slower, profile backend or optimize queries
-
-### Frontend Rendering
-
-Use browser DevTools Performance tab:
-1. Record performance
-2. Perform action (login, create record, load summary)
-3. Review frame rate and long tasks
-4. Optimize if needed
-
----
+VITE_API_URL=http://localhost:5000
+```
 
 ## Next Steps
 
-1. **Implement Components**: Based on design files and user stories
-2. **Add Unit Tests**: For tokenService, validation, errorHandler
-3. **Integration Testing**: Register → login → create records → view summary
-4. **Performance Testing**: Verify SC-006 (2-second response times)
-5. **Code Review**: Ensure compliance with constitution.md standards
-6. **Deployment**: Build and deploy to staging environment
+1. Run `npm run generate:types` to create type definitions
+2. Implement the API client, services, and context
+3. Create login/register pages
+4. Implement health record forms
+5. Create daily summary display component
+6. Add integration tests
+7. Test with backend API running locally
 
----
+## Common Patterns
 
-## Support & Documentation
+### Using API in Component
 
-- **OpenAPI Spec**: [health-diary-be/openapi.yaml](../../health-diary-be/openapi.yaml)
-- **Data Models**: [data-model.md](data-model.md)
-- **API Contracts**: [contracts/](contracts/)
-- **Feature Spec**: [spec.md](spec.md)
-
----
-
-## Scripts Summary
-
-```bash
-# Development
-npm run dev          # Start Vite dev server
-npm run build        # Build for production
-npm run preview      # Preview production build
-
-# Testing
-npm run test         # Run unit tests once
-npm run test:watch  # Run tests in watch mode
-npm run test:coverage # Generate coverage report
-
-# Linting (if configured)
-npm run lint        # Run ESLint
-npm run format      # Run Prettier
-
-# Other
-npm install         # Install dependencies
-npm list           # View installed packages
+```typescript
+const { data, isLoading, error } = useApi(
+  () => healthRecordService.getDailySummary(date),
+  [date]
+);
 ```
 
----
+### Handling API Errors
 
-**Ready to start developing?** 
+```typescript
+try {
+  await healthRecordService.createMedication(record);
+} catch (err: any) {
+  setError(err.message); // "Date and Time are required"
+}
+```
 
-Begin with the feature spec and data models, then implement components and tests following the API contracts.
+### Protected Routes
 
+```typescript
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
+```

@@ -1,164 +1,168 @@
 # Data Model: Frontend-Backend API Integration
 
-**Date**: 2026-02-06  
-**Feature**: Frontend-Backend API Integration (002-ui-backend-integration)  
-**Source**: OpenAPI 3.0.0 specification (health-diary-be/openapi.yaml)
+**Feature**: Frontend-Backend API Integration (002-ui-backend-integration)
+**Date**: 2026-02-08
+**Phase**: 1 - Design
 
-## Overview
-
-This document defines the data models and DTOs used in the frontend-backend integration. All models are derived from the OpenAPI 3.0.0 specification and represent the contract between the JavaScript frontend and C# .NET9 REST API.
-
----
-
-## Authentication Models
+## Entity Definitions
 
 ### User
 
-Represents a registered user in the system.
+**Purpose**: Represents an authenticated user of the health diary
 
+**Frontend Representation**:
 ```typescript
 interface User {
-  id: string;              // UUID format
-  email: string;           // Email address, unique, format: email
-  username: string;        // Unique username, 3-50 chars, pattern: ^[a-zA-Z0-9_-]+$
-  name: string;            // User's full name
+  id: string;              // UUID
+  email: string;           // Email address (unique)
+  username: string;        // Username (unique, 3-50 chars, alphanumeric + - _)
+  name: string;            // Full name
 }
 ```
 
-**Validation Rules**:
-- `email`: Must be valid email format (RFC 5322)
-- `username`: 3-50 characters, alphanumeric with hyphens/underscores only
-- `name`: Non-empty string (no specific length constraint in spec)
-
 **Relationships**:
-- One-to-many with HealthRecord (a user has multiple health records)
-- One-to-one with current AuthTokens
+- One User → Many HealthRecords (one user owns many health records)
+- One User → One AuthState (current login session)
+
+**Validation Rules**:
+- `email`: Required, must be valid email format
+- `username`: Required, 3-50 characters, pattern ^[a-zA-Z0-9_-]+$
+- `name`: Required, non-empty string
+
+**State Transitions**:
+- Not Registered → Registered (via /api/auth/register)
+- Logged Out → Logged In (via /api/auth/login)
+- Logged In → Logged Out (via logout button)
 
 ---
 
-### AuthTokens
+### AuthToken
 
-JWT token pair issued upon successful authentication.
+**Purpose**: JWT tokens issued by backend for authenticated requests
 
+**Frontend Representation**:
 ```typescript
 interface AuthTokens {
-  accessToken: string;              // JWT access token (short-lived)
-  accessTokenExpiresAt: string;      // ISO 8601 datetime, format: date-time
-  refreshToken: string;              // JWT refresh token (long-lived)
-  refreshTokenExpiresAt: string;     // ISO 8601 datetime, format: date-time
+  accessToken: string;           // JWT access token (short-lived, ~1 hour)
+  accessTokenExpiresAt: string;  // ISO 8601 datetime when access token expires
+  refreshToken: string;          // JWT refresh token (long-lived, ~7 days)
+  refreshTokenExpiresAt: string; // ISO 8601 datetime when refresh token expires
 }
 ```
 
-**Storage**: Persisted in browser localStorage as JSON
-**Key Names in Storage**:
-- `health_diary_access_token`
-- `health_diary_refresh_token`
-- `health_diary_access_token_expires_at`
-- `health_diary_refresh_token_expires_at`
+**Storage**:
+- Location: browser localStorage
+- Keys: `healthDiary_accessToken`, `healthDiary_refreshToken`, `healthDiary_accessTokenExpiresAt`, `healthDiary_refreshTokenExpiresAt`
+- Cleared on logout or when refresh fails
 
-**Security Considerations**:
-- Access token expires in minutes/hours (short-lived)
-- Refresh token expires in days/weeks (long-lived)
-- Both tokens stored in localStorage (acceptable for health diary use case)
+**Lifecycle**:
+- Issued by /api/auth/login (access + refresh tokens)
+- Access token refreshed by /api/auth/token/refresh when expired
 - Tokens cleared on logout
-- Token refresh occurs automatically on 401 Unauthorized response
 
 **Validation Rules**:
-- `accessToken`: Valid JWT format, contains exp claim
-- `refreshToken`: Valid JWT format, contains exp claim
-- `accessTokenExpiresAt` and `refreshTokenExpiresAt`: ISO 8601 datetime strings
+- `accessToken`: Required for authenticated requests; included in Authorization header as `Bearer {token}`
+- `refreshToken`: Used only for token refresh endpoint
+- `expiresAt`: Must be compared with current time to detect expiration
 
 ---
 
 ### AuthState
 
-Singleton service managing user authentication state.
+**Purpose**: Frontend representation of current login session
 
+**Frontend Representation**:
 ```typescript
 interface AuthState {
-  isAuthenticated: boolean;         // True if access token exists and is valid
-  currentUser: User | null;         // Current logged-in user, null if not authenticated
-  lastRefreshTime: number;          // Timestamp of last token refresh (for debugging)
+  user: User | null;              // Current user or null if not logged in
+  tokens: AuthTokens | null;      // Current tokens or null if not logged in
+  isLoading: boolean;             // Loading state (during login/register)
+  error: string | null;           // Last error message or null
+  isAuthenticated: boolean;       // Computed: user && tokens are valid
+  tokenExpiredAt: Date | null;    // When access token expires (computed from accessTokenExpiresAt)
 }
 ```
 
 **State Transitions**:
-1. **Initial**: `isAuthenticated: false, currentUser: null`
-2. **After Login**: `isAuthenticated: true, currentUser: { id, email, username, name }`
-3. **After Token Refresh**: `isAuthenticated: true, currentUser: same, lastRefreshTime: updated`
-4. **After 401 + Refresh Fails**: `isAuthenticated: false, currentUser: null` (redirect to login)
-5. **After Logout**: `isAuthenticated: false, currentUser: null`
+```
+Initial (not logged in)
+  ↓ login/register (loading=true)
+  ↓ success
+Authenticated (user, tokens, isAuthenticated=true)
+  ↓ token refresh (auto on 401)
+  ↓ success
+Authenticated (tokens refreshed)
+  ↓ logout
+Logged out (user=null, tokens=null)
+  ↓ login again
+Authenticated (user, tokens)
 
-**Usage in UI**:
-- Guard authenticated pages (check `isAuthenticated` before rendering)
-- Display user info in header/navbar
-- Include access token in API request headers
+Error states:
+  ↓ login fails
+Not authenticated (error="Invalid email or password")
+  ↓ retry or navigate to register
+Not authenticated (error cleared)
+```
+
+**Responsibilities**:
+- Maintain current user and token information
+- Automatically refresh token on expiration
+- Detect and handle 401 Unauthorized responses
 
 ---
 
-## Health Record Models
+### HealthRecord (Base Entity)
 
-All health records share common base properties.
+**Purpose**: Base representation of any health tracking record
 
-### HealthRecord (Base)
-
+**Frontend Representation**:
 ```typescript
 interface HealthRecord {
-  id: string;                  // UUID format
-  date: string;                // ISO 8601 date, format: date (yyyy-MM-dd)
-  time: string;                // ISO 8601 time, format: time (HH:mm)
-  recordType: string;          // Type discriminator: 'medication', 'hydration', 'bowel', 'food', 'observation'
-  createdAt?: string;          // ISO 8601 datetime (optional, server-set)
-  userId: string;              // UUID of the user who created the record (server-set)
+  id: string;              // UUID (from API response)
+  recordType: string;      // Type: "medication" | "hydration" | "bowel-movement" | "food" | "observation"
+  date: string;            // Date in yyyy-MM-dd format
+  time: string;            // Time in HH:mm format
+  createdAt?: string;      // ISO 8601 timestamp (from API)
+  [key: string]: any;      // Type-specific fields (see below)
 }
 ```
 
 **Validation Rules**:
-- `date`: Must be valid yyyy-MM-dd format; past or present dates only
-- `time`: Must be valid HH:mm format (24-hour)
-- `recordType`: One of the five specific record types
-- `id`: Always server-generated UUID
-
-**Relationships**:
-- Many-to-one with User
-- Grouped by date in DailySummary
-- Organized by recordType in DailySummary
+- `date`: Required, must be valid date
+- `time`: Required, must be valid time
+- `recordType`: Required, one of five types
 
 ---
 
-### MedicationRecord
+### MedicationAdministration
 
-Health record for medication administration.
+**Purpose**: Record of a medication taken at a specific date/time
 
+**Extends**: HealthRecord
+
+**Frontend Representation**:
 ```typescript
-interface MedicationRecord extends HealthRecord {
-  recordType: 'medication';
-  medication: string;               // Name of medication
-  dosage: string;                   // Dosage amount and unit (e.g., "500mg", "2 tablets")
+interface MedicationAdministration extends HealthRecord {
+  recordType: "medication";
+  medication: string;    // Name of medication
+  dosage: string;        // Dosage amount (e.g., "500mg", "2 tablets")
 }
 ```
 
-**Validation Rules** (OpenAPI schema):
-- `medication`: Optional, can be null or empty string
-- `dosage`: Optional, can be null or empty string
-- `date` and `time`: Required (inherited)
+**Validation Rules**:
+- `date`, `time`: Required (inherited)
+- `medication`: Optional but recommended
+- `dosage`: Optional but recommended
 
-**Frontend Validation**:
-- `date` and `time` required (HTML5 required attribute)
-- `medication` recommended (can display warning if empty but allow submission)
-- `dosage` recommended (can display warning if empty but allow submission)
-
-**Example**:
+**Example Data**:
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "date": "2026-02-06",
-  "time": "09:00",
   "recordType": "medication",
-  "medication": "Metformin",
-  "dosage": "500mg",
-  "userId": "user-123",
-  "createdAt": "2026-02-06T09:15:00Z"
+  "date": "2026-02-08",
+  "time": "09:00",
+  "medication": "Aspirin",
+  "dosage": "500mg"
 }
 ```
 
@@ -166,104 +170,95 @@ interface MedicationRecord extends HealthRecord {
 
 ### HydrationRecord
 
-Health record for hydration/bottle consumption.
+**Purpose**: Record of fluid intake (water/bottle consumption)
 
+**Extends**: HealthRecord
+
+**Frontend Representation**:
 ```typescript
 interface HydrationRecord extends HealthRecord {
-  recordType: 'hydration';
-  quantity: number;                 // Amount consumed in ml or oz
+  recordType: "hydration";
+  quantity: number;      // Amount in ml or oz
 }
 ```
 
-**Validation Rules** (OpenAPI schema):
-- `quantity`: Optional, number type
-- `date` and `time`: Required (inherited)
+**Validation Rules**:
+- `date`, `time`: Required (inherited)
+- `quantity`: Required, must be positive number
 
-**Frontend Validation**:
-- `date` and `time` required
-- `quantity` optional but when provided must be positive number
-- Suggest units: ml or oz (store as-is without unit conversion)
-
-**Example**:
+**Example Data**:
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440001",
-  "date": "2026-02-06",
-  "time": "10:30",
   "recordType": "hydration",
-  "quantity": 250,
-  "userId": "user-123"
+  "date": "2026-02-08",
+  "time": "10:30",
+  "quantity": 500
 }
 ```
 
 ---
 
-### BowelRecord
+### BowelMovementRecord
 
-Health record for bowel movement tracking.
+**Purpose**: Record of bowel movement event with consistency level
 
+**Extends**: HealthRecord
+
+**Frontend Representation**:
 ```typescript
-interface BowelRecord extends HealthRecord {
-  recordType: 'bowel';
-  consistency: 'Hard' | 'Normal' | 'Soft' | 'Diarrhea';   // Enum from OpenAPI
+interface BowelMovementRecord extends HealthRecord {
+  recordType: "bowel-movement";
+  consistency: "Hard" | "Normal" | "Soft" | "Diarrhea";
 }
 ```
 
-**Validation Rules** (OpenAPI schema):
-- `consistency`: Required, must be one of exactly four values (case-sensitive: Hard, Normal, Soft, Diarrhea)
-- `date` and `time`: Required
+**Validation Rules**:
+- `date`, `time`: Required (inherited)
+- `consistency`: Required, must be one of four enum values
 
-**Frontend Validation**:
-- `date` and `time` required
-- `consistency` required with dropdown/radio button selection showing all 4 options
-- No free-text input; only enum values allowed
-
-**Example**:
+**Example Data**:
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440002",
-  "date": "2026-02-06",
+  "recordType": "bowel-movement",
+  "date": "2026-02-08",
   "time": "14:00",
-  "recordType": "bowel",
-  "consistency": "Normal",
-  "userId": "user-123"
+  "consistency": "Normal"
 }
 ```
 
 ---
 
-### FoodRecord
+### FoodConsumptionRecord
 
-Health record for solid food consumption.
+**Purpose**: Record of solid food intake
 
+**Extends**: HealthRecord
+
+**Frontend Representation**:
 ```typescript
-interface FoodRecord extends HealthRecord {
-  recordType: 'food';
-  food: string;                     // Description of food consumed
-  quantity: string;                 // Amount/portion size (e.g., "1 apple", "half cup")
+interface FoodConsumptionRecord extends HealthRecord {
+  recordType: "food";
+  food: string;          // Description of food consumed
+  quantity: string;      // Amount consumed (e.g., "1 plate", "200g")
 }
 ```
 
-**Validation Rules** (OpenAPI schema):
-- `food`: Optional string
-- `quantity`: Optional string
-- `date` and `time`: Required
+**Validation Rules**:
+- `date`, `time`: Required (inherited)
+- `food`: Optional but recommended
+- `quantity`: Optional
 
-**Frontend Validation**:
-- `date` and `time` required
-- `food` optional but recommended
-- `quantity` optional but recommended
-
-**Example**:
+**Example Data**:
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440003",
-  "date": "2026-02-06",
-  "time": "12:30",
   "recordType": "food",
-  "food": "Grilled chicken with rice",
-  "quantity": "1 plate",
-  "userId": "user-123"
+  "date": "2026-02-08",
+  "time": "12:00",
+  "food": "Chicken and rice",
+  "quantity": "1 plate"
 }
 ```
 
@@ -271,236 +266,260 @@ interface FoodRecord extends HealthRecord {
 
 ### ObservationRecord
 
-Health record for general notes and observations.
+**Purpose**: General notes or observations
 
+**Extends**: HealthRecord
+
+**Frontend Representation**:
 ```typescript
 interface ObservationRecord extends HealthRecord {
-  recordType: 'observation';
-  notes: string;                    // Free-form observation text
-  category?: string;                // Optional category for grouping observations
+  recordType: "observation";
+  notes: string;         // Observation text content
+  category?: string;     // Optional category for organization
 }
 ```
 
-**Validation Rules** (OpenAPI schema):
-- `notes`: Optional string
-- `category`: Optional string
-- `date` and `time`: Required
+**Validation Rules**:
+- `date`, `time`: Required (inherited)
+- `notes`: Required, non-empty string
+- `category`: Optional
 
-**Frontend Validation**:
-- `date` and `time` required
-- `notes` optional but recommended
-- `category` optional (provide text input or common suggestions like "Mood", "Sleep", "Energy", "Symptoms")
-
-**Example**:
+**Example Data**:
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440004",
-  "date": "2026-02-06",
-  "time": "18:00",
   "recordType": "observation",
-  "notes": "Feeling tired and experiencing mild headache",
-  "category": "Symptoms",
-  "userId": "user-123"
+  "date": "2026-02-08",
+  "time": "15:30",
+  "notes": "Feeling more energetic today",
+  "category": "General"
 }
 ```
 
 ---
 
-## Summary Models
-
 ### DailySummary
 
-Collection of all health records for a specific date, organized by record type.
+**Purpose**: All health records for a specific date, organized by type
 
+**Frontend Representation**:
 ```typescript
 interface DailySummary {
-  date: string;                                    // ISO 8601 date, format: date (yyyy-MM-dd)
-  data: HealthRecord[];                           // All records for the date (mixed types)
-  // OR organized version:
-  medications: MedicationRecord[];
-  hydrations: HydrationRecord[];
-  bowels: BowelRecord[];
-  foods: FoodRecord[];
-  observations: ObservationRecord[];
+  date: string;                                    // yyyy-MM-dd
+  data: {
+    medications: MedicationAdministration[];
+    hydration: HydrationRecord[];
+    bowelMovements: BowelMovementRecord[];
+    food: FoodConsumptionRecord[];
+    observations: ObservationRecord[];
+  };
 }
 ```
 
-**OpenAPI Contract** (from GET /api/health/summary/{date}):
+**Composition**: Aggregates all HealthRecord types for a given date from API response
+
+**Example Data**:
 ```json
 {
-  "date": "2026-02-06",
+  "date": "2026-02-08",
   "data": [
-    { "id": "...", "date": "2026-02-06", "time": "09:00", "recordType": "medication", "medication": "...", "dosage": "..." },
-    { "id": "...", "date": "2026-02-06", "time": "10:30", "recordType": "hydration", "quantity": 250 },
-    ...
+    { "id": "...", "recordType": "medication", "date": "2026-02-08", "time": "09:00", "medication": "Aspirin", "dosage": "500mg" },
+    { "id": "...", "recordType": "hydration", "date": "2026-02-08", "time": "10:30", "quantity": 500 },
+    { "id": "...", "recordType": "bowel-movement", "date": "2026-02-08", "time": "14:00", "consistency": "Normal" }
   ]
 }
 ```
 
-**Frontend Processing**:
-When received from API, the frontend organizes the flat `data` array into typed arrays:
-```javascript
-function organizeDailySummary(apiResponse) {
-  const organized = {
-    date: apiResponse.date,
-    medications: [],
-    hydrations: [],
-    bowels: [],
-    foods: [],
-    observations: []
-  };
-  
-  apiResponse.data.forEach(record => {
-    switch(record.recordType) {
-      case 'medication': organized.medications.push(record); break;
-      case 'hydration': organized.hydrations.push(record); break;
-      case 'bowel': organized.bowels.push(record); break;
-      case 'food': organized.foods.push(record); break;
-      case 'observation': organized.observations.push(record); break;
-    }
-  });
-  
-  return organized;
-}
-```
-
-**Display Rendering**:
-- Render each record type section with appropriate field labels
-- Show "No records" message if all arrays are empty
-- Sort records within each type by time (optional, depends on API order)
-
 ---
 
-## Error Models
+## Frontend State Architecture
 
-### APIError
-
-Standard error response from the API.
+### Global State (AuthContext)
 
 ```typescript
-interface APIError {
-  statusCode: number;               // HTTP status code (400, 401, 409, 500, etc.)
-  message: string;                  // User-friendly error message
-  details?: any;                    // Optional additional details (depends on error type)
+interface AuthContextValue {
+  // Current state
+  authState: AuthState;
+  
+  // Actions
+  register: (email: string, username: string, name: string, password: string, inviteToken: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  refreshToken: () => Promise<void>;  // Internal, auto-called
+  
+  // Selectors
+  isAuthenticated: () => boolean;
+  isTokenExpired: () => boolean;
 }
 ```
 
-**Status Code Meanings**:
+### Component-Level State (Examples)
 
-| Code | Meaning | Example | Frontend Action |
-|------|---------|---------|-----------------|
-| 400 | Bad Request / Validation Error | "Username is required" | Show form validation error, highlight field |
-| 401 | Unauthorized | "Invalid credentials" or "Token expired" | If login page, show error; else attempt refresh, then redirect to login |
-| 409 | Conflict | "Email already registered" | Show form validation error, suggest action (e.g., "login instead") |
-| 500 | Server Error | "Internal server error" | Show generic message, suggest retry or contact support |
-
-**Frontend Error Handling**:
-- Centralized `errorHandler.js` maps status codes to user-friendly messages
-- Implements retry logic for 500 errors
-- Implements automatic refresh for 401 errors during health record operations
-- Displays 400/409 errors inline in forms
-- Displays other errors as dismissible toast notifications
-
----
-
-## Type Definitions Summary
-
-All TypeScript interfaces and validation rules are documented in:
-- `src/api/types.ts` (frontend DTOs)
-- `src/utils/validation.js` (validation rules)
-- `src/services/errorHandler.js` (error type mappings)
-
----
-
-## Validation Rules by Field
-
-### Email
-- **Type**: string
-- **Format**: RFC 5322 email
-- **Required**: Yes (for login, register)
-- **Validation**: Regex pattern or native HTML5 `<input type="email">`
-- **Error Message**: "Please enter a valid email address"
-
-### Password
-- **Type**: string
-- **Requirements**: Minimum 8 characters
-- **Required**: Yes (for login, register, reset)
-- **Validation**: `password.length >= 8`
-- **Error Message**: "Password must be at least 8 characters"
-
-### Username
-- **Type**: string
-- **Length**: 3-50 characters
-- **Pattern**: `^[a-zA-Z0-9_-]+$` (alphanumeric, hyphens, underscores only)
-- **Required**: Yes (register only)
-- **Validation**: Regex match
-- **Error Message**: "Username must be 3-50 characters, containing only letters, numbers, hyphens, and underscores"
-
-### Date
-- **Type**: string (ISO 8601)
-- **Format**: yyyy-MM-dd
-- **Required**: Yes (all health records)
-- **Validation**: Regex `^\d{4}-\d{2}-\d{2}$` or HTML5 `<input type="date">`
-- **Error Message**: "Date is required"
-
-### Time
-- **Type**: string (ISO 8601)
-- **Format**: HH:mm (24-hour)
-- **Required**: Yes (all health records)
-- **Validation**: Regex `^\d{2}:\d{2}$` or HTML5 `<input type="time">`
-- **Error Message**: "Time is required"
-
-### Quantity (Hydration)
-- **Type**: number
-- **Requirements**: Positive number
-- **Required**: No
-- **Validation**: `quantity > 0` if provided
-- **Error Message**: "Quantity must be a positive number"
-
-### Consistency (Bowel)
-- **Type**: enum
-- **Values**: Hard, Normal, Soft, Diarrhea (case-sensitive)
-- **Required**: Yes
-- **Validation**: `['Hard', 'Normal', 'Soft', 'Diarrhea'].includes(value)`
-- **Error Message**: "Please select a consistency level"
-
-### Invite Token
-- **Type**: string (UUID)
-- **Required**: Yes (register only)
-- **Validation**: Server-side validation
-- **Error Message**: "Invalid or expired invite link" (from server)
-
----
-
-## Relationships
-
+**LoginPage**:
+```typescript
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [submitError, setSubmitError] = useState<string | null>(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
 ```
-User
-├── has many HealthRecord
-│   ├── MedicationRecord
-│   ├── HydrationRecord
-│   ├── BowelRecord
-│   ├── FoodRecord
-│   └── ObservationRecord
-└── has one current AuthTokens
-    ├── accessToken (expires minutes/hours)
-    └── refreshToken (expires days/weeks)
 
-DailySummary
-└── contains many HealthRecord (for a specific date)
+**MedicationForm**:
+```typescript
+const [date, setDate] = useState(today());
+const [time, setTime] = useState('09:00');
+const [medication, setMedication] = useState('');
+const [dosage, setDosage] = useState('');
+const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 ```
 
 ---
 
-## Notes
+## Data Flow
 
-1. **Server-Generated Fields**: `id`, `userId`, and `createdAt` are always generated by the backend; frontend should not send these in POST requests.
+### 1. Registration Flow
 
-2. **Optional vs Required**: The distinction between optional and required fields is documented, but the actual OpenAPI schema shows all health record creation endpoints accept optional `medication`, `dosage`, `quantity`, etc. The frontend treats these as recommended-but-not-required to provide a better UX (warning instead of blocking submission).
+```
+User Input (RegisterPage)
+  ↓ form validation
+Client-side Validation (email, username, password strength, required fields)
+  ↓ if valid
+POST /api/auth/register (with inviteToken, email, username, name, password)
+  ↓ success (201)
+AuthContext updates: user set (id, email, username, name)
+  ↓
+Redirect to LoginPage (user must login with new credentials)
 
-3. **Type Discriminator**: The `recordType` field serves as a discriminator for polymorphic health records. Frontend code uses this to determine how to display and process each record.
+  ↓ if error (400)
+Display error message (e.g., "Email already in use")
+  ↓
+User retries with different data
+```
 
-4. **Date Handling**: All dates are timezone-naive (no timezone information). Users' local timezone is assumed.
+### 2. Login Flow
 
-5. **Token Expiration**: Access tokens are short-lived (minutes to hours); refresh tokens are longer-lived (days to weeks). The frontend should check `isTokenExpired()` before making requests and proactively refresh if approaching expiration, or reactively refresh on 401 responses.
+```
+User Input (LoginPage: email, password)
+  ↓
+AuthContext.login(email, password)
+  ↓
+POST /api/auth/login
+  ↓ success (200)
+Response includes: accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt
+  ↓
+AuthContext stores tokens in localStorage + state
+  ↓
+AuthContext sets user info from token claims (or separate user endpoint)
+  ↓
+Redirect to DashboardPage (authenticated)
 
+  ↓ if error (401)
+Display "Invalid email or password"
+  ↓
+User retries
+```
+
+### 3. Health Record Creation Flow
+
+```
+User Input (RecordMedicationForm)
+  ↓ client validation (date, time required; medication/dosage optional)
+Validation passes
+  ↓
+healthRecordService.createMedication(date, time, medication, dosage)
+  ↓
+GET authState from AuthContext → extract accessToken
+  ↓
+POST /api/health/medication with Authorization: Bearer {accessToken}
+  ↓ success (201)
+Response includes: id, message
+  ↓
+Display success message
+  ↓
+Close dialog / Refresh daily summary
+  ↓
+DailySummary reloads via GET /api/health/summary/{date}
+
+  ↓ if error (401 - token expired)
+Automatically call refreshToken()
+  ↓
+Retry POST /api/health/medication with new token
+  ↓
+On success: create record as normal
+On failure: display "Session expired, please login again"
+
+  ↓ if error (400 - validation)
+Display API error (e.g., "Date and Time are required")
+  ↓
+User corrects and retries
+```
+
+### 4. Token Refresh Flow
+
+```
+API Response: 401 Unauthorized
+  ↓ (automatic, transparent to user)
+AuthContext.refreshToken()
+  ↓
+POST /api/auth/token/refresh with { refreshToken }
+  ↓ success (200)
+Response includes: accessToken, expiresAt
+  ↓
+Update localStorage + authState with new accessToken
+  ↓
+Retry original request with new token
+  ↓ if retry succeeds
+Complete action as normal
+  ↓ if retry fails with 401
+Clear tokens / logout
+  ↓
+Redirect to LoginPage with message "Session expired, please login again"
+```
+
+### 5. Daily Summary Load Flow
+
+```
+User navigates to date
+  ↓
+DashboardPage calls healthRecordService.getSummary(date)
+  ↓
+GET /api/health/summary/{date} with Authorization: Bearer {accessToken}
+  ↓ success (200)
+Response includes: date, data (array of HealthRecords)
+  ↓
+DailySummary component displays records organized by type
+  ↓
+Records grouped: medications, hydration, bowel-movements, food, observations
+
+  ↓ if error (400 - invalid date)
+Display "Invalid date format"
+  ↓
+User picks a valid date
+
+  ↓ if error (401 - token expired)
+Automatic refresh + retry (as in token refresh flow above)
+```
+
+---
+
+## TypeScript Type Generation
+
+**Source**: openapi.yaml (OpenAPI 3.0.0)
+**Tool**: openapi-typescript CLI
+**Output**: `src/types/api.ts` (auto-generated, committed to repo)
+
+Generated types will include:
+- `components.schemas.User` (from spec)
+- `components.schemas.AuthTokens` (from spec)
+- `components.schemas.MedicationAdministration` (from spec)
+- `components.schemas.BottleConsumption` (from spec)
+- `components.schemas.BowelMovement` (from spec)
+- `components.schemas.SolidFoodConsumption` (from spec)
+- `components.schemas.Observation` (from spec)
+- `components.schemas.DailySummary` (from spec)
+- All request/response types for auth endpoints
+
+**Update Process**:
+1. Update openapi.yaml in backend
+2. Run `npm run generate:types` in frontend
+3. Types are regenerated in `src/types/api.ts`
+4. Consuming code is updated if types changed
