@@ -5,23 +5,26 @@
 **Prerequisites**: plan.md, spec.md (user stories), research.md, data-model.md, contracts/  
 
 **Constitution Principles**:
+
 - **Code Quality**: TypeScript strict mode, JSDoc comments, service layer extraction, code review required
 - **Testing Standards**: Integration tests for API contracts (Vitest), unit tests for Auth context, all tests pass before merge
 - **User Experience Consistency**: MUI styling consistency, API error messages displayed to users, transparent token refresh
 - **Performance Requirements**: <2s API response targets, client-side validation before API calls, no localStorage performance regression
 
----
-
 ## Implementation Strategy & Execution Order
 
 ### MVP Scope (Recommended for Phase 1)
+
 Implement **User Stories 1, 2, and 8** to create a complete MVP:
+
 - US1 (Registration) → US2 (Login) → US8 (Daily Summary View)
 - Enables end-to-end authentication and basic dashboard
 - Users can register, log in, and see their health data
 
 ### Full Implementation
+
 Add health record types sequentially:
+
 - Phase 1 MVP: US1, US2, US8 (Auth + Dashboard)
 - Phase 2: US3 (Medication) - First health record type
 - Phase 3: US4-7 (Remaining health record types in parallel)
@@ -29,10 +32,12 @@ Add health record types sequentially:
 ### Parallelization Opportunities
 
 **After Phase 2 (Foundation) complete**:
+
 - US1 & US2 can be developed in parallel (different pages, both use AuthService)
 - US3-7 can be developed in parallel (each record type is independent, same pattern)
 
 **Example parallel execution** (6 developers):
+
 ```
 Developer 1: US1 (Registration)
 Developer 2: US2 (Login) + US8 (Dashboard setup)
