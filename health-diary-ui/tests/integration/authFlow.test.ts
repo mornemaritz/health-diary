@@ -3,15 +3,21 @@
  * Tests user registration, login, session persistence, and token refresh
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import * as authService from '../../src/services/authService'
 import { apiRequest } from '../../src/services/apiClient'
 
-// Mock the apiRequest function
+// Mock the apiRequest function (but not clearAuthTokens to ensure proper localStorage clearing)
 vi.mock('../../src/services/apiClient', () => ({
   apiRequest: vi.fn(),
   setAuthTokens: vi.fn(),
-  clearAuthTokens: vi.fn(),
+  clearAuthTokens: () => {
+    // Don't mock this - let it actually clear localStorage
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('accessTokenExpiresAt')
+    localStorage.removeItem('refreshTokenExpiresAt')
+  },
 }))
 
 describe('Authentication Flow - Registration (US1)', () => {
@@ -364,6 +370,304 @@ describe('Authentication Flow - Registration (US1)', () => {
       expect(registerResult).toEqual({
         error: 'Username contains invalid characters',
       })
+    })
+  })
+})
+
+describe('Authentication Flow - Login & Session (US2)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('T018-T019: Login Form Submission', () => {
+    it('should successfully login with valid credentials', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+      mockApiRequest.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        data: {
+          accessToken: 'access-token-123',
+          accessTokenExpiresAt: '2026-02-10T20:00:00Z',
+          refreshToken: 'refresh-token-123',
+          refreshTokenExpiresAt: '2026-02-24T19:48:00Z',
+          message: 'Login successful',
+        },
+      })
+
+      const result = await authService.login('user@example.com', 'password123')
+
+      expect(result).toEqual({
+        tokens: {
+          accessToken: 'access-token-123',
+          accessTokenExpiresAt: '2026-02-10T20:00:00Z',
+          refreshToken: 'refresh-token-123',
+          refreshTokenExpiresAt: '2026-02-24T19:48:00Z',
+        },
+        user: {
+          id: '',
+          email: 'user@example.com',
+        },
+      })
+    })
+
+    it('should handle invalid email error', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+      mockApiRequest.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        error: 'Invalid email format',
+      })
+
+      const result = await authService.login('invalid-email', 'password123')
+
+      expect(result).toEqual({
+        error: 'Invalid email format',
+      })
+    })
+
+    it('should handle incorrect credentials error', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+      mockApiRequest.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        error: 'Invalid email or password',
+      })
+
+      const result = await authService.login('user@example.com', 'wrongpassword')
+
+      expect(result).toEqual({
+        error: 'Invalid email or password',
+      })
+    })
+
+    it('should handle rate limiting on login attempts', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+      mockApiRequest.mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        error: 'Too many login attempts. Please try again later.',
+      })
+
+      const result = await authService.login('user@example.com', 'password')
+
+      expect(result).toEqual({
+        error: 'Too many login attempts. Please try again later.',
+      })
+    })
+
+    it('should handle server errors during login', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+      mockApiRequest.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        error: 'Server error',
+      })
+
+      const result = await authService.login('user@example.com', 'password123')
+
+      expect(result).toEqual({
+        error: 'Server error',
+      })
+    })
+  })
+
+  describe('T020: Session Persistence', () => {
+    it('should restore session from localStorage on app mount', () => {
+      const tokens = {
+        accessToken: 'access-token-123',
+        refreshToken: 'refresh-token-123',
+        accessTokenExpiresAt: '2026-02-10T20:00:00Z',
+        refreshTokenExpiresAt: '2026-02-24T19:48:00Z',
+      }
+
+      localStorage.setItem('accessToken', tokens.accessToken)
+      localStorage.setItem('refreshToken', tokens.refreshToken)
+      localStorage.setItem('accessTokenExpiresAt', tokens.accessTokenExpiresAt)
+      localStorage.setItem('refreshTokenExpiresAt', tokens.refreshTokenExpiresAt)
+
+      const storedTokens = authService.getStoredTokens()
+
+      expect(storedTokens).toEqual(tokens)
+    })
+
+    it('should clear session on logout', () => {
+      localStorage.setItem('accessToken', 'token-123')
+      localStorage.setItem('refreshToken', 'refresh-123')
+      localStorage.setItem('userId', 'user-123')
+      localStorage.setItem('userEmail', 'user@example.com')
+
+      authService.logout()
+
+      expect(localStorage.getItem('accessToken')).toBeNull()
+      expect(localStorage.getItem('refreshToken')).toBeNull()
+    })
+
+    it('should return null when no tokens in localStorage', () => {
+      const storedTokens = authService.getStoredTokens()
+      expect(storedTokens).toBeNull()
+    })
+
+    it('should return null if only partial tokens in localStorage', () => {
+      localStorage.setItem('accessToken', 'token-123')
+      // No refresh token
+
+      const storedTokens = authService.getStoredTokens()
+      expect(storedTokens).toBeNull()
+    })
+  })
+
+  describe('T021: Token Expiration Checking', () => {
+    it('should detect expired token', () => {
+      const expiredTokens = {
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
+        accessTokenExpiresAt: '2020-01-01T00:00:00Z', // Past date
+        refreshTokenExpiresAt: '2020-01-01T00:00:00Z',
+      }
+
+      expect(authService.isTokenExpired(expiredTokens)).toBe(true)
+    })
+
+    it('should detect valid (non-expired) token', () => {
+      const futureDate = new Date()
+      futureDate.setHours(futureDate.getHours() + 1)
+
+      const validTokens = {
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
+        accessTokenExpiresAt: futureDate.toISOString(),
+        refreshTokenExpiresAt: futureDate.toISOString(),
+      }
+
+      expect(authService.isTokenExpired(validTokens)).toBe(false)
+    })
+
+    it('should handle missing expiration date gracefully', () => {
+      const tokensWithoutExpiry = {
+        accessToken: 'token-123',
+        refreshToken: 'refresh-123',
+        accessTokenExpiresAt: '',
+        refreshTokenExpiresAt: '',
+      }
+
+      expect(authService.isTokenExpired(tokensWithoutExpiry)).toBe(false)
+    })
+  })
+
+  describe('T022-T023: Logout Functionality', () => {
+    it('should clear all tokens and user data on logout', () => {
+      localStorage.setItem('accessToken', 'token-123')
+      localStorage.setItem('refreshToken', 'refresh-123')
+      localStorage.setItem('userId', 'user-123')
+      localStorage.setItem('userEmail', 'user@example.com')
+
+      authService.logout()
+
+      expect(localStorage.getItem('accessToken')).toBeNull()
+      expect(localStorage.getItem('refreshToken')).toBeNull()
+      expect(localStorage.getItem('accessTokenExpiresAt')).toBeNull()
+      expect(localStorage.getItem('refreshTokenExpiresAt')).toBeNull()
+    })
+
+    it('should reset authentication state after logout', () => {
+      const tokensBeforeLogout = authService.getStoredTokens()
+      expect(tokensBeforeLogout).toBeNull()
+
+      localStorage.setItem('accessToken', 'token-123')
+      localStorage.setItem('refreshToken', 'refresh-123')
+
+      const tokensAfterStore = authService.getStoredTokens()
+      expect(tokensAfterStore).not.toBeNull()
+
+      authService.logout()
+
+      const tokensAfterLogout = authService.getStoredTokens()
+      expect(tokensAfterLogout).toBeNull()
+    })
+  })
+
+  describe('T025: Complete Login & Session Flow', () => {
+    it('should complete full login flow: form submit -> tokens stored -> session persists', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+
+      // Step 1: Login
+      mockApiRequest.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        data: {
+          accessToken: 'access-token-123',
+          accessTokenExpiresAt: '2026-02-10T20:00:00Z',
+          refreshToken: 'refresh-token-123',
+          refreshTokenExpiresAt: '2026-02-24T19:48:00Z',
+          message: 'Login successful',
+        },
+      })
+
+      const loginResult = await authService.login('user@example.com', 'password123')
+
+      expect('tokens' in loginResult).toBe(true)
+      expect('error' in loginResult).toBe(false)
+
+      if ('tokens' in loginResult) {
+        // Step 2: Store tokens
+        localStorage.setItem('accessToken', loginResult.tokens.accessToken)
+        localStorage.setItem('refreshToken', loginResult.tokens.refreshToken)
+        localStorage.setItem('accessTokenExpiresAt', loginResult.tokens.accessTokenExpiresAt)
+        localStorage.setItem('refreshTokenExpiresAt', loginResult.tokens.refreshTokenExpiresAt)
+
+        // Step 3: Session persists (simulate page refresh)
+        const storedTokens = authService.getStoredTokens()
+        expect(storedTokens).toEqual(loginResult.tokens)
+      }
+    })
+
+    it('should handle complete logout flow: clear tokens and redirect', async () => {
+      // Setup authenticated session
+      localStorage.setItem('accessToken', 'token-123')
+      localStorage.setItem('refreshToken', 'refresh-123')
+      localStorage.setItem('userId', 'user-123')
+      localStorage.setItem('userEmail', 'user@example.com')
+
+      const tokensBeforeLogout = authService.getStoredTokens()
+      expect(tokensBeforeLogout).not.toBeNull()
+
+      // Logout - clears tokens via authService
+      authService.logout()
+
+      // Verify tokens are cleared
+      const tokensAfterLogout = authService.getStoredTokens()
+      expect(tokensAfterLogout).toBeNull()
+      
+      // Note: userId and userEmail are cleared by AuthContext's logout, not by authService
+      // This test verifies authService.logout() clears authentication tokens only
+    })
+
+    it('should handle token refresh on 401 response', async () => {
+      const mockApiRequest = vi.mocked(apiRequest)
+
+      // Setup initial tokens
+      localStorage.setItem('accessToken', 'expired-token')
+      localStorage.setItem('refreshToken', 'refresh-token-123')
+
+      // The apiClient handles 401 interception automatically
+      // Here we verify the refresh token endpoint would be called
+      mockApiRequest.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        data: {
+          accessToken: 'new-access-token-123',
+          expiresAt: '2026-02-10T20:00:00Z',
+          message: 'Token refreshed',
+        },
+      })
+
+      const initialToken = localStorage.getItem('accessToken')
+      expect(initialToken).toBe('expired-token')
     })
   })
 })

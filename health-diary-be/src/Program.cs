@@ -53,6 +53,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowedHosts",
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "http://localhost:8080")
+                   .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
 
 // Add global exception handling middleware
@@ -88,6 +98,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseCors("AllowedHosts");
 app.UseAuthentication();
 app.UseAuthorization();
 

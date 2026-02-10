@@ -121,6 +121,7 @@ export async function apiRequest<T>(
   }
 
   const url = `${API_BASE_URL}${path}`
+  console.debug(`API Request: ${method} ${url}`, { body, requiresAuth })
   let response = await fetch(url, {
     method,
     headers: finalHeaders,

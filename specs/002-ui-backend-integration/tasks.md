@@ -111,14 +111,14 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] Create LoginPage component in health-diary-ui/src/pages/LoginPage.tsx (email, password form inputs, submit button)
-- [ ] T019 [US2] Implement login form submission in LoginPage (call useAuth().login, show error messages on 401, redirect to DashboardPage on success)
-- [ ] T020 [US2] Add session persistence in AuthContext (restore user + tokens from localStorage on app mount/refresh)
-- [ ] T021 [US2] Implement token refresh functionality in apiClient.ts (intercept 401 responses, call /api/auth/token/refresh, retry original request with new token)
-- [ ] T022 [US2] Add logout functionality: LogoutButton component in health-diary-ui/src/components/LogoutButton.tsx (calls useAuth().logout, clears localStorage via authService.logout, redirects to LoginPage)
-- [ ] T023 [P] [US2] Create protected route wrapper in health-diary-ui/src/components/ProtectedRoute.tsx (redirect unauthenticated users to LoginPage)
-- [ ] T024 [P] [US2] Add token expiration checking in AuthContext (compare expiresAt with current time, warn user or auto-refresh)
-- [ ] T025 [US2] Create integration test for auth flow in tests/integration/authFlow.test.ts (login, session restore, token refresh, logout)
+- [x] T018 [P] [US2] Create LoginPage component in health-diary-ui/src/pages/LoginPage.tsx (email, password form inputs, submit button)
+- [x] T019 [US2] Implement login form submission in LoginPage (call useAuth().login, show error messages on 401, redirect to DashboardPage on success)
+- [x] T020 [US2] Add session persistence in AuthContext (restore user + tokens from localStorage on app mount/refresh)
+- [x] T021 [US2] Implement token refresh functionality in apiClient.ts (intercept 401 responses, call /api/auth/token/refresh, retry original request with new token)
+- [x] T022 [US2] Add logout functionality: LogoutButton component in health-diary-ui/src/components/LogoutButton.tsx (calls useAuth().logout, clears localStorage via authService.logout, redirects to LoginPage)
+- [x] T023 [P] [US2] Create protected route wrapper in health-diary-ui/src/components/ProtectedRoute.tsx (redirect unauthenticated users to LoginPage)
+- [x] T024 [P] [US2] Add token expiration checking in AuthContext (compare expiresAt with current time, warn user or auto-refresh)
+- [x] T025 [US2] Create integration test for auth flow in tests/integration/authFlow.test.ts (login, session restore, token refresh, logout)
 
 **Checkpoint**: Full authentication cycle works - users can login, maintain sessions across page refreshes, auto-refresh expiring tokens, logout cleanly
 

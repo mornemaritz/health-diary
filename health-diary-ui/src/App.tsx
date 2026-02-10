@@ -1,22 +1,29 @@
 import type React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './layout/components/Home'
 import RegisterPage from './pages/RegisterPage'
+import LoginPage from './pages/LoginPage'
 
 const App: React.FC = () => (
   <AuthProvider>
     <Router>
       <Routes>
-        {/* Main application route - renders existing Home component */}
+        {/* Public routes */}
         <Route path="/" element={<Home />} />
-
-        {/* User Story 1: Registration */}
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
 
-        {/* Placeholder routes for remaining user stories (pages not yet created) */}
-        <Route path="/login" element={<div>Login Page (Coming Soon)</div>} />
-        <Route path="/dashboard" element={<div>Dashboard Page (Coming Soon)</div>} />
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <div>Dashboard Page (Coming Soon)</div>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch-all redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
