@@ -73,12 +73,12 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Foundational Implementation Tasks
 
-- [ ] T006 [P] Create API client wrapper with JWT interceptor in health-diary-ui/src/services/apiClient.ts (handles Fetch, token injection, 401 response interception)
-- [ ] T007 [P] Create Auth service with register/login/logout methods in health-diary-ui/src/services/authService.ts (uses apiClient, stores tokens via localStorage)
-- [ ] T008 Create Health Record service with CRUD methods in health-diary-ui/src/services/healthRecordService.ts (createMedication, createHydration, createBowelMovement, createFood, createObservation, getDailySummary)
-- [ ] T009 [P] Create AuthContext provider with user state, login/register/logout actions in health-diary-ui/src/contexts/AuthContext.tsx (wraps entire app)
-- [ ] T010 [P] Create useAuth hook for accessing auth context in health-diary-ui/src/hooks/useAuth.ts
-- [ ] T011 Update health-diary-ui/src/App.tsx to wrap with AuthProvider and set up routing skeleton (pages not yet created)
+- [x] T006 [P] Create API client wrapper with JWT interceptor in health-diary-ui/src/services/apiClient.ts (handles Fetch, token injection, 401 response interception)
+- [x] T007 [P] Create Auth service with register/login/logout methods in health-diary-ui/src/services/authService.ts (uses apiClient, stores tokens via localStorage)
+- [x] T008 Create Health Record service with CRUD methods in health-diary-ui/src/services/healthRecordService.ts (createMedication, createHydration, createBowelMovement, createFood, createObservation, getDailySummary)
+- [x] T009 [P] Create AuthContext provider with user state, login/register/logout actions in health-diary-ui/src/contexts/AuthContext.tsx (wraps entire app)
+- [x] T010 [P] Create useAuth hook for accessing auth context in health-diary-ui/src/hooks/useAuth.ts
+- [x] T011 Update health-diary-ui/src/App.tsx to wrap with AuthProvider and set up routing skeleton (pages not yet created)
 
 **Checkpoint**: All authentication infrastructure in place - each user story phase can now use these services independently
 
