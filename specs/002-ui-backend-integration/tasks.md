@@ -92,12 +92,12 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create RegisterPage component skeleton in health-diary-ui/src/pages/RegisterPage.tsx (layout and form inputs for email, username, name, password, invite token)
-- [ ] T013 [P] [US1] Implement invite token validation in RegisterPage (call authService.validateInvite before form enable)
-- [ ] T014 [US1] Implement form validation in RegisterPage (client-side: email format, username pattern, password minimum 8 chars, all required fields) in health-diary-ui/src/pages/RegisterPage.tsx
-- [ ] T015 [US1] Add register form submission handler in RegisterPage (call authService.register, handle errors, show validation error messages)
-- [ ] T016 [US1] Add success handling: redirect to LoginPage after successful registration in RegisterPage
-- [ ] T017 [P] [US1] Create integration test for registration flow in tests/integration/authFlow.test.ts (valid registration, invalid token, validation errors)
+- [x] T012 [P] [US1] Create RegisterPage component skeleton in health-diary-ui/src/pages/RegisterPage.tsx (layout and form inputs for email, username, name, password, invite token)
+- [x] T013 [P] [US1] Implement invite token validation in RegisterPage (call authService.validateInvite before form enable)
+- [x] T014 [US1] Implement form validation in RegisterPage (client-side: email format, username pattern, password minimum 8 chars, all required fields) in health-diary-ui/src/pages/RegisterPage.tsx
+- [x] T015 [US1] Add register form submission handler in RegisterPage (call authService.register, handle errors, show validation error messages)
+- [x] T016 [US1] Add success handling: redirect to LoginPage after successful registration in RegisterPage
+- [x] T017 [P] [US1] Create integration test for registration flow in tests/integration/authFlow.test.ts (valid registration, invalid token, validation errors)
 
 **Checkpoint**: Users can register via valid invite token and proceed to login
 

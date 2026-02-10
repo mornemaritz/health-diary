@@ -2,6 +2,7 @@ import type React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Home from './layout/components/Home'
+import RegisterPage from './pages/RegisterPage'
 
 const App: React.FC = () => (
   <AuthProvider>
@@ -10,8 +11,10 @@ const App: React.FC = () => (
         {/* Main application route - renders existing Home component */}
         <Route path="/" element={<Home />} />
 
-        {/* Placeholder routes for user stories (pages not yet created) */}
-        <Route path="/register" element={<div>Register Page (Coming Soon)</div>} />
+        {/* User Story 1: Registration */}
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Placeholder routes for remaining user stories (pages not yet created) */}
         <Route path="/login" element={<div>Login Page (Coming Soon)</div>} />
         <Route path="/dashboard" element={<div>Dashboard Page (Coming Soon)</div>} />
 
