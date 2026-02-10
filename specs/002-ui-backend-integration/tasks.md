@@ -55,11 +55,11 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 **Purpose**: Project structure and tooling setup
 
-- [ ] T001 Create directory structure per plan.md in health-diary-ui/src/ (services/, contexts/, hooks/, pages/, components/, types/)
-- [ ] T002 Generate TypeScript types from openapi.yaml by running `npm run generate:types` and verify types in src/types/api.ts
-- [ ] T003 [P] Configure Vitest for React component and integration testing in vite.config.ts
-- [ ] T004 [P] Update package.json with scripts: generate:types, test, test:watch (if not present)
-- [ ] T005 Create .env.local template with VITE_API_URL=http://localhost:5000
+- [x] T001 Create directory structure per plan.md in health-diary-ui/src/ (services/, contexts/, hooks/, pages/, components/, types/)
+- [x] T002 Generate TypeScript types from openapi.yaml by running `npm run generate:types` and verify types in src/types/api.ts
+- [x] T003 [P] Configure Vitest for React component and integration testing in vite.config.ts
+- [x] T004 [P] Update package.json with scripts: generate:types, test, test:watch (if not present)
+- [x] T005 Create .env.local template with VITE_API_URL=http://localhost:5000
 
 **Checkpoint**: All file structure and tooling in place - ready to implement foundational services
 
