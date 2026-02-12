@@ -132,13 +132,13 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 8
 
-- [ ] T026 [P] [US8] Create DailySummary component skeleton in health-diary-ui/src/components/DailySummary.tsx (displays records by type: medications, hydration, bowel movements, food, observations)
-- [ ] T027 [P] [US8] Create DashboardPage component in health-diary-ui/src/pages/DashboardPage.tsx (date picker, calls healthRecordService.getDailySummary, renders DailySummary component)
-- [ ] T028 [US8] Implement date navigation in DashboardPage (navigate to previous/next day, jump to today, show selected date)
-- [ ] T029 [US8] Implement daily summary data loading in DashboardPage (fetch GET /api/health/summary/{date}, show loading state, handle 401 token errors)
-- [ ] T030 [US8] Implement record display in DailySummary component (organize by type, show metadata: date, time, type-specific fields)
-- [ ] T031 [US8] Add "no records" message in DailySummary (display message when date has no records)
-- [ ] T032 [P] [US8] Create integration test for daily summary in tests/integration/dashboardFlow.test.ts (load summary, verify record display, test date navigation)
+- [x] T026 [P] [US8] Create DailySummary component skeleton in health-diary-ui/src/components/DailySummary.tsx (displays records by type: medications, hydration, bowel movements, food, observations)
+- [x] T027 [P] [US8] Create DashboardPage component in health-diary-ui/src/pages/DashboardPage.tsx (date picker, calls healthRecordService.getDailySummary, renders DailySummary component)
+- [x] T028 [US8] Implement date navigation in DashboardPage (navigate to previous/next day, jump to today, show selected date)
+- [x] T029 [US8] Implement daily summary data loading in DashboardPage (fetch GET /api/health/summary/{date}, show loading state, handle 401 token errors)
+- [x] T030 [US8] Implement record display in DailySummary component (organize by type, show metadata: date, time, type-specific fields)
+- [x] T031 [US8] Add "no records" message in DailySummary (display message when date has no records)
+- [x] T032 [P] [US8] Create integration test for daily summary in tests/integration/dashboardFlow.test.ts (load summary, verify record display, test date navigation)
 
 **Checkpoint**: MVP complete - users can register, login, and view their daily health summary
 

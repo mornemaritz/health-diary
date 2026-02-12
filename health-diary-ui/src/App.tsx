@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './layout/components/Home'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
 
 const App: React.FC = () => (
   <AuthProvider>
@@ -20,7 +21,7 @@ const App: React.FC = () => (
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <div>Dashboard Page (Coming Soon)</div>
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
