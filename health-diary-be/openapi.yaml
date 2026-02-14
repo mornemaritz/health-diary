@@ -659,6 +659,14 @@ components:
         dosage:
           type: string
           description: Dosage amount
+        schedule:
+          type: string
+          enum:
+            - SevenAm,
+            - ThreePm,
+            - SevenPm,
+            - TenPm,
+            - AdHoc
 
     BottleConsumption:
       type: object

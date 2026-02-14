@@ -12,11 +12,17 @@ const App: React.FC = () => (
     <Router>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Home />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
 
         {/* Protected routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } />
         <Route
           path="/dashboard"
           element={

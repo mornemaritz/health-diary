@@ -98,6 +98,7 @@ public enum MedicationSchedule
 /// </summary>
 public record BottleConsumption : HealthRecord
 {
+  [JsonPropertyName("quantity")]
   public int BottleSize { get; set; }
 }
 

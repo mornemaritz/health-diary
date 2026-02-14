@@ -102,6 +102,8 @@ export async function apiRequest<T>(
 ): Promise<ApiResponse<T>> {
   const { method = 'GET', headers = {}, body, requiresAuth = true } = options
 
+  console.log('API Request:', { path, method, body, requiresAuth });
+
   const finalHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers,
