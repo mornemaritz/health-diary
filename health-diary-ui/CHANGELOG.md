@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.19.3] - 2026-02-14
+### :bug: Bug Fixes
+- [`9342438`](https://github.com/mornemaritz/health-diary/commit/9342438d6db8ca81c0b164181ac8f5f11a606e00) - bump version maybe *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.19.1] - 2026-01-22
 ### :bug: Bug Fixes
 - [`5989bdf`](https://github.com/mornemaritz/health-diary/commit/5989bdfa1a064de7cf58060faf91c8300d402c00) - renew cert and tweak letsencypt integration *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -167,3 +172,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.18.0]: https://github.com/mornemaritz/health-diary/compare/v0.17.2...v0.18.0
 [v0.19.0]: https://github.com/mornemaritz/health-diary/compare/v0.18.0...v0.19.0
 [v0.19.1]: https://github.com/mornemaritz/health-diary/compare/v0.19.0...v0.19.1
+[v0.19.3]: https://github.com/mornemaritz/health-diary/compare/v0.19.2...v0.19.3
