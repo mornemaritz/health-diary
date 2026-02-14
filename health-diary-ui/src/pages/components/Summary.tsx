@@ -1,6 +1,6 @@
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, Typography } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
+import WcIcon from '@mui/icons-material/Wc';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import CommentIcon from '@mui/icons-material/Comment';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -298,9 +298,9 @@ const Summary: React.FC = () => {
           aria-controls="nappies-panel-content"
           id="nappies-panel-header"
         >
-          <BabyChangingStationIcon color='primary' sx={{ marginRight: 1 }} />
-          <Typography component="span">Nappies</Typography>
-          <Chip label="2 Poos" color="success" size="small" sx={{ marginLeft: 1 }} />
+          <WcIcon color='primary' sx={{ marginRight: 1 }} />
+          <Typography component="span">Bowel Movement</Typography>
+          <Chip label="2" color="warning" size="small" sx={{ marginLeft: 1 }} />
         </AccordionSummary>
         <AccordionDetails>
           <TableContainer component={Paper} sx={{ marginRight: 1 }}>
@@ -325,7 +325,7 @@ const Summary: React.FC = () => {
           </TableContainer>          
         </AccordionDetails>
         <AccordionActions>
-          <Button variant="contained" size="small">Record Nappy</Button>
+          <Button variant="contained" size="small">Record Bowel Movement</Button>
         </AccordionActions>
       </Accordion>
       <Accordion>
