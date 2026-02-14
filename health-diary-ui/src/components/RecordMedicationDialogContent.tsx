@@ -32,7 +32,8 @@ const medications = {
   ],
   '7pm' : [
     'Menograine - 4 tablets',
-    'Urbanol - 5mg'
+    'Urbanol - 5mg',
+    'Allecet - 5ml'
   ],
   '10pm' : [
     'Epilim - 4ml',

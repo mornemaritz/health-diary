@@ -58,7 +58,7 @@ export const RecordBottleDialog = ({ onRecordBottle, ...dialogProps }: RecordBot
             margin="dense"
             id="bottleSize"
             name="bottleSize"
-            label="Bottle Size (ml)"
+            label="Amount Consumed (ml)"
             type="number"
             fullWidth
             variant="standard"
