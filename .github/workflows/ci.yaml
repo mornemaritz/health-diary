@@ -51,6 +51,7 @@ jobs:
       with:
         token: ${{ github.token }}
         branch: main
+        noVersionBumpBehavior: warn
 
     - name: write version to package.json and k8s manifest
       run: |
