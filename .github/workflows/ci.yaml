@@ -79,6 +79,7 @@ jobs:
         token: ${{ github.token }}
         tag: ${{ steps.semver.outputs.next }}
         changelogFilePath: ./health-diary-ui/CHANGELOG.md
+        excludeTypes: chore,docs,doc,perf
 
     - name: Create Release
       uses: ncipollo/release-action@v1.12.0
