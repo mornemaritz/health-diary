@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semver.outputs.next }}
+      old-version: ${{ steps.semver.outputs.current }}
     
     steps:
     - uses: actions/checkout@v5
@@ -54,6 +55,7 @@ jobs:
         noVersionBumpBehavior: warn
 
     - name: write version to package.json and k8s manifest
+      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
       run: |
         cd ./health-diary-ui
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
@@ -66,6 +68,7 @@ jobs:
         git tag ${{ steps.semver.outputs.next }}
 
     - name: Push Changes and Tags
+      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
       uses: ad-m/github-push-action@v0.6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -82,6 +85,7 @@ jobs:
         excludeTypes: chore,docs,doc,perf
 
     - name: Create Release
+      if: steps.semver.outputs.next != steps.semver.outputs.current
       uses: ncipollo/release-action@v1.12.0
       with:
         allowUpdates: true
@@ -93,6 +97,7 @@ jobs:
         token: ${{ github.token }}
 
     - name: Commit CHANGELOG.md
+      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         branch: main
@@ -102,7 +107,7 @@ jobs:
   docker:
     needs: build-test-tag
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.version != needs.build-test-tag.outputs.old-version
 
     steps:
     - uses: actions/checkout@v5
@@ -133,7 +138,7 @@ jobs:
   deploy:
     needs: [docker, build-test-tag]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.version != needs.build-test-tag.outputs.old-version
 
     steps:
     - name: Checkout rendered gitops repository
