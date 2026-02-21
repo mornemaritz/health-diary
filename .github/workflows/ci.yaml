@@ -55,7 +55,7 @@ jobs:
         noVersionBumpBehavior: warn
 
     - name: write version to package.json and k8s manifest
-      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
+      if: steps.semver.outputs.next != steps.semver.outputs.current
       run: |
         cd ./health-diary-ui
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
