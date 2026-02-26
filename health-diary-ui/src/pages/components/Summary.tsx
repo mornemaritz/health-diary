@@ -7,7 +7,7 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import MedicationIcon from '@mui/icons-material/Medication';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { ChevronLeft as PrevIcon, ChevronRight as NextIcon, Today as TodayIcon } from "@mui/icons-material";
-import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useCallback, useState, useEffect } from "react";
@@ -34,7 +34,6 @@ function formatTimeDisplay(timeStr: string | undefined): string {
 const Summary: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [selectedDate, setSelectedDate] = useState(moment());
-  const [currentTime, setCurrentTime] = useState(moment());
   const [summary, setSummary] = useState<DailySummaryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -222,25 +221,6 @@ const Summary: React.FC = () => {
     <Box>
       <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
-          {/* Date Navigation */}
-          <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'center', alignItems: 'center' }}>
-            <Button startIcon={<PrevIcon />} onClick={goToPreviousDay} variant="outlined" size="small">
-              Previous
-            </Button>
-            <Typography sx={{ minWidth: '200px', textAlign: 'center', fontWeight: 600 }}>
-              {selectedDate.format('dddd, MMMM Do YYYY')}
-            </Typography>
-            <Button endIcon={<NextIcon />} onClick={goToNextDay} variant="outlined" size="small">
-              Next
-            </Button>
-          </Stack>
-
-          {/* Today Button */}
-          <Stack sx={{ mb: 3, justifyContent: 'center' }}>
-            <Button startIcon={<TodayIcon />} onClick={goToToday} variant="contained" size="small" sx={{ mx: 'auto' }}>
-              Today
-            </Button>
-          </Stack>
 
           {/* Error State */}
           {error && (
@@ -270,18 +250,28 @@ const Summary: React.FC = () => {
                 mb: 3
               }}
             >
-              <DatePicker
-                label={selectedDate.format('dddd')}
-                value={selectedDate}
-                onChange={(newValue) => setSelectedDate(newValue || moment())}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-              <TimePicker
-                label="Time"
-                value={currentTime}
-                onChange={(newValue) => setCurrentTime(newValue || moment())}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
+          {/* Date Navigation */}
+          <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'center', alignItems: 'center' }}>
+            <Button startIcon={<PrevIcon />} onClick={goToPreviousDay} variant="outlined" size="small">
+              Prev
+            </Button>
+            <DatePicker
+              label={selectedDate.format('dddd')}
+              value={selectedDate}
+              onChange={(newValue) => setSelectedDate(newValue || moment())}
+              slotProps={{ textField: { fullWidth: false } }}
+            />
+            <Button endIcon={<NextIcon />} onClick={goToNextDay} variant="outlined" size="small">
+              Next
+            </Button>
+          </Stack>
+
+          {/* Today Button */}
+          <Stack sx={{ mb: 3, justifyContent: 'center' }}>
+            <Button startIcon={<TodayIcon />} onClick={goToToday} variant="contained" size="small" sx={{ mx: 'auto' }}>
+              Today
+            </Button>
+          </Stack>
               <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
               <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>
                 {selectedDate.isSame(moment(), 'day') ? 'Not set' : 'N/A'}
