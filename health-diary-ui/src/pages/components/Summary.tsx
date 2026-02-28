@@ -242,40 +242,61 @@ const Summary: React.FC = () => {
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
-                  xs: '1fr 1fr',
+                  xs: '1fr',
                   md: '1fr 1fr 1fr 1fr'
                 },
                 gap: 2,
                 alignItems: 'center',
-                mb: 3
               }}
             >
-          {/* Date Navigation */}
-          <Stack direction="row" spacing={2} sx={{ mb: 3, justifyContent: 'center', alignItems: 'center' }}>
-            <Button startIcon={<PrevIcon />} onClick={goToPreviousDay} variant="outlined" size="small">
-              Prev
-            </Button>
-            <DatePicker
-              label={selectedDate.format('dddd')}
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue || moment())}
-              slotProps={{ textField: { fullWidth: false } }}
-            />
-            <Button endIcon={<NextIcon />} onClick={goToNextDay} variant="outlined" size="small">
-              Next
-            </Button>
-          </Stack>
+              {/* Date Navigation */}
+              <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Button 
+                  onClick={goToPreviousDay} 
+                  variant="outlined" 
+                  size="small"
+                  sx={{ minWidth: '40px', p: '6px' }}
+                >
+                  <PrevIcon />
+                </Button>
+                <DatePicker
+                  label={selectedDate.format('dddd')}
+                  value={selectedDate}
+                  onChange={(newValue) => setSelectedDate(newValue || moment())}
+                  slotProps={{ 
+                    textField: { 
+                      size: 'small',
+                      sx: { 
+                        width: '145px',
+                        '& .MuiOutlinedInput-input': {
+                          padding: '8px 8px'
+                        }
+                      }
+                    } 
+                  }}
+                />
+                <Button 
+                  onClick={goToNextDay} 
+                  variant="outlined" 
+                  size="small"
+                  sx={{ minWidth: '40px', p: '6px' }}
+                >
+                  <NextIcon />
+                </Button>
+              </Stack>
 
-          {/* Today Button */}
-          <Stack sx={{ mb: 3, justifyContent: 'center' }}>
-            <Button startIcon={<TodayIcon />} onClick={goToToday} variant="contained" size="small" sx={{ mx: 'auto' }}>
-              Today
-            </Button>
-          </Stack>
-              <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
-              <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>
-                {selectedDate.isSame(moment(), 'day') ? 'Not set' : 'N/A'}
-              </Typography>
+              {/* Today Button */}
+              <Stack sx={{  justifyContent: 'center' }}>
+                <Button startIcon={<TodayIcon />} onClick={goToToday} variant="contained" size="small" sx={{ mx: 'auto' }}>
+                  Today
+                </Button>
+              </Stack>
+              <Stack direction="row" sx={{  justifyContent: 'center' }}>
+                <Typography sx={{ px: 1, textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
+                <Typography sx={{ px: 1, textAlign: { xs: 'left', md: 'center' } }}>
+                  {selectedDate.isSame(moment(), 'day') ? 'Not set' : 'N/A'}
+                </Typography>
+              </Stack>
             </Box>
           )}
         </LocalizationProvider>
@@ -292,7 +313,7 @@ const Summary: React.FC = () => {
               id="bottles-panel-header"
             >
               <LocalDrinkIcon color='primary' sx={{ marginRight: 1 }} />
-              <Typography component="span">Hydration</Typography>
+              <Typography component="span">Bottles</Typography>
               {summary?.hydration && summary.hydration.length > 0 && (
                 <Chip 
                   label={`${getBottleCount()} (${getTotalBottleQuantity()}ml)`} 
