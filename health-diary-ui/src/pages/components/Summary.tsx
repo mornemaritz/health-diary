@@ -15,6 +15,7 @@ import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell"
 import { RecordBottleDialog } from "../../components/RecordBottleDialog";
 import { RecordMedicationDialogContent, type MedicationRecord } from "../../components/RecordMedicationDialogContent";
 import { RecordDialog } from "../../components/RecordDialog";
+import { solidAuth } from "../../services/solid-auth.service";
 
 interface BottleRecord {
   time: string;
@@ -376,6 +377,10 @@ const Summary: React.FC = () => {
           Had a good night! Slept through until 5am. Asked for mommy from then on. Had 3 bottles
         </AccordionDetails>
       </Accordion>
+          <Button variant="contained" onClick={solidAuth.logout}>
+        Logout
+      </Button>
+
     </Box>
   );
 };
