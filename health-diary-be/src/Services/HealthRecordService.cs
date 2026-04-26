@@ -23,7 +23,7 @@ public interface IHealthRecordService
   Task<List<SolidFoodConsumption>> GetSolidFoodIntakesByDateAsync(DateOnly date);
   Task<List<Observation>> GetObservationsByDateAsync(DateOnly date);
 
-  Task<DailySummary> GetDailySummaryAsync(DateOnly date);
+  Task<DailySummary> GetDailySummaryAsync(DatePlusTime datePlusTime);
 }
 
 public class HealthRecordService : IHealthRecordService
@@ -139,13 +139,13 @@ public class HealthRecordService : IHealthRecordService
         .ToListAsync();
   }
 
-  public async Task<DailySummary> GetDailySummaryAsync(DateOnly date)
+  public async Task<DailySummary> GetDailySummaryAsync(DatePlusTime datePlusTime)
   {
-    var medications = await GetMedicationAdministrationsByDateAsync(date);
-    var bottles = await GetBottleConsumptionsByDateAsync(date);
-    var bowelMovements = await GetBowelMovementsByDateAsync(date);
-    var solidFoods = await GetSolidFoodIntakesByDateAsync(date);
-    var notes = await GetObservationsByDateAsync(date);
+    var medications = await GetMedicationAdministrationsByDateAsync(datePlusTime.Date);
+    var bottles = await GetBottleConsumptionsByDateAsync(datePlusTime.Date);
+    var bowelMovements = await GetBowelMovementsByDateAsync(datePlusTime.Date);
+    var solidFoods = await GetSolidFoodIntakesByDateAsync(datePlusTime.Date);
+    var notes = await GetObservationsByDateAsync(datePlusTime.Date);
 
     var allRecords = new List<HealthRecordDto>();
     allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication", Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" }));
@@ -156,7 +156,7 @@ public class HealthRecordService : IHealthRecordService
 
     return new DailySummary
     {
-      Date = date,
+      Date = datePlusTime.Date,
       Data = [.. allRecords.OrderBy(r => r.Time)]
     };
   }

@@ -372,14 +372,16 @@ app.MapGet("/api/health/medications/dosage-groups/schedule/{schedule}", async (s
 /// </summary>
 app.MapGet("/api/health/summary/{date}", async (string date, IHealthRecordService service) =>
 {
-    if (!DateOnly.TryParse(date, out var parsedDate))
+    if (!DateTime.TryParse(date, out var parsedDateTime))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
             Message = "Invalid date format. Use yyyy-MM-dd." 
         });
 
-    var summary = await service.GetDailySummaryAsync(parsedDate);
+    var dateAndTime = new DatePlusTime(parsedDateTime);
+
+    var summary = await service.GetDailySummaryAsync(dateAndTime);
     return Results.Ok(summary);
 })
 .WithName("GetSummaryByDate")
