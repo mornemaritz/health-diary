@@ -6,7 +6,15 @@ namespace HealthDiary.Api.Models;
 public record DailySummary
 {
     public DateOnly Date { get; set; }
+    public HealthEntrySet[] HealthEntrySets = [];
     public List<HealthRecordDto> Data { get; set; } = [];
+}
+
+public record HealthEntrySet
+{
+  public string RecordType { get; set; } = string.Empty;
+  public Highlight[] Highlights { get; set; } = [];
+  public List<HealthRecordDto> Records { get; set; } = [];
 }
 
 /// <summary>
@@ -19,6 +27,12 @@ public record HealthRecordDto
     public TimeOnly Time { get; set; }
     public string RecordType { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
+}
+
+public record Highlight
+{
+    public string Label { get; set; } = string.Empty;
+    public string Status { get; set; } = "success";
 }
 
 /// <summary>

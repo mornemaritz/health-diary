@@ -147,6 +147,11 @@ public class HealthRecordService : IHealthRecordService
     var solidFoods = await GetSolidFoodIntakesByDateAsync(datePlusTime.Date);
     var notes = await GetObservationsByDateAsync(datePlusTime.Date);
 
+    var healthEntrySets = new List<HealthEntrySet>
+    {
+      MedicationAdministration.EntrySet(medications, datePlusTime)
+    };
+
     var allRecords = new List<HealthRecordDto>();
     allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication", Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" }));
     allRecords.AddRange(bottles.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "Bottle", Summary = $"{b.BottleSize}ml" }));

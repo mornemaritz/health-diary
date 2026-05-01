@@ -58,6 +58,11 @@ public record MedicationAdministration : HealthRecord
   public required string Medication { get; set; }
   public required string Dosage { get; set; }
   public required MedicationSchedule Schedule { get; set; }
+
+  public static HealthEntrySet EntrySet(List<MedicationAdministration> medications, DatePlusTime datePlusTime)
+  {
+    throw new NotImplementedException();
+  }
 }
 
 /// <summary>
