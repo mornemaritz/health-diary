@@ -149,20 +149,17 @@ public class HealthRecordService : IHealthRecordService
 
     var healthEntrySets = new List<HealthEntrySet>
     {
-      MedicationAdministration.EntrySet(medications, datePlusTime)
+      MedicationAdministration.EntrySet(medications, datePlusTime),
+      BottleConsumption.EntrySet(bottles, datePlusTime),
+      BowelMovement.EntrySet(bowelMovements, datePlusTime),
+      SolidFoodConsumption.EntrySet(solidFoods, datePlusTime),
+      Observation.EntrySet(notes, datePlusTime)
     };
-
-    var allRecords = new List<HealthRecordDto>();
-    allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication", Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" }));
-    allRecords.AddRange(bottles.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "Bottle", Summary = $"{b.BottleSize}ml" }));
-    allRecords.AddRange(bowelMovements.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "BowelMovement", Summary = $"{b.Size} {b.Color} {b.Consistency}" }));
-    allRecords.AddRange(solidFoods.Select(s => new HealthRecordDto { Id = s.Id, Date = s.Date, Time = s.Time, RecordType = "SolidFood", Summary = $"{s.Size} - {s.Item} {s.Notes}" }));
-    allRecords.AddRange(notes.Select(n => new HealthRecordDto { Id = n.Id, Date = n.Date, Time = n.Time, RecordType = "Note", Summary = n.Note }));
 
     return new DailySummary
     {
       Date = datePlusTime.Date,
-      Data = [.. allRecords.OrderBy(r => r.Time)]
+      HealthEntrySets = [.. healthEntrySets]
     };
   }
 

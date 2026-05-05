@@ -6,8 +6,7 @@ namespace HealthDiary.Api.Models;
 public record DailySummary
 {
     public DateOnly Date { get; set; }
-    public HealthEntrySet[] HealthEntrySets = [];
-    public List<HealthRecordDto> Data { get; set; } = [];
+    public HealthEntrySet[] HealthEntrySets { get; set; } = [];
 }
 
 public record HealthEntrySet

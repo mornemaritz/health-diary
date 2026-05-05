@@ -757,10 +757,41 @@ components:
         date:
           type: string
           format: date
+        healthEntrySets:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthEntrySet'
         data:
           type: array
           items:
             $ref: '#/components/schemas/HealthRecord'
+
+    HealthEntrySet:
+      type: object
+      properties:
+        recordType:
+          type: string
+          description: The type of health record (e.g., MedicationAdministration)
+        highlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Highlight'
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthRecord'
+
+    Highlight:
+      type: object
+      properties:
+        label:
+          type: string
+          description: The label for the highlight (e.g., SevenAm, ThreePm)
+        status:
+          type: string
+          enum: [success, warning, error, neutral]
+          default: success
+          description: Status indicator for the highlight
 
     HealthRecord:
       type: object

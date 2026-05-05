@@ -61,7 +61,104 @@ public record MedicationAdministration : HealthRecord
 
   public static HealthEntrySet EntrySet(List<MedicationAdministration> medications, DatePlusTime datePlusTime)
   {
-    throw new NotImplementedException();
+    // If date is in the future, return empty sets
+    if (datePlusTime.DateTime > DateTime.Now)
+    {
+      return new HealthEntrySet
+      {
+        RecordType = nameof(MedicationAdministration),
+        Highlights = [],
+        Records = []
+      };
+    }
+
+    // Transform medications to HealthRecordDto
+    var records = medications.Select(m => new HealthRecordDto 
+    { 
+      Id = m.Id, 
+      Date = m.Date, 
+      Time = m.Time, 
+      RecordType = "Medication", 
+      Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" 
+    }).ToList();
+
+    // Create highlights for each non-AdHoc schedule
+    var schedules = new[] 
+    { 
+      MedicationSchedule.SevenAm, 
+      MedicationSchedule.ThreePm, 
+      MedicationSchedule.SevenPm, 
+      MedicationSchedule.TenPm 
+    };
+
+    var highlights = new List<Highlight>();
+    var isCurrent = datePlusTime.DateTime.Date == DateTime.Now.Date;
+    var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+
+    foreach (var schedule in schedules)
+    {
+      var scheduleTime = GetScheduleTime(schedule);
+      var scheduleMeds = medications.Where(m => m.Schedule == schedule).ToList();
+      var status = DetermineStatus(isCurrent, currentTime, scheduleTime, scheduleMeds);
+
+      highlights.Add(new Highlight
+      {
+        Label = schedule.ToString(),
+        Status = status
+      });
+    }
+
+    return new HealthEntrySet
+    {
+      RecordType = nameof(MedicationAdministration),
+      Highlights = [.. highlights],
+      Records = records
+    };
+  }
+
+  private static TimeOnly GetScheduleTime(MedicationSchedule schedule)
+  {
+    return schedule switch
+    {
+      MedicationSchedule.SevenAm => new TimeOnly(7, 0),
+      MedicationSchedule.ThreePm => new TimeOnly(15, 0),
+      MedicationSchedule.SevenPm => new TimeOnly(19, 0),
+      MedicationSchedule.TenPm => new TimeOnly(22, 0),
+      _ => throw new ArgumentException($"Invalid schedule: {schedule}")
+    };
+  }
+
+  private static string DetermineStatus(bool isCurrent, TimeOnly currentTime, TimeOnly scheduleTime, List<MedicationAdministration> scheduleMeds)
+  {
+    if (isCurrent)
+    {
+      // Current day logic
+      if (currentTime < scheduleTime)
+      {
+        return "neutral";
+      }
+      
+      return scheduleMeds.Any() ? "success" : "warning";
+    }
+    else
+    {
+      // Historical day logic
+      if (!scheduleMeds.Any())
+      {
+        return "error";
+      }
+
+      // Check if any medication is within 1 hour of schedule time
+      var hasWithinHour = scheduleMeds.Any(m => 
+      {
+        var diff = m.Time > scheduleTime 
+          ? m.Time - scheduleTime 
+          : scheduleTime - m.Time;
+        return diff.TotalHours <= 1.0;
+      });
+
+      return hasWithinHour ? "success" : "warning";
+    }
   }
 }
 
@@ -105,6 +202,26 @@ public record BottleConsumption : HealthRecord
 {
   [JsonPropertyName("quantity")]
   public int BottleSize { get; set; }
+  public static HealthEntrySet EntrySet(List<BottleConsumption> bottles, DatePlusTime datePlusTime)
+  {
+    // Transform bottles to HealthRecordDto
+    var records = bottles.Select(b => new HealthRecordDto 
+    { 
+      Id = b.Id, 
+      Date = b.Date, 
+      Time = b.Time, 
+      RecordType = "Bottle", 
+      Summary = $"{b.BottleSize}ml" 
+    }).ToList();
+
+    return new HealthEntrySet
+    {
+      RecordType = nameof(BottleConsumption),
+      Highlights = [],
+      Records = records
+    };
+    
+  }
 }
 
 /// <summary>
@@ -115,6 +232,26 @@ public record BowelMovement : HealthRecord
   public required string Size { get; set; }
   public required string Consistency { get; set; }
   public required string Color { get; set; }
+  public static HealthEntrySet EntrySet(List<BowelMovement> bowelMovements, DatePlusTime datePlusTime)
+  {
+    // Transform bowel movements to HealthRecordDto
+    var records = bowelMovements.Select(b => new HealthRecordDto 
+    { 
+      Id = b.Id, 
+      Date = b.Date, 
+      Time = b.Time, 
+      RecordType = "BowelMovement", 
+      Summary = $"{b.Size} {b.Color} {b.Consistency}" 
+    }).ToList();
+
+    return new HealthEntrySet
+    {
+      RecordType = nameof(BowelMovement),
+      Highlights = [],
+      Records = records
+    };
+    
+  }
 }
 
 /// <summary>
@@ -125,6 +262,26 @@ public record SolidFoodConsumption : HealthRecord
   public required string Item { get; set; }
   public required string Size { get; set; }
   public string? Notes { get; set; }
+  public static HealthEntrySet EntrySet(List<SolidFoodConsumption> solidFoods, DatePlusTime datePlusTime)
+  {
+    // Transform solid foods to HealthRecordDto
+    var records = solidFoods.Select(s => new HealthRecordDto 
+    { 
+      Id = s.Id, 
+      Date = s.Date, 
+      Time = s.Time, 
+      RecordType = "SolidFood", 
+      Summary = $"{s.Size} - {s.Item} {s.Notes}" 
+    }).ToList();
+
+    return new HealthEntrySet
+    {
+      RecordType = nameof(SolidFoodConsumption),
+      Highlights = [],
+      Records = records
+    };
+    
+  }
 }
 
 /// <summary>
@@ -134,4 +291,23 @@ public record Observation : HealthRecord
 {
   [JsonPropertyName("note")]
   public required string Note { get; set; }
+  public static HealthEntrySet EntrySet(List<Observation> observations, DatePlusTime datePlusTime)
+  {
+    // Transform observations to HealthRecordDto
+    var records = observations.Select(o => new HealthRecordDto 
+    { 
+      Id = o.Id, 
+      Date = o.Date, 
+      Time = o.Time, 
+      RecordType = "Observation", 
+      Summary = o.Note
+    }).ToList();
+
+    return new HealthEntrySet
+    {
+      RecordType = nameof(Observation),
+      Highlights = [],
+      Records = records
+    };
+  }
 }
