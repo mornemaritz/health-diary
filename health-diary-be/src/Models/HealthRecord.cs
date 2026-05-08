@@ -79,7 +79,7 @@ public record MedicationAdministration : HealthRecord
       Date = m.Date, 
       Time = m.Time, 
       RecordType = "Medication", 
-      Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" 
+      Summary = $"{m.Medication} - {m.Dosage} ({GetShortSchedule(m.Schedule)})" 
     }).ToList();
 
     // Create highlights for each non-AdHoc schedule
@@ -103,7 +103,7 @@ public record MedicationAdministration : HealthRecord
 
       highlights.Add(new Highlight
       {
-        Label = schedule.ToString(),
+        Label = GetShortSchedule(schedule),
         Status = status
       });
     }
@@ -113,6 +113,18 @@ public record MedicationAdministration : HealthRecord
       RecordType = nameof(MedicationAdministration),
       Highlights = [.. highlights],
       Records = records
+    };
+  }
+
+  private static string GetShortSchedule(MedicationSchedule schedule)
+  {
+    return schedule switch
+    {
+      MedicationSchedule.SevenAm => "7am",
+      MedicationSchedule.ThreePm => "3pm",
+      MedicationSchedule.SevenPm => "7pm",
+      MedicationSchedule.TenPm => "10pm",
+      _ => "AdHoc"
     };
   }
 

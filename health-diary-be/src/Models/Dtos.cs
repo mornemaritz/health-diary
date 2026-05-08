@@ -31,7 +31,7 @@ public record HealthRecordDto
 public record Highlight
 {
     public string Label { get; set; } = string.Empty;
-    public string Status { get; set; } = "success";
+    public string Status { get; set; } = "default";
 }
 
 /// <summary>

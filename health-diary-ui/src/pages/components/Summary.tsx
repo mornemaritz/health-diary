@@ -16,7 +16,7 @@ import { VerticallyBorderedCell } from "../../components/VerticallyBorderedCell"
 import { RecordBottleDialog } from "../../components/RecordBottleDialog";
 import { RecordMedicationDialogContent, type MedicationRecord } from "../../components/RecordMedicationDialogContent";
 import { RecordDialog } from "../../components/RecordDialog";
-import { getDailySummary, createHydration, createMedication, convertScheduleToApiFormat, type DailySummaryResponse } from "../../services/healthRecordService";
+import { getDailySummary, createHydration, createMedication, convertScheduleToApiFormat, type DailySummaryResponse, type HealthEntrySet } from "../../services/healthRecordService";
 import { useAuth } from "../../hooks/useAuth";
 
 /**
@@ -177,17 +177,40 @@ const Summary: React.FC = () => {
   }, []);
 
   /**
+   * Helper function to find an entry set by record type
+   */
+  const getEntrySet = (recordType: string): HealthEntrySet | undefined => {
+    return summary?.healthEntrySets?.find(set => set.recordType === recordType);
+  };
+
+  /**
+   * Map status from API to MUI chip color
+   */
+  const getChipColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+    const statusMap: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+      'success': 'success',
+      'warning': 'warning',
+      'error': 'error',
+      'info': 'info',
+      'primary': 'primary',
+      'secondary': 'secondary',
+    };
+    return statusMap[status.toLowerCase()] || 'default';
+  };
+
+  /**
    * Group medications by time for chips display
    */
   const getMedicationTimeChips = (): Array<{ time: string; color: 'success' | 'primary' }> => {
-    if (!summary?.medications || summary.medications.length === 0) {
+    const medicationSet = getEntrySet('Medication');
+    if (!medicationSet || medicationSet.records.length === 0) {
       return [];
     }
 
     const times = new Set<string>();
-    summary.medications.forEach((med) => {
-      if (med.time) {
-        const timeDisplay = formatTimeDisplay(med.time);
+    medicationSet.records.forEach((record) => {
+      if (record.time) {
+        const timeDisplay = formatTimeDisplay(record.time);
         times.add(timeDisplay);
       }
     });
@@ -202,19 +225,24 @@ const Summary: React.FC = () => {
    * Count bowel movements and get total quantity of bottles
    */
   const getBowelMovementCount = (): number => {
-    return summary?.bowelMovements?.length || 0;
+    const bowelSet = getEntrySet('BowelMovement');
+    return bowelSet?.records?.length || 0;
   };
 
   const getTotalBottleQuantity = (): number => {
-    return (
-      summary?.hydration?.reduce((total, record) => {
-        return total + (record.quantity || 0);
-      }, 0) || 0
-    );
+    const bottleSet = getEntrySet('Bottle');
+    if (!bottleSet) return 0;
+    
+    return bottleSet.records.reduce((total, record) => {
+      const match = record.summary.match(/(\d+)ml/);
+      const quantity = match ? parseInt(match[1], 10) : 0;
+      return total + quantity;
+    }, 0);
   };
 
   const getBottleCount = (): number => {
-    return summary?.hydration?.length || 0;
+    const bottleSet = getEntrySet('Bottle');
+    return bottleSet?.records?.length || 0;
   };
 
   return (
@@ -314,42 +342,61 @@ const Summary: React.FC = () => {
             >
               <LocalDrinkIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Bottles</Typography>
-              {summary?.hydration && summary.hydration.length > 0 && (
-                <Chip 
-                  label={`${getBottleCount()} (${getTotalBottleQuantity()}ml)`} 
-                  color="primary" 
-                  size="small" 
-                  sx={{ marginLeft: 1 }} 
-                />
-              )}
+              {(() => {
+                const bottleSet = getEntrySet('Bottle');
+                return (
+                  <>
+                    {bottleSet && bottleSet.records.length > 0 && (
+                      <Chip 
+                        label={`${getBottleCount()} (${getTotalBottleQuantity()}ml)`} 
+                        color="primary" 
+                        size="small" 
+                        sx={{ marginLeft: 1 }} 
+                      />
+                    )}
+                    {bottleSet?.highlights?.map((highlight, idx) => (
+                      <Chip 
+                        key={idx}
+                        label={highlight.label} 
+                        color={getChipColor(highlight.status)} 
+                        size="small" 
+                        sx={{ marginLeft: 1 }} 
+                      />
+                    ))}
+                  </>
+                );
+              })()}
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.hydration && summary.hydration.length > 0 ? (
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
-                    <AccentedTableHead>
-                      <TableRow>
-                        <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                        <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                      </TableRow>
-                    </AccentedTableHead>
-                    <TableBody>
-                      {summary.hydration.map((row) => (
-                        <TableRow key={row.id}>
-                          <VerticallyBorderedCell component="th" scope="row">
-                            {formatTimeDisplay(row.time)}
-                          </VerticallyBorderedCell>
-                          <VerticallyBorderedCell>{row.quantity || 0}ml</VerticallyBorderedCell>
+              {(() => {
+                const bottleSet = getEntrySet('Bottle');
+                return bottleSet && bottleSet.records.length > 0 ? (
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No hydration records for this date
-                </Typography>
-              )}
+                      </AccentedTableHead>
+                      <TableBody>
+                        {bottleSet.records.map((record) => (
+                          <TableRow key={record.id}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {formatTimeDisplay(record.time)}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{record.summary}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No hydration records for this date
+                  </Typography>
+                );
+              })()}
             </AccordionDetails>
             <RecordBottleDialog open={bottleRecordDialogOpen} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
             <AccordionActions>
@@ -367,38 +414,56 @@ const Summary: React.FC = () => {
               <MedicationIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span" sx={{ marginRight: 1 }}>Medication</Typography>
               <Stack direction="row" spacing={1}>
-                {getMedicationTimeChips().map((chip, idx) => (
-                  <Chip key={idx} label={chip.time} size="small" color={chip.color} />
-                ))}
+                {(() => {
+                  const medicationSet = getEntrySet('MedicationAdministration');
+                  return (
+                    <>
+                      {getMedicationTimeChips().map((chip, idx) => (
+                        <Chip key={idx} label={chip.time} size="small" color={chip.color} />
+                      ))}
+                      {medicationSet?.highlights?.map((highlight, idx) => (
+                        <Chip 
+                          key={`highlight-${idx}`}
+                          label={highlight.label} 
+                          color={getChipColor(highlight.status)} 
+                          size="small" 
+                        />
+                      ))}
+                    </>
+                  );
+                })()}
               </Stack>
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.medications && summary.medications.length > 0 ? (
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
-                    <AccentedTableHead>
-                      <TableRow>
-                        <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                        <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                      </TableRow>
-                    </AccentedTableHead>
-                    <TableBody>
-                      {summary.medications.map((row) => (
-                        <TableRow key={row.id}>
-                          <VerticallyBorderedCell component="th" scope="row">
-                            {formatTimeDisplay(row.time)}
-                          </VerticallyBorderedCell>
-                          <VerticallyBorderedCell>{`${row.dosage || ''} ${row.medication || 'N/A'}`.trim()}</VerticallyBorderedCell>
+              {(() => {
+                const medicationSet = getEntrySet('MedicationAdministration');
+                return medicationSet && medicationSet.records.length > 0 ? (
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No medication records for this date
-                </Typography>
-              )}
+                      </AccentedTableHead>
+                      <TableBody>
+                        {medicationSet.records.map((record) => (
+                          <TableRow key={record.id}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {formatTimeDisplay(record.time)}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{record.summary}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No medication records for this date
+                  </Typography>
+                );
+              })()}
             </AccordionDetails>
             <AccordionActions>
               <RecordDialog<MedicationRecord[]>
@@ -422,37 +487,56 @@ const Summary: React.FC = () => {
             >
               <RestaurantIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Food</Typography>
-              {summary?.food && summary.food.length > 0 && (
-                <Chip label={summary.food.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
-              )}
+              {(() => {
+                const foodSet = getEntrySet('SolidFood');
+                return (
+                  <>
+                    {foodSet && foodSet.records.length > 0 && (
+                      <Chip label={foodSet.records.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
+                    )}
+                    {foodSet?.highlights?.map((highlight, idx) => (
+                      <Chip 
+                        key={idx}
+                        label={highlight.label} 
+                        color={getChipColor(highlight.status)} 
+                        size="small" 
+                        sx={{ marginLeft: 1 }} 
+                      />
+                    ))}
+                  </>
+                );
+              })()}
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.food && summary.food.length > 0 ? (
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 100 }} size="small" aria-label="food table">
-                    <AccentedTableHead>
-                      <TableRow>
-                        <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                        <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                      </TableRow>
-                    </AccentedTableHead>
-                    <TableBody>
-                      {summary.food.map((row) => (
-                        <TableRow key={row.id}>
-                          <VerticallyBorderedCell component="th" scope="row">
-                            {formatTimeDisplay(row.time)}
-                          </VerticallyBorderedCell>
-                          <VerticallyBorderedCell>{`${row.food || 'N/A'}${row.quantity ? ` (${row.quantity})` : ''}`.trim()}</VerticallyBorderedCell>
+              {(() => {
+                const foodSet = getEntrySet('SolidFood');
+                return foodSet && foodSet.records.length > 0 ? (
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="food table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No food records for this date
-                </Typography>
-              )}
+                      </AccentedTableHead>
+                      <TableBody>
+                        {foodSet.records.map((record) => (
+                          <TableRow key={record.id}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {formatTimeDisplay(record.time)}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{record.summary}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No food records for this date
+                  </Typography>
+                );
+              })()}
             </AccordionDetails>
             <AccordionActions>
               <Button variant="contained" size="small">Record Food</Button>
@@ -468,37 +552,56 @@ const Summary: React.FC = () => {
             >
               <BabyChangingStationIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Bowel Movements</Typography>
-              {getBowelMovementCount() > 0 && (
-                <Chip label={`${getBowelMovementCount()}`} color="success" size="small" sx={{ marginLeft: 1 }} />
-              )}
+              {(() => {
+                const bowelSet = getEntrySet('BowelMovement');
+                return (
+                  <>
+                    {getBowelMovementCount() > 0 && (
+                      <Chip label={`${getBowelMovementCount()}`} color="success" size="small" sx={{ marginLeft: 1 }} />
+                    )}
+                    {bowelSet?.highlights?.map((highlight, idx) => (
+                      <Chip 
+                        key={idx}
+                        label={highlight.label} 
+                        color={getChipColor(highlight.status)} 
+                        size="small" 
+                        sx={{ marginLeft: 1 }} 
+                      />
+                    ))}
+                  </>
+                );
+              })()}
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.bowelMovements && summary.bowelMovements.length > 0 ? (
-                <TableContainer component={Paper} sx={{ marginRight: 1 }}>
-                  <Table sx={{ minWidth: 100 }} size="small" aria-label="bowel movement table">
-                    <AccentedTableHead>
-                      <TableRow>
-                        <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                        <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                      </TableRow>
-                    </AccentedTableHead>
-                    <TableBody>
-                      {summary.bowelMovements.map((row) => (
-                        <TableRow key={row.id}>
-                          <VerticallyBorderedCell component="th" scope="row">
-                            {formatTimeDisplay(row.time)}
-                          </VerticallyBorderedCell>
-                          <VerticallyBorderedCell>{row.consistency || 'N/A'}</VerticallyBorderedCell>
+              {(() => {
+                const bowelSet = getEntrySet('BowelMovement');
+                return bowelSet && bowelSet.records.length > 0 ? (
+                  <TableContainer component={Paper} sx={{ marginRight: 1 }}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="bowel movement table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No bowel movement records for this date
-                </Typography>
-              )}
+                      </AccentedTableHead>
+                      <TableBody>
+                        {bowelSet.records.map((record) => (
+                          <TableRow key={record.id}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {formatTimeDisplay(record.time)}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{record.summary}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No bowel movement records for this date
+                  </Typography>
+                );
+              })()}
             </AccordionDetails>
             <AccordionActions>
               <Button variant="contained" size="small">Record Bowel Movement</Button>
@@ -514,37 +617,56 @@ const Summary: React.FC = () => {
             >
               <CommentIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Observations</Typography>
-              {summary?.observations && summary.observations.length > 0 && (
-                <Chip label={summary.observations.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
-              )}
+              {(() => {
+                const noteSet = getEntrySet('Note');
+                return (
+                  <>
+                    {noteSet && noteSet.records.length > 0 && (
+                      <Chip label={noteSet.records.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
+                    )}
+                    {noteSet?.highlights?.map((highlight, idx) => (
+                      <Chip 
+                        key={idx}
+                        label={highlight.label} 
+                        color={getChipColor(highlight.status)} 
+                        size="small" 
+                        sx={{ marginLeft: 1 }} 
+                      />
+                    ))}
+                  </>
+                );
+              })()}
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.observations && summary.observations.length > 0 ? (
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 100 }} size="small" aria-label="observations table">
-                    <AccentedTableHead>
-                      <TableRow>
-                        <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                        <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                      </TableRow>
-                    </AccentedTableHead>
-                    <TableBody>
-                      {summary.observations.map((row) => (
-                        <TableRow key={row.id}>
-                          <VerticallyBorderedCell component="th" scope="row">
-                            {formatTimeDisplay(row.time)}
-                          </VerticallyBorderedCell>
-                          <VerticallyBorderedCell>{row.notes || 'N/A'}</VerticallyBorderedCell>
+              {(() => {
+                const noteSet = getEntrySet('Note');
+                return noteSet && noteSet.records.length > 0 ? (
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="observations table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No observation records for this date
-                </Typography>
-              )}
+                      </AccentedTableHead>
+                      <TableBody>
+                        {noteSet.records.map((record) => (
+                          <TableRow key={record.id}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {formatTimeDisplay(record.time)}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{record.summary}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No observation records for this date
+                  </Typography>
+                );
+              })()}
             </AccordionDetails>
             <AccordionActions>
               <Button variant="contained" size="small">Add Note</Button>
@@ -562,7 +684,11 @@ const Summary: React.FC = () => {
               <Typography component="span">How was the night?</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {summary?.observations?.find((o) => o.category === 'sleep')?.notes || 'No sleep notes recorded'}
+              {(() => {
+                const noteSet = getEntrySet('Note');
+                const sleepNote = noteSet?.records?.find((record) => record.summary.toLowerCase().includes('sleep'));
+                return sleepNote?.summary || 'No sleep notes recorded';
+              })()}
             </AccordionDetails>
           </Accordion>
         </>
