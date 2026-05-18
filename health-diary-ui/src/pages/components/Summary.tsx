@@ -32,6 +32,7 @@ function formatTimeDisplay(timeStr: string | undefined): string {
 }
 
 const Summary: React.FC = () => {
+  console.log('Summary component is rendering!');``
   const { isAuthenticated } = useAuth();
   const [selectedDate, setSelectedDate] = useState(moment());
   const [summary, setSummary] = useState<DailySummaryResponse | null>(null);
@@ -52,9 +53,7 @@ const Summary: React.FC = () => {
    * Load daily summary for selected date
    */
   const loadDailySummary = async (date: moment.Moment) => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated)  return;
 
     setIsLoading(true);
     setError(null);
@@ -63,6 +62,7 @@ const Summary: React.FC = () => {
       const dateStr = formatDateForApi(date);
       const result = await getDailySummary(dateStr);
 
+      // Check if result has error property
       if ('error' in result) {
         setError(result.error);
         setSummary(null);
@@ -82,6 +82,7 @@ const Summary: React.FC = () => {
    * Load summary when date changes or authentication state changes
    */
   useEffect(() => {
+    console.log('Selected date changed:', selectedDate.format('YYYY-MM-DD'), 'Is authenticated:', isAuthenticated);
     loadDailySummary(selectedDate);
   }, [selectedDate, isAuthenticated]);
 
@@ -198,53 +199,6 @@ const Summary: React.FC = () => {
     return statusMap[status.toLowerCase()] || 'default';
   };
 
-  /**
-   * Group medications by time for chips display
-   */
-  const getMedicationTimeChips = (): Array<{ time: string; color: 'success' | 'primary' }> => {
-    const medicationSet = getEntrySet('Medication');
-    if (!medicationSet || medicationSet.records.length === 0) {
-      return [];
-    }
-
-    const times = new Set<string>();
-    medicationSet.records.forEach((record) => {
-      if (record.time) {
-        const timeDisplay = formatTimeDisplay(record.time);
-        times.add(timeDisplay);
-      }
-    });
-
-    return Array.from(times).map((time) => ({
-      time,
-      color: time.includes('am') ? 'success' as const : 'primary' as const,
-    }));
-  };
-
-  /**
-   * Count bowel movements and get total quantity of bottles
-   */
-  const getBowelMovementCount = (): number => {
-    const bowelSet = getEntrySet('BowelMovement');
-    return bowelSet?.records?.length || 0;
-  };
-
-  const getTotalBottleQuantity = (): number => {
-    const bottleSet = getEntrySet('Bottle');
-    if (!bottleSet) return 0;
-    
-    return bottleSet.records.reduce((total, record) => {
-      const match = record.summary.match(/(\d+)ml/);
-      const quantity = match ? parseInt(match[1], 10) : 0;
-      return total + quantity;
-    }, 0);
-  };
-
-  const getBottleCount = (): number => {
-    const bottleSet = getEntrySet('Bottle');
-    return bottleSet?.records?.length || 0;
-  };
-
   return (
     <Box>
       <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
@@ -343,17 +297,9 @@ const Summary: React.FC = () => {
               <LocalDrinkIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Bottles</Typography>
               {(() => {
-                const bottleSet = getEntrySet('Bottle');
+                const bottleSet = getEntrySet('BottleConsumption');
                 return (
                   <>
-                    {bottleSet && bottleSet.records.length > 0 && (
-                      <Chip 
-                        label={`${getBottleCount()} (${getTotalBottleQuantity()}ml)`} 
-                        color="primary" 
-                        size="small" 
-                        sx={{ marginLeft: 1 }} 
-                      />
-                    )}
                     {bottleSet?.highlights?.map((highlight, idx) => (
                       <Chip 
                         key={idx}
@@ -369,7 +315,7 @@ const Summary: React.FC = () => {
             </AccordionSummary>
             <AccordionDetails>
               {(() => {
-                const bottleSet = getEntrySet('Bottle');
+                const bottleSet = getEntrySet('BottleConsumption');
                 return bottleSet && bottleSet.records.length > 0 ? (
                   <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
@@ -418,9 +364,6 @@ const Summary: React.FC = () => {
                   const medicationSet = getEntrySet('MedicationAdministration');
                   return (
                     <>
-                      {getMedicationTimeChips().map((chip, idx) => (
-                        <Chip key={idx} label={chip.time} size="small" color={chip.color} />
-                      ))}
                       {medicationSet?.highlights?.map((highlight, idx) => (
                         <Chip 
                           key={`highlight-${idx}`}
@@ -488,12 +431,9 @@ const Summary: React.FC = () => {
               <RestaurantIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Food</Typography>
               {(() => {
-                const foodSet = getEntrySet('SolidFood');
+                const foodSet = getEntrySet('SolidFoodConsumption');
                 return (
                   <>
-                    {foodSet && foodSet.records.length > 0 && (
-                      <Chip label={foodSet.records.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
-                    )}
                     {foodSet?.highlights?.map((highlight, idx) => (
                       <Chip 
                         key={idx}
@@ -509,7 +449,7 @@ const Summary: React.FC = () => {
             </AccordionSummary>
             <AccordionDetails>
               {(() => {
-                const foodSet = getEntrySet('SolidFood');
+                const foodSet = getEntrySet('SolidFoodConsumption');
                 return foodSet && foodSet.records.length > 0 ? (
                   <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 100 }} size="small" aria-label="food table">
@@ -556,9 +496,6 @@ const Summary: React.FC = () => {
                 const bowelSet = getEntrySet('BowelMovement');
                 return (
                   <>
-                    {getBowelMovementCount() > 0 && (
-                      <Chip label={`${getBowelMovementCount()}`} color="success" size="small" sx={{ marginLeft: 1 }} />
-                    )}
                     {bowelSet?.highlights?.map((highlight, idx) => (
                       <Chip 
                         key={idx}
@@ -618,13 +555,10 @@ const Summary: React.FC = () => {
               <CommentIcon color='primary' sx={{ marginRight: 1 }} />
               <Typography component="span">Observations</Typography>
               {(() => {
-                const noteSet = getEntrySet('Note');
+                const observationSet = getEntrySet('Observation');
                 return (
                   <>
-                    {noteSet && noteSet.records.length > 0 && (
-                      <Chip label={noteSet.records.length} color="primary" size="small" sx={{ marginLeft: 1 }} />
-                    )}
-                    {noteSet?.highlights?.map((highlight, idx) => (
+                    {observationSet?.highlights?.map((highlight, idx) => (
                       <Chip 
                         key={idx}
                         label={highlight.label} 
@@ -639,8 +573,8 @@ const Summary: React.FC = () => {
             </AccordionSummary>
             <AccordionDetails>
               {(() => {
-                const noteSet = getEntrySet('Note');
-                return noteSet && noteSet.records.length > 0 ? (
+                const observationSet = getEntrySet('Observation');
+                return observationSet && observationSet.records.length > 0 ? (
                   <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 100 }} size="small" aria-label="observations table">
                       <AccentedTableHead>
@@ -650,7 +584,7 @@ const Summary: React.FC = () => {
                         </TableRow>
                       </AccentedTableHead>
                       <TableBody>
-                        {noteSet.records.map((record) => (
+                        {observationSet.records.map((record) => (
                           <TableRow key={record.id}>
                             <VerticallyBorderedCell component="th" scope="row">
                               {formatTimeDisplay(record.time)}

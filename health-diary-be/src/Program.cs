@@ -387,4 +387,11 @@ app.MapGet("/api/health/summary/{date}", async (string date, IHealthRecordServic
 .WithName("GetSummaryByDate")
 .RequireAuthorization();
 
+/// <summary>
+/// GET: Health check endpoint for container monitoring.
+/// </summary>
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+.WithName("HealthCheck")
+.AllowAnonymous();
+
 app.Run();

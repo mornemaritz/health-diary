@@ -5,7 +5,6 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Home from './layout/components/Home'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
 
 const App: React.FC = () => (
   <AuthProvider>
@@ -23,14 +22,6 @@ const App: React.FC = () => (
               <Home />
             </ProtectedRoute>
           } />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
 
         {/* Catch-all redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
