@@ -21,7 +21,7 @@ public abstract record HealthRecord
 /// <summary>
 /// JSON converter for DateOnly
 /// </summary>
-public class JsonDateOnlyConverter : System.Text.Json.Serialization.JsonConverter<DateOnly>
+public class JsonDateOnlyConverter : JsonConverter<DateOnly>
 {
   public override DateOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
   {
@@ -37,7 +37,7 @@ public class JsonDateOnlyConverter : System.Text.Json.Serialization.JsonConverte
 /// <summary>
 /// JSON converter for TimeOnly
 /// </summary>
-public class JsonTimeOnlyConverter : System.Text.Json.Serialization.JsonConverter<TimeOnly>
+public class JsonTimeOnlyConverter : JsonConverter<TimeOnly>
 {
   public override TimeOnly Read(ref System.Text.Json.Utf8JsonReader reader, Type typeToConvert, System.Text.Json.JsonSerializerOptions options)
   {
@@ -55,8 +55,7 @@ public class JsonTimeOnlyConverter : System.Text.Json.Serialization.JsonConverte
 /// </summary>
 public record MedicationAdministration : HealthRecord
 {
-  public required string Medication { get; set; }
-  public required string Dosage { get; set; }
+  public required MedicationDosage MedicationDosage { get; set; }
   public required MedicationSchedule Schedule { get; set; }
 
   public static HealthEntrySet EntrySet(List<MedicationAdministration> medications, DatePlusTime datePlusTime)
@@ -79,7 +78,7 @@ public record MedicationAdministration : HealthRecord
       Date = m.Date, 
       Time = m.Time, 
       RecordType = "Medication", 
-      Summary = $"{m.Medication} - {m.Dosage} ({GetShortSchedule(m.Schedule)})" 
+      Summary = $"{m.MedicationDosage.Medication} - {m.MedicationDosage.Dosage} ({GetShortSchedule(m.Schedule)})" 
     }).ToList();
 
     // Create highlights for each non-AdHoc schedule
@@ -190,8 +189,7 @@ public record MedicationDosage
 public record MedicationDosageGroup
 {
   public Guid Id { get; set; } = Guid.NewGuid();
-  public required string Medication { get; set; }
-  public required string Dosage { get; set; }
+  public required MedicationDosage MedicationDosage { get; init; }
   public required MedicationSchedule Schedule { get; set; }
 }
 

@@ -49,10 +49,11 @@ public class HealthRecordService : IHealthRecordService
     if (await _context.MedicationAdministrations.AnyAsync(r =>
         r.Date == record.Date
         && r.Time == record.Time
-        && r.Medication == record.Medication
+        && r.MedicationDosage.Medication == record.MedicationDosage.Medication
+        && r.MedicationDosage.Dosage == record.MedicationDosage.Dosage
         && r.Schedule == record.Schedule))
 
-      return (false, $"A medication record already exists for {record.Medication} at this date and time.", null);
+      return (false, $"A medication record already exists for {record.MedicationDosage.Medication} at this date and time.", null);
 
     _context.MedicationAdministrations.Add(record);
     await _context.SaveChangesAsync();
