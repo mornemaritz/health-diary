@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:5000
     description: Local development server
-  - url: https://api.healthdiary.example.com
+  - url: https://health-diary.me
     description: Production server
 
 paths:

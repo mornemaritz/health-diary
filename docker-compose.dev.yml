@@ -15,7 +15,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
+      - health-diary-postgres-data:/var/lib/postgresql/data
+      - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -23,5 +24,5 @@ services:
       retries: 5
 
 volumes:
-  postgres_dev_data:
-    driver: local
+  health-diary-postgres-data:
+    external: true

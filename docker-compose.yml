@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - health-diary-postgres-data:/var/lib/postgresql/data
-      # - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+      - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
     ports:
       - "2345:5432"
     expose:

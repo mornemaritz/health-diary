@@ -69,7 +69,7 @@ export const RecordMedicationDialogContent = ({
     event.preventDefault();
 
     const record = selectedMedications.map(selectedMedication => {
-      var [medication, dosage] = selectedMedication.split(' - ');
+      let [medication, dosage] = selectedMedication.split(' - ');
 
       return { recordTime: recordTime.format('hh:mma'), medication, dosage, schedule };
     })

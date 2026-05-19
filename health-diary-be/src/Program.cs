@@ -115,7 +115,7 @@ app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAut
     // if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var adminId))
     //     return Results.Unauthorized();
 
-    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, Guid.Parse("00000000-0000-0000-0000-000000000001"));
+    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, Guid.Parse("728c5add-34cd-432c-a255-d0aa3c7203dc"));
     return Results.Created($"/api/auth/invite/{inviteLink.Id}", new 
     {
       inviteLink.Id,
