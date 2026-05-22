@@ -44,7 +44,7 @@ A user logs in with their email and password, receives authentication tokens (ac
 
 ### User Story 3 - Record a Medication Administration (Priority: P2)
 
-A user records when medication was taken by entering the date, time, medication name, and dosage. The UI sends this data to the API, which creates the record and returns a confirmation. The medication is added to the health diary.
+The UI retrieves a list of MedicationDosageGroups and associated MedicatinDosages from the API and presents it to a user for selection. A user records when medication was taken by entering the date, time, and selecting a MedicationDosage from the list retrieved from the API. The UI sends this data to the API, which creates the record and returns a confirmation. The medication is added to the health diary.
 
 **Why this priority**: Medication tracking is a core health diary feature. While users can access the app with just login and registration, medication tracking delivers immediate value. It's the first health record type most users will interact with.
 
@@ -52,10 +52,12 @@ A user records when medication was taken by entering the date, time, medication 
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated user accesses the medication recording interface, **When** they enter date, time, medication name, and dosage, **Then** a form validates all required fields are present
-2. **Given** the user submits valid medication data, **When** the API creates the record, **Then** the UI displays a success message and the record appears in the daily summary
-3. **Given** the user submits medication data missing required fields (date or time), **When** they attempt submission, **Then** they see a validation error indicating what's missing
-4. **Given** a medication record is created, **When** the user views the daily summary, **Then** the medication record is displayed with date, time, name, and dosage
+1. **Given** an authenticated user accesses the medication recording interface, **When** the form loads, **Then** the UI retrieves the medication dosage groups from the API and displays them as selection options organized by schedule
+2. **Given** the medication list is loaded, **When** the user selects a schedule time, **Then** the UI displays only medications for that schedule in the format "Medication - Dosage"
+3. **Given** the user selects a medication and enters date and time, **When** they submit the form, **Then** the API validates all required fields are present
+4. **Given** the user submits valid medication data, **When** the API creates the record, **Then** the UI displays a success message and the record appears in the daily summary
+5. **Given** the user submits medication data missing required fields (date or time), **When** they attempt submission, **Then** they see a validation error indicating what's missing
+6. **Given** a medication record is created, **When** the user views the daily summary, **Then** the medication record is displayed with date, time, name, and dosage
 
 ---
 
@@ -193,6 +195,7 @@ A user can view all health records for a specific date organized by record type 
 - **FR-023**: UI MUST provide forms for each health record type with fields corresponding to the OpenAPI schema
 - **FR-024**: UI MUST validate user input on the client side before submitting to the API
 - **FR-025**: UI MUST persist the current date selection so users can easily navigate between dates in their health diary
+- **FR-026**: UI MUST fetch medication dosage groups from the API and reshape the response data to match the internal medication selection format (transform MedicationDosageGroup Schedule enum values to lowercase keys, combine Medication and Dosage fields as "Medication - Dosage" strings)
 
 ### Key Entities
 

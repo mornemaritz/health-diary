@@ -152,13 +152,17 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 3
 
-- [ ] T033 [P] [US3] Extend RecordMedicationDialogContent component in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (add form submission handler calling healthRecordService.createMedication)
-- [ ] T034 [US3] Add medication form validation in RecordMedicationDialogContent (required: date, time; optional: medication, dosage; validate date format yyyy-MM-dd, time HH:mm)
-- [ ] T035 [US3] Implement API integration for medication creation in RecordMedicationDialogContent (call healthRecordService.createMedication, show success message, close dialog, trigger summary refresh)
-- [ ] T036 [US3] Add error handling in RecordMedicationDialogContent (display API errors from /api/health/medication response)
-- [ ] T037 [P] [US3] Create integration test for medication recording in tests/integration/recordFlow.test.ts (valid form, validation errors, API failure handling)
+- [ ] T033 [P] [US3] Update openapi.yaml to document GET /api/health/medications/dosage-groups endpoint in health-diary-be/openapi.yaml (include request/response schemas for MedicationDosageGroup and MedicationDosage)
+- [ ] T034 [P] [US3] Add getMedicationDosageGroups method to healthRecordService in health-diary-ui/src/services/healthRecordService.ts (fetch GET /api/health/medications/dosage-groups with authentication)
+- [ ] T035 [US3] Update RecordMedicationDialogContent to fetch medication dosage groups on component mount in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (call healthRecordService.getMedicationDosageGroups, reshape API response to match hardcoded medications constant structure on line 15: transform Schedule enum to lowercase keys, combine Medication and Dosage as "Medication - Dosage" strings)
+- [ ] T036 [US3] Add medication selection dropdown/autocomplete in RecordMedicationDialogContent (display MedicationDosageGroup list, allow user to select a MedicationDosage)
+- [x] T037 [P] [US3] Extend RecordMedicationDialogContent component in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (add form submission handler calling healthRecordService.createMedication)
+- [x] T038 [US3] Add medication form validation in RecordMedicationDialogContent (required: date, time; optional: medication, dosage; validate date format yyyy-MM-dd, time HH:mm)
+- [x] T039 [US3] Implement API integration for medication creation in RecordMedicationDialogContent (call healthRecordService.createMedication, show success message, close dialog, trigger summary refresh)
+- [x] T040 [US3] Add error handling in RecordMedicationDialogContent (display API errors from /api/health/medication response)
+- [ ] T041 [P] [US3] Create integration test for medication recording in tests/integration/recordFlow.test.ts (valid form, validation errors, API failure handling, medication selection from API)
 
-**Checkpoint**: Medication recording works end-to-end
+**Checkpoint**: Medication recording works end-to-end with medication selection from API
 
 ---
 
@@ -170,11 +174,11 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 4
 
-- [ ] T038 [P] [US4] Create HydrationForm component in health-diary-ui/src/components/HydrationForm.tsx (date picker, time input, quantity number input)
-- [ ] T039 [US4] Implement hydration form validation in HydrationForm (required: date, time; optional: quantity; validate quantity is positive number)
-- [ ] T040 [US4] Implement API integration in HydrationForm (call healthRecordService.createHydration, show success, trigger summary refresh)
-- [ ] T041 [US4] Add error handling in HydrationForm (display API errors from /api/health/bottle response)
-- [ ] T042 [P] [US4] Create integration test for hydration recording in tests/integration/recordFlow.test.ts (valid form, validation, API errors)
+- [ ] T042 [P] [US4] Create HydrationForm component in health-diary-ui/src/components/HydrationForm.tsx (date picker, time input, quantity number input)
+- [ ] T043 [US4] Implement hydration form validation in HydrationForm (required: date, time; optional: quantity; validate quantity is positive number)
+- [ ] T044 [US4] Implement API integration in HydrationForm (call healthRecordService.createHydration, show success, trigger summary refresh)
+- [ ] T045 [US4] Add error handling in HydrationForm (display API errors from /api/health/bottle response)
+- [ ] T046 [P] [US4] Create integration test for hydration recording in tests/integration/recordFlow.test.ts (valid form, validation, API errors)
 
 **Checkpoint**: Hydration recording works end-to-end
 
@@ -188,11 +192,11 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 5
 
-- [ ] T043 [P] [US5] Create BowelMovementForm component in health-diary-ui/src/components/BowelMovementForm.tsx (date picker, time input, consistency select dropdown with options: Hard, Normal, Soft, Diarrhea)
-- [ ] T044 [US5] Implement bowel movement form validation in BowelMovementForm (required: date, time, consistency; consistency must be one of enum values)
-- [ ] T045 [US5] Implement API integration in BowelMovementForm (call healthRecordService.createBowelMovement, show success, trigger summary refresh)
-- [ ] T046 [US5] Add error handling in BowelMovementForm (display API errors from /api/health/bowel-movement response)
-- [ ] T047 [P] [US5] Create integration test for bowel movement recording in tests/integration/recordFlow.test.ts (valid form, consistency enum validation, API errors)
+- [ ] T047 [P] [US5] Create BowelMovementForm component in health-diary-ui/src/components/BowelMovementForm.tsx (date picker, time input, consistency select dropdown with options: Hard, Normal, Soft, Diarrhea)
+- [ ] T048 [US5] Implement bowel movement form validation in BowelMovementForm (required: date, time, consistency; consistency must be one of enum values)
+- [ ] T049 [US5] Implement API integration in BowelMovementForm (call healthRecordService.createBowelMovement, show success, trigger summary refresh)
+- [ ] T050 [US5] Add error handling in BowelMovementForm (display API errors from /api/health/bowel-movement response)
+- [ ] T051 [P] [US5] Create integration test for bowel movement recording in tests/integration/recordFlow.test.ts (valid form, consistency enum validation, API errors)
 
 **Checkpoint**: Bowel movement recording works end-to-end
 
@@ -206,11 +210,11 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 6
 
-- [ ] T048 [P] [US6] Create FoodConsumptionForm component in health-diary-ui/src/components/FoodConsumptionForm.tsx (date picker, time input, food description text field, quantity field)
-- [ ] T049 [US6] Implement food form validation in FoodConsumptionForm (required: date, time; optional: food, quantity)
-- [ ] T050 [US6] Implement API integration in FoodConsumptionForm (call healthRecordService.createFood, show success, trigger summary refresh)
-- [ ] T051 [US6] Add error handling in FoodConsumptionForm (display API errors from /api/health/solid-food response)
-- [ ] T052 [P] [US6] Create integration test for food recording in tests/integration/recordFlow.test.ts (valid form, missing optional fields, API errors)
+- [ ] T052 [P] [US6] Create FoodConsumptionForm component in health-diary-ui/src/components/FoodConsumptionForm.tsx (date picker, time input, food description text field, quantity field)
+- [ ] T053 [US6] Implement food form validation in FoodConsumptionForm (required: date, time; optional: food, quantity)
+- [ ] T054 [US6] Implement API integration in FoodConsumptionForm (call healthRecordService.createFood, show success, trigger summary refresh)
+- [ ] T055 [US6] Add error handling in FoodConsumptionForm (display API errors from /api/health/solid-food response)
+- [ ] T056 [P] [US6] Create integration test for food recording in tests/integration/recordFlow.test.ts (valid form, missing optional fields, API errors)
 
 **Checkpoint**: Food consumption recording works end-to-end
 
@@ -224,11 +228,11 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 7
 
-- [ ] T053 [P] [US7] Create ObservationForm component in health-diary-ui/src/components/ObservationForm.tsx (date picker, time input, notes text area, category text field)
-- [ ] T054 [US7] Implement observation form validation in ObservationForm (required: date, time, notes; optional: category; notes must be non-empty)
-- [ ] T055 [US7] Implement API integration in ObservationForm (call healthRecordService.createObservation, show success, trigger summary refresh)
-- [ ] T056 [US7] Add error handling in ObservationForm (display API errors from /api/health/note response)
-- [ ] T057 [P] [US7] Create integration test for observation recording in tests/integration/recordFlow.test.ts (valid form, category optional, API errors)
+- [ ] T057 [P] [US7] Create ObservationForm component in health-diary-ui/src/components/ObservationForm.tsx (date picker, time input, notes text area, category text field)
+- [ ] T058 [US7] Implement observation form validation in ObservationForm (required: date, time, notes; optional: category; notes must be non-empty)
+- [ ] T059 [US7] Implement API integration in ObservationForm (call healthRecordService.createObservation, show success, trigger summary refresh)
+- [ ] T060 [US7] Add error handling in ObservationForm (display API errors from /api/health/note response)
+- [ ] T061 [P] [US7] Create integration test for observation recording in tests/integration/recordFlow.test.ts (valid form, category optional, API errors)
 
 **Checkpoint**: All health record types can be recorded end-to-end
 
@@ -240,40 +244,40 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Error Handling & Loading States
 
-- [ ] T058 [P] Add loading spinners to all form submissions (show spinner in submit button during API call)
-- [ ] T059 [P] Implement error toast notifications for API failures (display API error messages in MUI Snackbar/Toast)
-- [ ] T060 [P] Add field-level error display in all forms (show red error text below each field with validation message)
-- [ ] T061 [P] Handle network connectivity errors (show offline message, retry option if network unavailable)
-- [ ] T062 Add session timeout handling (warn user before token expires, auto-logout on refresh failure)
+- [ ] T062 [P] Add loading spinners to all form submissions (show spinner in submit button during API call)
+- [ ] T063 [P] Implement error toast notifications for API failures (display API error messages in MUI Snackbar/Toast)
+- [ ] T064 [P] Add field-level error display in all forms (show red error text below each field with validation message)
+- [ ] T065 [P] Handle network connectivity errors (show offline message, retry option if network unavailable)
+- [ ] T066 Add session timeout handling (warn user before token expires, auto-logout on refresh failure)
 
 ### UX Improvements
 
-- [ ] T063 [P] Add date preset buttons in date picker (Today, Yesterday, 7 days ago buttons)
-- [ ] T064 [P] Implement record confirmation dialogs (confirm before submitting to prevent accidental posts)
-- [ ] T065 Persist selected date in browser session (user's selected date remembered across page reloads)
-- [ ] T066 Add empty state messaging throughout app (when no records, no search results, etc.)
-- [ ] T067 Implement form reset after successful submission (clear fields, ready for next record)
+- [ ] T067 [P] Add date preset buttons in date picker (Today, Yesterday, 7 days ago buttons)
+- [ ] T068 [P] Implement record confirmation dialogs (confirm before submitting to prevent accidental posts)
+- [ ] T069 Persist selected date in browser session (user's selected date remembered across page reloads)
+- [ ] T070 Add empty state messaging throughout app (when no records, no search results, etc.)
+- [ ] T071 Implement form reset after successful submission (clear fields, ready for next record)
 
 ### Testing & Quality
 
-- [ ] T068 [P] Add unit tests for apiClient.ts (token injection, refresh logic, error parsing)
-- [ ] T069 [P] Add unit tests for authService.ts (register, login, logout, token storage)
-- [ ] T070 [P] Add unit tests for AuthContext provider (state updates, login/logout, error handling)
-- [ ] T071 [P] Add unit tests for form validation functions (email format, username pattern, required fields)
-- [ ] T072 Create E2E test scenario document in specs/002-ui-backend-integration/e2e-scenarios.md (user journeys for manual testing)
+- [ ] T072 [P] Add unit tests for apiClient.ts (token injection, refresh logic, error parsing)
+- [ ] T073 [P] Add unit tests for authService.ts (register, login, logout, token storage)
+- [ ] T074 [P] Add unit tests for AuthContext provider (state updates, login/logout, error handling)
+- [ ] T075 [P] Add unit tests for form validation functions (email format, username pattern, required fields)
+- [ ] T076 Create E2E test scenario document in specs/002-ui-backend-integration/e2e-scenarios.md (user journeys for manual testing)
 
 ### Documentation
 
-- [ ] T073 Update README.md with setup instructions (npm install, npm run generate:types, npm run dev, npm test)
-- [ ] T074 Add code comments for complex logic (token refresh, 401 interception, form validation)
-- [ ] T075 [P] Document API error codes and what to do in each case (500 errors, 409 conflicts, 400 validation)
-- [ ] T076 [P] Create troubleshooting guide for common issues (token not stored, API unreachable, form validation not working)
+- [ ] T077 Update README.md with setup instructions (npm install, npm run generate:types, npm run dev, npm test)
+- [ ] T078 Add code comments for complex logic (token refresh, 401 interception, form validation)
+- [ ] T079 [P] Document API error codes and what to do in each case (500 errors, 409 conflicts, 400 validation)
+- [ ] T080 [P] Create troubleshooting guide for common issues (token not stored, API unreachable, form validation not working)
 
 ### Performance & Monitoring
 
-- [ ] T077 [P] Add performance logging for API calls (log request time, identify slow endpoints)
-- [ ] T078 [P] Monitor bundle size (ensure no unexpected dependencies added)
-- [ ] T079 Profile localStorage operations (verify <10ms overhead as planned)
+- [ ] T081 [P] Add performance logging for API calls (log request time, identify slow endpoints)
+- [ ] T082 [P] Monitor bundle size (ensure no unexpected dependencies added)
+- [ ] T083 Profile localStorage operations (verify <10ms overhead as planned)
 
 **Checkpoint**: Feature is production-ready with robust error handling, excellent UX, and comprehensive tests
 
@@ -317,18 +321,18 @@ All Phase 2 tasks must be 100% complete before ANY user story work. If Phase 2 i
 
 ## Task Checklist Summary
 
-- **Total Tasks**: 79
+- **Total Tasks**: 83
 - **Setup Phase**: 5 tasks
 - **Foundational Phase**: 6 tasks (🚫 Blocking)
 - **User Story 1 (Registration)**: 7 tasks
 - **User Story 2 (Auth & Session)**: 8 tasks
 - **User Story 8 (Dashboard)**: 7 tasks
-- **User Story 3 (Medication)**: 5 tasks
+- **User Story 3 (Medication)**: 9 tasks (includes API endpoint documentation + medication selection from API)
 - **User Story 4 (Hydration)**: 5 tasks
 - **User Story 5 (Bowel Movement)**: 5 tasks
 - **User Story 6 (Food)**: 5 tasks
 - **User Story 7 (Observations)**: 5 tasks
-- **Polish Phase**: 19 tasks
+- **Polish Phase**: 22 tasks
 
 ### Parallelization Opportunities
 
