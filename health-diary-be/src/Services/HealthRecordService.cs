@@ -24,16 +24,12 @@ public interface IHealthRecordService
   Task<List<Observation>> GetObservationsByDateAsync(DateOnly date);
 
   Task<DailySummary> GetDailySummaryAsync(DatePlusTime datePlusTime);
+  Task<MedicationDosage?> GetMedicationDosageAsync(string medication, string dosage, MedicationSchedule schedule);
 }
 
-public class HealthRecordService : IHealthRecordService
+public class HealthRecordService(HealthDiaryContext context) : IHealthRecordService
 {
-  private readonly HealthDiaryContext _context;
-
-  public HealthRecordService(HealthDiaryContext context)
-  {
-    _context = context;
-  }
+  private readonly HealthDiaryContext _context = context;
 
   /// <summary>
   /// Checks if a duplicate record already exists for the date, time, and type.
@@ -103,6 +99,7 @@ public class HealthRecordService : IHealthRecordService
   public async Task<List<MedicationAdministration>> GetMedicationAdministrationsByDateAsync(DateOnly date)
   {
     return await _context.MedicationAdministrations
+        .Include(m => m.MedicationDosage)
         .Where(r => r.Date == date)
         .OrderBy(r => r.Time)
         .ToListAsync();
@@ -166,7 +163,7 @@ public class HealthRecordService : IHealthRecordService
 
   public async Task<List<MedicationDosageGroup>> GetAllMedicationDosageGroupsAsync()
   {
-    return await _context.MedicationDosageGroups.ToListAsync();
+    return await _context.MedicationDosageGroups.Include(mdg => mdg.MedicationDosage).ToListAsync();
   }
 
   public async Task<List<MedicationDosageGroup>> GetMedicationDosageGroupsByScheduleAsync(MedicationSchedule schedule)
@@ -174,5 +171,15 @@ public class HealthRecordService : IHealthRecordService
     return await _context.MedicationDosageGroups
         .Where(m => m.Schedule == schedule)
         .ToListAsync();
+  }
+
+  public async Task<MedicationDosage?> GetMedicationDosageAsync(string medication, string dosage, MedicationSchedule schedule)
+  {
+    return await _context.MedicationDosageGroups
+        .Where(mdg => mdg.Schedule == schedule
+            && mdg.MedicationDosage.Medication == medication
+            && mdg.MedicationDosage.Dosage == dosage)
+        .Select(mdg => mdg.MedicationDosage)
+        .FirstOrDefaultAsync(mdg => mdg != null);
   }
 }

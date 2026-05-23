@@ -152,15 +152,15 @@ Dependencies: All wait for Phase 2 foundational tasks
 
 ### Implementation for User Story 3
 
-- [ ] T033 [P] [US3] Update openapi.yaml to document GET /api/health/medications/dosage-groups endpoint in health-diary-be/openapi.yaml (include request/response schemas for MedicationDosageGroup and MedicationDosage)
-- [ ] T034 [P] [US3] Add getMedicationDosageGroups method to healthRecordService in health-diary-ui/src/services/healthRecordService.ts (fetch GET /api/health/medications/dosage-groups with authentication)
-- [ ] T035 [US3] Update RecordMedicationDialogContent to fetch medication dosage groups on component mount in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (call healthRecordService.getMedicationDosageGroups, reshape API response to match hardcoded medications constant structure on line 15: transform Schedule enum to lowercase keys, combine Medication and Dosage as "Medication - Dosage" strings)
-- [ ] T036 [US3] Add medication selection dropdown/autocomplete in RecordMedicationDialogContent (display MedicationDosageGroup list, allow user to select a MedicationDosage)
+- [x] T033 [P] [US3] Update openapi.yaml to document GET /api/health/medications/dosage-groups endpoint in health-diary-be/openapi.yaml (include request/response schemas for MedicationDosageGroup and MedicationDosage)
+- [x] T034 [P] [US3] Add getMedicationDosageGroups method to healthRecordService in health-diary-ui/src/services/healthRecordService.ts (fetch GET /api/health/medications/dosage-groups with authentication)
+- [x] T035 [US3] Update RecordMedicationDialogContent to fetch medication dosage groups on component mount in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (call healthRecordService.getMedicationDosageGroups, reshape API response to match hardcoded medications constant structure on line 15: transform Schedule enum to lowercase keys, combine Medication and Dosage as "Medication - Dosage" strings)
+- [x] T036 [US3] Add medication selection dropdown/autocomplete in RecordMedicationDialogContent (display MedicationDosageGroup list, allow user to select a MedicationDosage)
 - [x] T037 [P] [US3] Extend RecordMedicationDialogContent component in health-diary-ui/src/components/RecordMedicationDialogContent.tsx (add form submission handler calling healthRecordService.createMedication)
 - [x] T038 [US3] Add medication form validation in RecordMedicationDialogContent (required: date, time; optional: medication, dosage; validate date format yyyy-MM-dd, time HH:mm)
 - [x] T039 [US3] Implement API integration for medication creation in RecordMedicationDialogContent (call healthRecordService.createMedication, show success message, close dialog, trigger summary refresh)
 - [x] T040 [US3] Add error handling in RecordMedicationDialogContent (display API errors from /api/health/medication response)
-- [ ] T041 [P] [US3] Create integration test for medication recording in tests/integration/recordFlow.test.ts (valid form, validation errors, API failure handling, medication selection from API)
+- [x] T041 [P] [US3] Create integration test for medication recording in tests/integration/recordFlow.test.ts (valid form, validation errors, API failure handling, medication selection from API)
 
 **Checkpoint**: Medication recording works end-to-end with medication selection from API
 

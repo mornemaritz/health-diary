@@ -63,6 +63,59 @@ export type DailySummaryResponse = {
   healthEntrySets: HealthEntrySet[]
 }
 
+export type MedicationDosageDto = {
+  id: string
+  medication: string
+  dosage: string
+}
+
+export type MedicationDosageGroupDto = {
+  id: string
+  medicationDosage: MedicationDosageDto
+  schedule: 'SevenAm' | 'ThreePm' | 'SevenPm' | 'TenPm' | 'AdHoc'
+}
+
+/** Maps API schedule enum values to the UI schedule key format */
+const SCHEDULE_KEY_MAP: Record<MedicationDosageGroupDto['schedule'], string> = {
+  SevenAm: '7am',
+  ThreePm: '3pm',
+  SevenPm: '7pm',
+  TenPm: '10pm',
+  AdHoc: 'adhoc',
+}
+
+/**
+ * Fetch all medication dosage groups from the API and reshape to the UI medications format:
+ * { '7am': ['Med - Dosage', ...], '3pm': [...], '7pm': [...], '10pm': [...], 'adhoc': [...] }
+ */
+export async function getMedicationDosageGroups(): Promise<
+  Record<string, string[]> | { error: string }
+> {
+  const result = await apiRequest<MedicationDosageGroupDto[]>(
+    '/api/health/medications/dosage-groups',
+    { method: 'GET', requiresAuth: true }
+  )
+
+  if (!result.ok || !result.data) {
+    return { error: result.error || 'Failed to fetch medication dosage groups' }
+  }
+
+  const shaped: Record<string, string[]> = {
+    '7am': [],
+    '3pm': [],
+    '7pm': [],
+    '10pm': [],
+    adhoc: [],
+  }
+
+  for (const group of result.data) {
+    const key = SCHEDULE_KEY_MAP[group.schedule] ?? 'adhoc'
+    shaped[key].push(`${group.medicationDosage.medication} - ${group.medicationDosage.dosage}`)
+  }
+
+  return shaped
+}
+
 /**
  * Create a medication record
  */

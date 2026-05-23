@@ -162,7 +162,7 @@ export async function apiRequest<T>(
       ok: response.ok,
       status: response.status,
       data: response.ok ? data : undefined,
-      error: !response.ok ? data?.error || 'Request failed' : undefined,
+      error: !response.ok ? data?.message || data?.error || 'Request failed' : undefined,
     }
   } catch {
     return {

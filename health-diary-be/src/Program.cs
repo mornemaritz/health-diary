@@ -241,7 +241,7 @@ app.MapPost("/api/auth/password-reset/confirm", async (string resetToken, string
 /// <summary>
 /// POST: Add a medication record for a date.
 /// </summary>
-app.MapPost("/api/health/medication", async (MedicationAdministration record, IHealthRecordService service) =>
+app.MapPost("/api/health/medication", async (MedicationAdministrationDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -250,7 +250,33 @@ app.MapPost("/api/health/medication", async (MedicationAdministration record, IH
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddMedicationAdministrationAsync(record);
+    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
+        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
+            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
+            )
+        )
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add medication record for a future date and time." 
+        });
+
+     var parsedSchedule = Enum.TryParse<MedicationSchedule>(record.Schedule, ignoreCase: true, out var schedule) 
+        ? schedule 
+        : throw new ArgumentException("Invalid schedule. Valid values are: sevenAm, threePm, sevenPm, tenPm, adHoc");
+
+    var medicationDosage = await service.GetMedicationDosageAsync(record.Medication, record.Dosage, parsedSchedule)
+        ?? throw new ArgumentException($"Medication dosage not found for {record.Medication} with dosage {record.Dosage}. Please create a medication dosage group first.");
+
+    var medicationAdministration = new MedicationAdministration
+    {
+        Date = record.Date,
+        Time = record.Time,
+        MedicationDosage = medicationDosage,
+        Schedule = parsedSchedule
+    };
+
+    var (success, message, recordId) = await service.AddMedicationAdministrationAsync(medicationAdministration);
     return success 
         ? Results.Created($"/api/health/medication/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -269,6 +295,18 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
             StatusCode = 400, 
             Message = "Date and Time are required." 
         });
+
+    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
+        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
+            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
+            )
+        )
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add bottle record for a future date and time." 
+        });
+
 
     var (success, message, recordId) = await service.AddBottleConsumptionAsync(record);
     return success 
@@ -290,6 +328,18 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
             Message = "Date and Time are required." 
         });
 
+    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
+        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
+            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
+            )
+        )
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add bowel movement record for a future date and time." 
+        });
+
+
     var (success, message, recordId) = await service.AddBowelMovementAsync(record);
     return success 
         ? Results.Created($"/api/health/bowel-movement/{recordId}", new { Id = recordId, Message = message })
@@ -310,6 +360,17 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
             Message = "Date and Time are required." 
         });
 
+    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
+        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
+            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
+            )
+        )
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add solid food record for a future date and time." 
+        });
+
     var (success, message, recordId) = await service.AddSolidFoodIntakeAsync(record);
     return success 
         ? Results.Created($"/api/health/solid-food/{recordId}", new { Id = recordId, Message = message })
@@ -328,6 +389,17 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
         { 
             StatusCode = 400, 
             Message = "Date and Time are required." 
+        });
+
+    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
+        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
+            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
+            )
+        )
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add note record for a future date and time." 
         });
 
     var (success, message, recordId) = await service.AddObservationAsync(record);
