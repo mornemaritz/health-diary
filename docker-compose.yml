@@ -65,6 +65,15 @@ services:
     networks:
       - webproxy
 
+  health-diary-demo:
+    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.1
+    container_name: health-diary-demo
+    restart: unless-stopped
+    expose:
+      - "3001"
+    networks:
+      - webproxy
+
   nginx:
     image: nginx:1.25-alpine
     container_name: hd-nginx
