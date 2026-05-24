@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using HealthDiary.Api.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -250,11 +251,7 @@ app.MapPost("/api/health/medication", async (MedicationAdministrationDto record,
             Message = "Date and Time are required." 
         });
 
-    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
-        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
-            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
-            )
-        )
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -296,11 +293,7 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
             Message = "Date and Time are required." 
         });
 
-    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
-        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
-            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
-            )
-        )
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -328,11 +321,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
             Message = "Date and Time are required." 
         });
 
-    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
-        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
-            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
-            )
-        )
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -360,11 +349,7 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
             Message = "Date and Time are required." 
         });
 
-    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
-        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
-            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
-            )
-        )
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -391,11 +376,7 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
             Message = "Date and Time are required." 
         });
 
-    if (record.Date > DateOnly.FromDateTime(DateTime.Now)
-        || (record.Date == DateOnly.FromDateTime(DateTime.Now)
-            && record.Time > TimeOnly.FromDateTime(DateTime.Now)
-            )
-        )
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 

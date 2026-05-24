@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using HealthDiary.Api.Utilities;
 
 namespace HealthDiary.Api.Models;
 

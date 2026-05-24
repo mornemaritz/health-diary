@@ -1,6 +1,7 @@
 using HealthDiary.Api.Models;
 using HealthDiary.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using HealthDiary.Api.Utilities;
 
 namespace HealthDiary.Api.Services;
 

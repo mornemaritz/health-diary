@@ -479,7 +479,7 @@ const Summary: React.FC = () => {
               })()}
             </AccordionDetails>
             <AccordionActions>
-              <Button variant="contained" size="small">Record Food</Button>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Record Food</Button>
             </AccordionActions>
           </Accordion>
 
@@ -541,7 +541,7 @@ const Summary: React.FC = () => {
               })()}
             </AccordionDetails>
             <AccordionActions>
-              <Button variant="contained" size="small">Record Bowel Movement</Button>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Record Bowel Movement</Button>
             </AccordionActions>
           </Accordion>
 
@@ -603,7 +603,7 @@ const Summary: React.FC = () => {
               })()}
             </AccordionDetails>
             <AccordionActions>
-              <Button variant="contained" size="small">Add Note</Button>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Add Note</Button>
             </AccordionActions>
           </Accordion>
 
