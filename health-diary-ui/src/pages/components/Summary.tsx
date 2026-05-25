@@ -6,7 +6,8 @@ import CommentIcon from '@mui/icons-material/Comment';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import MedicationIcon from '@mui/icons-material/Medication';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { ChevronLeft as PrevIcon, ChevronRight as NextIcon, Today as TodayIcon } from "@mui/icons-material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useCallback, useState } from "react";
@@ -101,13 +102,13 @@ function createMedicationData(recordTime: string, medication: string, dosage: st
 }
 
 const Summary: React.FC = () => {
-  const [day, setDate] = useState(moment());
-  const [currentTime, setCurrentTime] = useState(moment());
   const [bottleRowsState, setBottleRowsState] = useState(bottleRows);
   const [medicationRowsState, setMedicationRowsState] = useState([...sevenAmMedicationRows, ...threePmMedicationRows]);
   const [nappyRowsState] = useState(nappyRows);
   const [solidRowsState] = useState(solidRows);
   const [noteRowsState] = useState(noteRows);
+  const [selectedDate, setSelectedDate] = useState(moment());
+  
   const [bottleRecordDialogOpen, setBottleRecordDialogOpen] = useState(false);
   const [medsRecordDialogOpen, setMedsRecordDialogOpen] = useState(false);
 
@@ -139,243 +140,311 @@ const Summary: React.FC = () => {
     setMedsRecordDialogOpen(false);
   }, []);
 
+  /**
+   * Navigate to previous day
+   */
+  const goToPreviousDay = () => {
+    const newDate = selectedDate.clone().subtract(1, 'day');
+    setSelectedDate(newDate);
+  };
+
+  /**
+   * Navigate to next day
+   */
+  const goToNextDay = () => {
+    const newDate = selectedDate.clone().add(1, 'day');
+    setSelectedDate(newDate);
+  };
+
+  /**
+   * Jump to today
+   */
+  const goToToday = () => {
+    setSelectedDate(moment());
+  };
+
   return (
     <Box>
       <Container maxWidth="md" sx={{ marginTop: 2, marginBottom: 2 }}>
         <LocalizationProvider dateAdapter={AdapterMoment}>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr 1fr', // 2 columns on extra small devices
-                md: '1fr 1fr 1fr 1fr' // 4 columns on medium and larger devices
-              },
-              gap: 2,
-              alignItems: 'center'
-            }}
-          >
-            <DatePicker 
-              label={day.format('dddd')}
-              value={day} 
-              onChange={(newValue) => setDate(newValue || moment())}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-            <TimePicker
-              label="Time"
-              value={currentTime}
-              onChange={(newValue) => setCurrentTime(newValue || moment())}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-            <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
-            <Typography sx={{ textAlign: { xs: 'left', md: 'center' } }}>06h45</Typography>
-          </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: '1fr 1fr 1fr 1fr'
+                },
+                gap: 2,
+                alignItems: 'center',
+              }}
+            >
+              {/* Date Navigation */}
+              <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'center', alignItems: 'center' }}>
+                <Button 
+                  onClick={goToPreviousDay} 
+                  variant="outlined" 
+                  size="small"
+                  sx={{ minWidth: '40px', p: '6px' }}
+                >
+                  <PrevIcon />
+                </Button>
+                <DatePicker
+                  label={selectedDate.format('dddd')}
+                  value={selectedDate}
+                  onChange={(newValue) => setSelectedDate(newValue || moment())}
+                  slotProps={{ 
+                    textField: { 
+                      size: 'small',
+                      sx: { 
+                        width: '145px',
+                        '& .MuiOutlinedInput-input': {
+                          padding: '8px 8px'
+                        }
+                      }
+                    } 
+                  }}
+                />
+                <Button 
+                  onClick={goToNextDay} 
+                  variant="outlined" 
+                  size="small"
+                  sx={{ minWidth: '40px', p: '6px' }}
+                >
+                  <NextIcon />
+                </Button>
+              </Stack>
+
+              {/* Today Button */}
+              <Stack sx={{  justifyContent: 'center' }}>
+                <Button startIcon={<TodayIcon />} onClick={goToToday} variant="contained" size="small" sx={{ mx: 'auto' }}>
+                  Today
+                </Button>
+              </Stack>
+              <Stack direction="row" sx={{  justifyContent: 'center' }}>
+                <Typography sx={{ px: 1, textAlign: { xs: 'left', md: 'center' } }}>Wake up time:</Typography>
+                <Typography sx={{ px: 1, textAlign: { xs: 'left', md: 'center' } }}>
+                  {selectedDate.isSame(moment(), 'day') ? 'Not set' : 'N/A'}
+                </Typography>
+              </Stack>
+            </Box>
         </LocalizationProvider>
       </Container>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="bottles-panel-content"
-          id="bottles-panel-header"
-        >
-          <LocalDrinkIcon color='primary' sx={{ marginRight: 1 }} />
-          <Typography component="span">Bottles</Typography>
-          <Chip label="3 (180ml)" color="primary" size="small" sx={{ marginLeft: 1 }} />
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
-              <AccentedTableHead>
-                <TableRow>
-                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                </TableRow>
-              </AccentedTableHead>
-              <TableBody>
+          {/* Bottles Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="bottles-panel-content"
+              id="bottles-panel-header"
+            >
+              <LocalDrinkIcon color='primary' sx={{ marginRight: 1 }} />
+              <Typography component="span">Bottles</Typography>
+              <Chip label="3 (180ml)" color="primary" size="small" sx={{ marginLeft: 1 }} />
+            </AccordionSummary>
+            <AccordionDetails>
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="bottle table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
+                        </TableRow>
+                      </AccentedTableHead>
+                      <TableBody>
                 {bottleRowsState.map((row) => (
                   <TableRow key={row.time}>
-                    <VerticallyBorderedCell component="th" scope="row">
+                            <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
-                    </VerticallyBorderedCell>
+                            </VerticallyBorderedCell>
                     <VerticallyBorderedCell>{row.size}ml</VerticallyBorderedCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-        <RecordBottleDialog open={bottleRecordDialogOpen} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
-        <AccordionActions>
-          <Button variant="contained" size="small" onClick={handleBottleRecordClickOpen}>Record Bottle</Button>
-        </AccordionActions>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="medication-panel-content"
-          id="medication-panel-header"
-        >
-          <MedicationIcon color='primary' sx={{ marginRight: 1 }} />
-          <Typography component="span" sx={{marginRight: 1}}>Medication</Typography>
-          <Stack direction="row" spacing={1}>
-            <Chip label="7am" size="small" color="success"/>
-            <Chip label="3pm" size="small" color="success"/>
-            <Chip label="7pm" size="small" color="primary"/>
-            <Chip label="10pm" size="small" color="primary"/>
-          </Stack>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
-              <AccentedTableHead>
-                <TableRow>
-                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                </TableRow>
-              </AccentedTableHead>
-              <TableBody>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+            </AccordionDetails>
+            <RecordBottleDialog open={bottleRecordDialogOpen} onClose={handleBottleRecordClose} onRecordBottle={handleRecordBottle} />
+            <AccordionActions>
+              <Button variant="contained" size="small" onClick={handleBottleRecordClickOpen}>Record Bottle</Button>
+            </AccordionActions>
+          </Accordion>
+
+          {/* Medication Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="medication-panel-content"
+              id="medication-panel-header"
+            >
+              <MedicationIcon color='primary' sx={{ marginRight: 1 }} />
+              <Typography component="span" sx={{ marginRight: 1 }}>Medication</Typography>
+              <Stack direction="row" spacing={1}>
+              <Chip label="7am" size="small" color="success"/>
+              <Chip label="3pm" size="small" color="success"/>
+              <Chip label="7pm" size="small" color="primary"/>
+              <Chip label="10pm" size="small" color="primary"/>
+              </Stack>
+            </AccordionSummary>
+            <AccordionDetails>
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="medication table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
+                        </TableRow>
+                      </AccentedTableHead>
+                      <TableBody>
                 {medicationRowsState.map((row) => (
                   <TableRow key={`${row.recordTime}-${row.medication}`}>
-                    <VerticallyBorderedCell component="th" scope="row">
+                            <VerticallyBorderedCell component="th" scope="row">
                       {row.recordTime}
-                    </VerticallyBorderedCell>
+                            </VerticallyBorderedCell>
                     <VerticallyBorderedCell>{`${row.dosage} ${row.medication} (${row.schedule})`}</VerticallyBorderedCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-        <AccordionActions>
-      <RecordDialog<MedicationRecord[]>
-        open={medsRecordDialogOpen}
-        onClose={handleMedsRecordClose}
-        onRecord={handleRecordMeds}
-        formId="medication-form"
-        title="Record Medication"
-        ContentComponent={RecordMedicationDialogContent}
-      />
-          <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record Medication</Button>
-        </AccordionActions>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="solids-panel-content"
-          id="solids-panel-header"
-        >
-          <RestaurantIcon color='primary' sx={{ marginRight: 1 }} />
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+            </AccordionDetails>
+            <AccordionActions>
+              <RecordDialog<MedicationRecord[]>
+                open={medsRecordDialogOpen}
+                onClose={handleMedsRecordClose}
+                onRecord={handleRecordMeds}
+                formId="medication-form"
+                title="Record Medication"
+                ContentComponent={RecordMedicationDialogContent}
+              />
+              <Button variant="contained" size="small" onClick={handleMedsRecordClickOpen}>Record Medication</Button>
+            </AccordionActions>
+          </Accordion>
+
+          {/* Food Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="solids-panel-content"
+              id="solids-panel-header"
+            >
+              <RestaurantIcon color='primary' sx={{ marginRight: 1 }} />
           <Typography component="span">Solids</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer component={Paper}>
+            </AccordionSummary>
+            <AccordionDetails>
+                  <TableContainer component={Paper}>
             <Table sx={{ minWidth: 100 }} size="small" aria-label="solids table">
-              <AccentedTableHead>
-                <TableRow>
-                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                </TableRow>
-              </AccentedTableHead>
-              <TableBody>
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
+                        </TableRow>
+                      </AccentedTableHead>
+                      <TableBody>
                 {solidRowsState.map((row) => (
                   <TableRow key={row.time}>
-                    <VerticallyBorderedCell component="th" scope="row">
+                            <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
-                    </VerticallyBorderedCell>
+                            </VerticallyBorderedCell>
                     <VerticallyBorderedCell>{`${row.size} ${row.item} (${row.notes})`}</VerticallyBorderedCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-        <AccordionActions>
-          <Button variant="contained" size="small">Record Solids</Button>
-        </AccordionActions>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="nappies-panel-content"
-          id="nappies-panel-header"
-        >
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+            </AccordionDetails>
+            <AccordionActions>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Record Food</Button>
+            </AccordionActions>
+          </Accordion>
+
+          {/* Bowel Movements Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="nappies-panel-content"
+              id="nappies-panel-header"
+            >
           <WcIcon color='primary' sx={{ marginRight: 1 }} />
           <Typography component="span">Bowel Movement</Typography>
           <Chip label="2" color="warning" size="small" sx={{ marginLeft: 1 }} />
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer component={Paper} sx={{ marginRight: 1 }}>
-            <Table sx={{ minWidth: 100 }} size="small" aria-label="nappy table">
-              <AccentedTableHead>
-                <TableRow>
-                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                </TableRow>
-              </AccentedTableHead>
-              <TableBody>
+            </AccordionSummary>
+            <AccordionDetails>
+                  <TableContainer component={Paper} sx={{ marginRight: 1 }}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="bowel movement table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
+                        </TableRow>
+                      </AccentedTableHead>
+                      <TableBody>
                 {nappyRowsState.map((row) => (
                   <TableRow key={row.time}>
-                    <VerticallyBorderedCell component="th" scope="row">
+                            <VerticallyBorderedCell component="th" scope="row">
                       {row.time}
-                    </VerticallyBorderedCell>
+                            </VerticallyBorderedCell>
                     <VerticallyBorderedCell>{`${row.size} ${row.color} ${row.consistency}`}</VerticallyBorderedCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>          
-        </AccordionDetails>
-        <AccordionActions>
-          <Button variant="contained" size="small">Record Bowel Movement</Button>
-        </AccordionActions>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="notes-panel-content"
-          id="notes-panel-header"
-        >
-          <CommentIcon color='primary' sx={{ marginRight: 1 }} />
-          <Typography component="span">Notes</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 100 }} size="small" aria-label="notes table">
-              <AccentedTableHead>
-                <TableRow>
-                  <VerticallyBorderedCell>Time</VerticallyBorderedCell>
-                  <VerticallyBorderedCell>Details</VerticallyBorderedCell>
-                </TableRow>
-              </AccentedTableHead>
-              <TableBody>
-                {noteRowsState.map((row) => (
-                  <TableRow key={row.time}>
-                    <VerticallyBorderedCell component="th" scope="row">
-                      {row.time}
-                    </VerticallyBorderedCell>
-                    <VerticallyBorderedCell>{row.note}</VerticallyBorderedCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </AccordionDetails>
-        <AccordionActions>
-          <Button variant="contained" size="small">Add Note</Button>
-        </AccordionActions>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="nights-panel-content"
-          id="nights-panel-header"
-        >
-          <BedtimeIcon color='primary' sx={{ marginRight: 1 }} />
-          <Typography component="span">How was the night?</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          Had a good night! Slept through until 5am. Asked for mommy from then on. Had 3 bottles
-        </AccordionDetails>
-      </Accordion>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+            </AccordionDetails>
+            <AccordionActions>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Record Bowel Movement</Button>
+            </AccordionActions>
+          </Accordion>
+
+          {/* Notes Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="notes-panel-content"
+              id="notes-panel-header"
+            >
+              <CommentIcon color='primary' sx={{ marginRight: 1 }} />
+              <Typography component="span">Observations</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 100 }} size="small" aria-label="observations table">
+                      <AccentedTableHead>
+                        <TableRow>
+                          <VerticallyBorderedCell>Time</VerticallyBorderedCell>
+                          <VerticallyBorderedCell>Details</VerticallyBorderedCell>
+                        </TableRow>
+                      </AccentedTableHead>
+                      <TableBody>
+                        {noteRowsState.map((row) => (
+                          <TableRow key={row.time}>
+                            <VerticallyBorderedCell component="th" scope="row">
+                              {row.time}
+                            </VerticallyBorderedCell>
+                            <VerticallyBorderedCell>{row.note}</VerticallyBorderedCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+            </AccordionDetails>
+            <AccordionActions>
+              <Button variant="contained" size="small" onClick={() => alert('🚧 Under construction')}>Add Note</Button>
+            </AccordionActions>
+          </Accordion>
+
+          {/* Night Sleep Section */}
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="nights-panel-content"
+              id="nights-panel-header"
+            >
+              <BedtimeIcon color='primary' sx={{ marginRight: 1 }} />
+              <Typography component="span">How was the night?</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              Had a good night! Slept through until 5am. Asked for mommy from then on. Had 3 bottles
+            </AccordionDetails>
+          </Accordion>
     </Box>
   );
 };
