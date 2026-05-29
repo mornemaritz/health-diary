@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
 using HealthDiary.Api.Utilities;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+builder.Configuration.AddUserSecrets<Program>();
 
 // Configure EF Core with PostgreSQL
 builder.Services.AddDbContext<HealthDiaryContext>(options =>
@@ -111,12 +114,12 @@ app.UseAuthorization();
 /// </summary>
 app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAuthService authService, HttpContext context) =>
 {
-    // Check if user is admin
-    // var userId = context.User.FindFirst("sub")?.Value;
-    // if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var adminId))
-    //     return Results.Unauthorized();
+    if (!Guid.TryParse(context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var loggedInUserId))
+    {
+        throw new InvalidOperationException("Invalid User ID claim in the token.");
+    }
 
-    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, Guid.Parse("728c5add-34cd-432c-a255-d0aa3c7203dc"));
+    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, loggedInUserId);
     return Results.Created($"/api/auth/invite/{inviteLink.Id}", new 
     {
       inviteLink.Id,
@@ -127,6 +130,7 @@ app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAut
     });
 })
 .WithName("GenerateInviteLink")
+.RequireAuthorization(policy => policy.RequireRole("Admin"))
 .Produces(201)
 .Produces(401);
 
@@ -153,7 +157,7 @@ app.MapPost("/api/auth/register", async (
 {
     var (success, message, user) = await authService.RegisterUserAsync(request.InviteToken, request.Email, request.Username, request.Name, request.Password);
     return success
-        ? Results.Created($"/api/auth/users/{user!.Id}", new { Id = user.Id, Email = user.Email, Message = message })
+        ? Results.Created($"/api/auth/users/{user!.Id}", new { user.Id, user.Email, Message = message })
         : Results.BadRequest(new { Message = message });
 })
 .WithName("RegisterUser")
@@ -192,9 +196,9 @@ app.MapPost("/api/auth/token/refresh", async (RefreshTokenRequest request, IAuth
     return success
         ? Results.Ok(new 
         { 
-            AccessToken = accessToken!.Jwt,
-            ExpiresAt = accessToken.ExpiresAt,
-            Message = "Access token refreshed"
+          AccessToken = accessToken!.Jwt,
+          accessToken.ExpiresAt,
+          Message = "Access token refreshed"
         })
         : Results.Unauthorized();
 })
@@ -205,21 +209,23 @@ app.MapPost("/api/auth/token/refresh", async (RefreshTokenRequest request, IAuth
 /// <summary>
 /// POST: Request a password reset link (Admin generates for user).
 /// </summary>
-app.MapPost("/api/auth/admin/password-reset", async (Guid userId, IAuthService authService, HttpContext context) =>
+app.MapPost("/api/auth/admin/password-reset", async (Guid userIdToReset, IAuthService authService, HttpContext context) =>
 {
-    // Check if user is admin
-    if (!context.User.IsInRole("Admin"))
-        return Results.Forbid();
+    if (!Guid.TryParse(context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var loggedInUserId))
+    {
+        throw new InvalidOperationException("Invalid User ID claim in the token.");
+    }
 
-    var resetLink = await authService.GeneratePasswordResetLinkAsync(userId);
+    var resetLink = await authService.GeneratePasswordResetLinkAsync(loggedInUserId);
     return Results.Ok(new 
-    { 
-        Token = resetLink.Token,
-        ExpiresAt = resetLink.ExpiresAt,
-        Message = "Password reset link generated"
+    {
+      resetLink.Token,
+      resetLink.ExpiresAt,
+      Message = "Password reset link generated"
     });
 })
 .WithName("GeneratePasswordResetLink")
+.RequireAuthorization(policy => policy.RequireRole("Admin"))
 .Produces(200)
 .Produces(403);
 

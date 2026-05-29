@@ -37,6 +37,8 @@ services:
       - Jwt__AccessTokenExpiryMinutes=15
       - Jwt__RefreshTokenExpiryDays=7
       - ASPNETCORE_ENVIRONMENT=Production
+    ports:
+      - "8080:8080"
     expose:
       - "8080"
     networks:
@@ -60,17 +62,21 @@ services:
     restart: unless-stopped
     # environment:
     #   - VITE_API_URL=http://health-diary-api:8080
+    ports:
+      - "3000:3000"
     expose:
       - "3000"
     networks:
       - webproxy
 
   health-diary-demo:
-    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.1
+    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.20.0
     container_name: health-diary-demo
     restart: unless-stopped
+    ports:
+      - "3001:3000"
     expose:
-      - "3001"
+      - "3000"
     networks:
       - webproxy
 
