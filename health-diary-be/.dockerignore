@@ -1,0 +1,42 @@
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# IDE files
+**/.vs/
+**/.vscode/
+**/.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/
+**/node_modules/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+**/.dockerignore
+**/Dockerfile
+**/docker-compose*
+
+# Documentation
+*.md
+LICENSE
+
+# Environment and secrets
+**/*.Development.json
+**/appsettings.Development.json
+**/*.local.json

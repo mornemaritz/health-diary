@@ -9,7 +9,7 @@ info:
 servers:
   - url: http://localhost:5000
     description: Local development server
-  - url: https://api.healthdiary.example.com
+  - url: https://health-diary.me
     description: Production server
 
 paths:
@@ -229,7 +229,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MedicationAdministration'
+              $ref: '#/components/schemas/MedicationAdministrationDto'
       responses:
         '201':
           description: Medication record created successfully
@@ -450,6 +450,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/health/medications/dosage-groups:
+    get:
+      summary: Retrieve all medication dosage groups
+      description: Retrieves all configured medication dosage groups organised by schedule. Used by the UI to populate medication selection lists. Requires authentication.
+      operationId: getAllMedicationDosageGroups
+      tags:
+        - Health Records
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Medication dosage groups retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MedicationDosageGroup'
+        '401':
+          description: Unauthorized - Valid access token required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /api/health/summary/{date}:
     get:
       summary: Retrieve daily summary for a given date
@@ -638,7 +663,66 @@ components:
           minLength: 8
           description: New password (min 8 characters)
 
+    # Medication Reference Data Schemas
+    MedicationDosage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        medication:
+          type: string
+          description: Name of the medication
+        dosage:
+          type: string
+          description: Dosage amount (e.g. "4ml", "300mg")
+
+    MedicationDosageGroup:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        medicationDosage:
+          $ref: '#/components/schemas/MedicationDosage'
+        schedule:
+          type: string
+          enum:
+            - SevenAm
+            - ThreePm
+            - SevenPm
+            - TenPm
+            - AdHoc
+          description: The scheduled administration time for this medication dosage
+
     # Health Record Schemas
+    MedicationAdministrationDto:
+      type: object
+      required:
+        - date
+        - time
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of medication administration (yyyy-MM-dd)
+        time:
+          type: string
+          format: time
+          description: Time of medication administration (HH:mm)
+        medication:
+          type: string
+          default: ''
+          description: Name of medication
+        dosage:
+          type: string
+          default: ''
+          description: Dosage amount (e.g. "4ml", "300mg")
+        schedule:
+          type: string
+          default: ''
+          description: Schedule key (e.g. "SevenAm", "ThreePm", "SevenPm", "TenPm", "AdHoc")
+
     MedicationAdministration:
       type: object
       required:
@@ -659,6 +743,14 @@ components:
         dosage:
           type: string
           description: Dosage amount
+        schedule:
+          type: string
+          enum:
+            - SevenAm,
+            - ThreePm,
+            - SevenPm,
+            - TenPm,
+            - AdHoc
 
     BottleConsumption:
       type: object
@@ -749,10 +841,41 @@ components:
         date:
           type: string
           format: date
+        healthEntrySets:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthEntrySet'
         data:
           type: array
           items:
             $ref: '#/components/schemas/HealthRecord'
+
+    HealthEntrySet:
+      type: object
+      properties:
+        recordType:
+          type: string
+          description: The type of health record (e.g., MedicationAdministration)
+        highlights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Highlight'
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/HealthRecord'
+
+    Highlight:
+      type: object
+      properties:
+        label:
+          type: string
+          description: The label for the highlight (e.g., SevenAm, ThreePm)
+        status:
+          type: string
+          enum: [success, warning, error, neutral]
+          default: success
+          description: Status indicator for the highlight
 
     HealthRecord:
       type: object

@@ -1,6 +1,7 @@
 using HealthDiary.Api.Models;
 using HealthDiary.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using HealthDiary.Api.Utilities;
 
 namespace HealthDiary.Api.Services;
 
@@ -23,17 +24,13 @@ public interface IHealthRecordService
   Task<List<SolidFoodConsumption>> GetSolidFoodIntakesByDateAsync(DateOnly date);
   Task<List<Observation>> GetObservationsByDateAsync(DateOnly date);
 
-  Task<DailySummary> GetDailySummaryAsync(DateOnly date);
+  Task<DailySummary> GetDailySummaryAsync(DatePlusTime datePlusTime);
+  Task<MedicationDosage?> GetMedicationDosageAsync(string medication, string dosage, MedicationSchedule schedule);
 }
 
-public class HealthRecordService : IHealthRecordService
+public class HealthRecordService(HealthDiaryContext context) : IHealthRecordService
 {
-  private readonly HealthDiaryContext _context;
-
-  public HealthRecordService(HealthDiaryContext context)
-  {
-    _context = context;
-  }
+  private readonly HealthDiaryContext _context = context;
 
   /// <summary>
   /// Checks if a duplicate record already exists for the date, time, and type.
@@ -49,10 +46,11 @@ public class HealthRecordService : IHealthRecordService
     if (await _context.MedicationAdministrations.AnyAsync(r =>
         r.Date == record.Date
         && r.Time == record.Time
-        && r.Medication == record.Medication
+        && r.MedicationDosage.Medication == record.MedicationDosage.Medication
+        && r.MedicationDosage.Dosage == record.MedicationDosage.Dosage
         && r.Schedule == record.Schedule))
 
-      return (false, $"A medication record already exists for {record.Medication} at this date and time.", null);
+      return (false, $"A medication record already exists for {record.MedicationDosage.Medication} at this date and time.", null);
 
     _context.MedicationAdministrations.Add(record);
     await _context.SaveChangesAsync();
@@ -102,6 +100,7 @@ public class HealthRecordService : IHealthRecordService
   public async Task<List<MedicationAdministration>> GetMedicationAdministrationsByDateAsync(DateOnly date)
   {
     return await _context.MedicationAdministrations
+        .Include(m => m.MedicationDosage)
         .Where(r => r.Date == date)
         .OrderBy(r => r.Time)
         .ToListAsync();
@@ -139,31 +138,33 @@ public class HealthRecordService : IHealthRecordService
         .ToListAsync();
   }
 
-  public async Task<DailySummary> GetDailySummaryAsync(DateOnly date)
+  public async Task<DailySummary> GetDailySummaryAsync(DatePlusTime datePlusTime)
   {
-    var medications = await GetMedicationAdministrationsByDateAsync(date);
-    var bottles = await GetBottleConsumptionsByDateAsync(date);
-    var bowelMovements = await GetBowelMovementsByDateAsync(date);
-    var solidFoods = await GetSolidFoodIntakesByDateAsync(date);
-    var notes = await GetObservationsByDateAsync(date);
+    var medications = await GetMedicationAdministrationsByDateAsync(datePlusTime.Date);
+    var bottles = await GetBottleConsumptionsByDateAsync(datePlusTime.Date);
+    var bowelMovements = await GetBowelMovementsByDateAsync(datePlusTime.Date);
+    var solidFoods = await GetSolidFoodIntakesByDateAsync(datePlusTime.Date);
+    var notes = await GetObservationsByDateAsync(datePlusTime.Date);
 
-    var allRecords = new List<HealthRecordDto>();
-    allRecords.AddRange(medications.Select(m => new HealthRecordDto { Id = m.Id, Date = m.Date, Time = m.Time, RecordType = "Medication", Summary = $"{m.Medication} - {m.Dosage} ({m.Schedule})" }));
-    allRecords.AddRange(bottles.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "Bottle", Summary = $"{b.BottleSize}ml" }));
-    allRecords.AddRange(bowelMovements.Select(b => new HealthRecordDto { Id = b.Id, Date = b.Date, Time = b.Time, RecordType = "BowelMovement", Summary = $"{b.Size} {b.Color} {b.Consistency}" }));
-    allRecords.AddRange(solidFoods.Select(s => new HealthRecordDto { Id = s.Id, Date = s.Date, Time = s.Time, RecordType = "SolidFood", Summary = $"{s.Size} - {s.Item} {s.Notes}" }));
-    allRecords.AddRange(notes.Select(n => new HealthRecordDto { Id = n.Id, Date = n.Date, Time = n.Time, RecordType = "Note", Summary = n.Note }));
+    var healthEntrySets = new List<HealthEntrySet>
+    {
+      MedicationAdministration.EntrySet(medications, datePlusTime),
+      BottleConsumption.EntrySet(bottles, datePlusTime),
+      BowelMovement.EntrySet(bowelMovements, datePlusTime),
+      SolidFoodConsumption.EntrySet(solidFoods, datePlusTime),
+      Observation.EntrySet(notes, datePlusTime)
+    };
 
     return new DailySummary
     {
-      Date = date,
-      Data = [.. allRecords.OrderBy(r => r.Time)]
+      Date = datePlusTime.Date,
+      HealthEntrySets = [.. healthEntrySets]
     };
   }
 
   public async Task<List<MedicationDosageGroup>> GetAllMedicationDosageGroupsAsync()
   {
-    return await _context.MedicationDosageGroups.ToListAsync();
+    return await _context.MedicationDosageGroups.Include(mdg => mdg.MedicationDosage).ToListAsync();
   }
 
   public async Task<List<MedicationDosageGroup>> GetMedicationDosageGroupsByScheduleAsync(MedicationSchedule schedule)
@@ -171,5 +172,15 @@ public class HealthRecordService : IHealthRecordService
     return await _context.MedicationDosageGroups
         .Where(m => m.Schedule == schedule)
         .ToListAsync();
+  }
+
+  public async Task<MedicationDosage?> GetMedicationDosageAsync(string medication, string dosage, MedicationSchedule schedule)
+  {
+    return await _context.MedicationDosageGroups
+        .Where(mdg => mdg.Schedule == schedule
+            && mdg.MedicationDosage.Medication == medication
+            && mdg.MedicationDosage.Dosage == dosage)
+        .Select(mdg => mdg.MedicationDosage)
+        .FirstOrDefaultAsync(mdg => mdg != null);
   }
 }

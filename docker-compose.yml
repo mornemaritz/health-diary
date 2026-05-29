@@ -1,13 +1,80 @@
-version: '3.8'
-
 services:
+  health-diary-postgres:
+    image: postgres:16-alpine
+    container_name: health-diary-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: health_diary
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - health-diary-postgres-data:/var/lib/postgresql/data
+      - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    ports:
+      - "2345:5432"
+    expose:
+      - "5432"
+    networks:
+      - webproxy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  health-diary-be:
+    build:
+      context: ./health-diary-be
+      dockerfile: Dockerfile
+    # image: ghcr.io/mornemaritz/health-diary/health-diary-be:latest
+    container_name: health-diary-api
+    restart: unless-stopped
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=health-diary-postgres;Port=5432;Database=health_diary;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - Jwt__SecretKey=${JWT_SECRET_KEY}
+      - Jwt__Issuer=HealthDiary
+      - Jwt__Audience=HealthDiaryUsers
+      - Jwt__AccessTokenExpiryMinutes=15
+      - Jwt__RefreshTokenExpiryDays=7
+      - ASPNETCORE_ENVIRONMENT=Production
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    networks:
+      - webproxy
+    depends_on:
+      health-diary-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   health-diary:
     build:
       context: ./health-diary-ui
       dockerfile: Dockerfile
-    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.3
+    # image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.19.1
     container_name: health-diary-ui
     restart: unless-stopped
+    # environment:
+    #   - VITE_API_URL=http://health-diary-api:8080
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    networks:
+      - webproxy
+
+  health-diary-demo:
+    image: ghcr.io/mornemaritz/health-diary/health-diary-ui:v0.20.0
+    container_name: health-diary-demo
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
     expose:
       - "3000"
     networks:
@@ -24,10 +91,16 @@ services:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/nginx/certs:ro
+      - /etc/letsencrypt/certbot:/etc/letsencrypt/certbot:ro
     depends_on:
       - health-diary
+      - health-diary-be
     networks:
       - webproxy
+
+volumes:
+  health-diary-postgres-data:
+    external: true
 
 networks:
   webproxy:

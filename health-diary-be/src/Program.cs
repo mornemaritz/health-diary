@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using HealthDiary.Api.Utilities;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+builder.Configuration.AddUserSecrets<Program>();
 
 // Configure EF Core with PostgreSQL
 builder.Services.AddDbContext<HealthDiaryContext>(options =>
@@ -52,6 +56,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowedHosts",
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "http://localhost:8080")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
@@ -88,6 +103,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseCors("AllowedHosts");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -98,12 +114,12 @@ app.UseAuthorization();
 /// </summary>
 app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAuthService authService, HttpContext context) =>
 {
-    // Check if user is admin
-    // var userId = context.User.FindFirst("sub")?.Value;
-    // if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var adminId))
-    //     return Results.Unauthorized();
+    if (!Guid.TryParse(context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var loggedInUserId))
+    {
+        throw new InvalidOperationException("Invalid User ID claim in the token.");
+    }
 
-    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, Guid.Parse("00000000-0000-0000-0000-000000000001"));
+    var inviteLink = await authService.GenerateInviteLinkAsync(request.Email, loggedInUserId);
     return Results.Created($"/api/auth/invite/{inviteLink.Id}", new 
     {
       inviteLink.Id,
@@ -114,6 +130,7 @@ app.MapPost("/api/auth/admin/invite", async (GenerateInviteRequest request, IAut
     });
 })
 .WithName("GenerateInviteLink")
+.RequireAuthorization(policy => policy.RequireRole("Admin"))
 .Produces(201)
 .Produces(401);
 
@@ -140,7 +157,7 @@ app.MapPost("/api/auth/register", async (
 {
     var (success, message, user) = await authService.RegisterUserAsync(request.InviteToken, request.Email, request.Username, request.Name, request.Password);
     return success
-        ? Results.Created($"/api/auth/users/{user!.Id}", new { Id = user.Id, Email = user.Email, Message = message })
+        ? Results.Created($"/api/auth/users/{user!.Id}", new { user.Id, user.Email, Message = message })
         : Results.BadRequest(new { Message = message });
 })
 .WithName("RegisterUser")
@@ -179,9 +196,9 @@ app.MapPost("/api/auth/token/refresh", async (RefreshTokenRequest request, IAuth
     return success
         ? Results.Ok(new 
         { 
-            AccessToken = accessToken!.Jwt,
-            ExpiresAt = accessToken.ExpiresAt,
-            Message = "Access token refreshed"
+          AccessToken = accessToken!.Jwt,
+          accessToken.ExpiresAt,
+          Message = "Access token refreshed"
         })
         : Results.Unauthorized();
 })
@@ -192,21 +209,23 @@ app.MapPost("/api/auth/token/refresh", async (RefreshTokenRequest request, IAuth
 /// <summary>
 /// POST: Request a password reset link (Admin generates for user).
 /// </summary>
-app.MapPost("/api/auth/admin/password-reset", async (Guid userId, IAuthService authService, HttpContext context) =>
+app.MapPost("/api/auth/admin/password-reset", async (Guid userIdToReset, IAuthService authService, HttpContext context) =>
 {
-    // Check if user is admin
-    if (!context.User.IsInRole("Admin"))
-        return Results.Forbid();
+    if (!Guid.TryParse(context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var loggedInUserId))
+    {
+        throw new InvalidOperationException("Invalid User ID claim in the token.");
+    }
 
-    var resetLink = await authService.GeneratePasswordResetLinkAsync(userId);
+    var resetLink = await authService.GeneratePasswordResetLinkAsync(loggedInUserId);
     return Results.Ok(new 
-    { 
-        Token = resetLink.Token,
-        ExpiresAt = resetLink.ExpiresAt,
-        Message = "Password reset link generated"
+    {
+      resetLink.Token,
+      resetLink.ExpiresAt,
+      Message = "Password reset link generated"
     });
 })
 .WithName("GeneratePasswordResetLink")
+.RequireAuthorization(policy => policy.RequireRole("Admin"))
 .Produces(200)
 .Produces(403);
 
@@ -229,7 +248,7 @@ app.MapPost("/api/auth/password-reset/confirm", async (string resetToken, string
 /// <summary>
 /// POST: Add a medication record for a date.
 /// </summary>
-app.MapPost("/api/health/medication", async (MedicationAdministration record, IHealthRecordService service) =>
+app.MapPost("/api/health/medication", async (MedicationAdministrationDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -238,7 +257,29 @@ app.MapPost("/api/health/medication", async (MedicationAdministration record, IH
             Message = "Date and Time are required." 
         });
 
-    var (success, message, recordId) = await service.AddMedicationAdministrationAsync(record);
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add medication record for a future date and time." 
+        });
+
+     var parsedSchedule = Enum.TryParse<MedicationSchedule>(record.Schedule, ignoreCase: true, out var schedule) 
+        ? schedule 
+        : throw new ArgumentException("Invalid schedule. Valid values are: sevenAm, threePm, sevenPm, tenPm, adHoc");
+
+    var medicationDosage = await service.GetMedicationDosageAsync(record.Medication, record.Dosage, parsedSchedule)
+        ?? throw new ArgumentException($"Medication dosage not found for {record.Medication} with dosage {record.Dosage}. Please create a medication dosage group first.");
+
+    var medicationAdministration = new MedicationAdministration
+    {
+        Date = record.Date,
+        Time = record.Time,
+        MedicationDosage = medicationDosage,
+        Schedule = parsedSchedule
+    };
+
+    var (success, message, recordId) = await service.AddMedicationAdministrationAsync(medicationAdministration);
     return success 
         ? Results.Created($"/api/health/medication/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -257,6 +298,14 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
             StatusCode = 400, 
             Message = "Date and Time are required." 
         });
+
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add bottle record for a future date and time." 
+        });
+
 
     var (success, message, recordId) = await service.AddBottleConsumptionAsync(record);
     return success 
@@ -278,6 +327,14 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
             Message = "Date and Time are required." 
         });
 
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add bowel movement record for a future date and time." 
+        });
+
+
     var (success, message, recordId) = await service.AddBowelMovementAsync(record);
     return success 
         ? Results.Created($"/api/health/bowel-movement/{recordId}", new { Id = recordId, Message = message })
@@ -298,6 +355,13 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
             Message = "Date and Time are required." 
         });
 
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add solid food record for a future date and time." 
+        });
+
     var (success, message, recordId) = await service.AddSolidFoodIntakeAsync(record);
     return success 
         ? Results.Created($"/api/health/solid-food/{recordId}", new { Id = recordId, Message = message })
@@ -316,6 +380,13 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
         { 
             StatusCode = 400, 
             Message = "Date and Time are required." 
+        });
+
+    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+        return Results.BadRequest(new ErrorResponse 
+        { 
+            StatusCode = 400, 
+            Message = "Cannot add note record for a future date and time." 
         });
 
     var (success, message, recordId) = await service.AddObservationAsync(record);
@@ -360,17 +431,26 @@ app.MapGet("/api/health/medications/dosage-groups/schedule/{schedule}", async (s
 /// </summary>
 app.MapGet("/api/health/summary/{date}", async (string date, IHealthRecordService service) =>
 {
-    if (!DateOnly.TryParse(date, out var parsedDate))
+    if (!DateTime.TryParse(date, out var parsedDateTime))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
             Message = "Invalid date format. Use yyyy-MM-dd." 
         });
 
-    var summary = await service.GetDailySummaryAsync(parsedDate);
+    var dateAndTime = new DatePlusTime(parsedDateTime);
+
+    var summary = await service.GetDailySummaryAsync(dateAndTime);
     return Results.Ok(summary);
 })
 .WithName("GetSummaryByDate")
 .RequireAuthorization();
+
+/// <summary>
+/// GET: Health check endpoint for container monitoring.
+/// </summary>
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+.WithName("HealthCheck")
+.AllowAnonymous();
 
 app.Run();

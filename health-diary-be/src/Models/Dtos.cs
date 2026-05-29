@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace HealthDiary.Api.Models;
 
 /// <summary>
@@ -6,7 +8,14 @@ namespace HealthDiary.Api.Models;
 public record DailySummary
 {
     public DateOnly Date { get; set; }
-    public List<HealthRecordDto> Data { get; set; } = [];
+    public HealthEntrySet[] HealthEntrySets { get; set; } = [];
+}
+
+public record HealthEntrySet
+{
+  public string RecordType { get; set; } = string.Empty;
+  public Highlight[] Highlights { get; set; } = [];
+  public List<HealthRecordDto> Records { get; set; } = [];
 }
 
 /// <summary>
@@ -19,6 +28,26 @@ public record HealthRecordDto
     public TimeOnly Time { get; set; }
     public string RecordType { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
+}
+
+public record Highlight
+{
+    public string Label { get; set; } = string.Empty;
+    public string Status { get; set; } = "default";
+}
+
+public record MedicationAdministrationDto
+{
+    [JsonPropertyName("date")]
+    [JsonConverter(typeof(JsonDateOnlyConverter))]
+    public DateOnly Date { get; set; }
+    
+    [JsonPropertyName("time")]
+    [JsonConverter(typeof(JsonTimeOnlyConverter))]
+    public TimeOnly Time { get; set; }
+    public string Medication { get; set; } = string.Empty;
+    public string Dosage { get; set; } = string.Empty;
+    public string Schedule { get; set; } = string.Empty;
 }
 
 /// <summary>
