@@ -1,6 +1,6 @@
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Box, Button, Chip, Container, Paper, Stack, Table, TableBody, TableContainer, TableRow, Typography, CircularProgress, Alert } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import BabyChangingStationIcon from '@mui/icons-material/BabyChangingStation';
+import WcIcon from '@mui/icons-material/Wc';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import CommentIcon from '@mui/icons-material/Comment';
 import RestaurantIcon from '@mui/icons-material/Restaurant';

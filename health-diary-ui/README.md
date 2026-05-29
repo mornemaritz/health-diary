@@ -7,6 +7,7 @@ A React-based web application for tracking daily health and care activities.
 The features for this app are currently specific to a use case of tracking health events and actions for a young child. The vision is to add features that enable the tracking of more extensive health events and actions for a broader range of subjects, and include, for example healthcare encounters and data derived from wearables.
 
 ### Current Features
+
 - Track bottle feeds with time and volume
 - Record medication administration
 - Monitor solid food intake
@@ -43,9 +44,11 @@ npm run build
 ```
 
 ## Build and publish container images
+
 ```bash
 docker build -t health-diary-ui:{version} .
 ```
+
 currently images are pushed to a local microk8s registry
 
 ## Technology Stack
@@ -58,7 +61,7 @@ currently images are pushed to a local microk8s registry
 
 ## Project Structure
 
-```
+```text
 health-diary-ui/
 ├── src/
 │   ├── components/    # Reusable UI components
