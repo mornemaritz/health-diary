@@ -189,4 +189,164 @@ public class DatePlusTimeTests
 
         subject.IsAfter(new DateTime(2026, 5, 24, 0, 0, 0)).Should().BeFalse();
     }
+
+    // IsAfterWithTimezone tests
+    
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTCPlus2_AndBeforeServerTime_ReturnsFalse()
+    {
+        // Scenario: Client in UTC+2 submits 14:30 local time (which is 12:30 UTC)
+        // Server time is 13:00 UTC
+        // Expected: Should return false (12:30 UTC is before 13:00 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(14, 30, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 13, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 120; // UTC+2
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTCPlus2_AndAfterServerTime_ReturnsTrue()
+    {
+        // Scenario: Client in UTC+2 submits 14:30 local time (which is 12:30 UTC)
+        // Server time is 12:00 UTC
+        // Expected: Should return true (12:30 UTC is after 12:00 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(14, 30, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 12, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 120; // UTC+2
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTCMinus5_AndBeforeServerTime_ReturnsFalse()
+    {
+        // Scenario: Client in UTC-5 submits 10:00 local time (which is 15:00 UTC)
+        // Server time is 16:00 UTC
+        // Expected: Should return false (15:00 UTC is before 16:00 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(10, 0, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 16, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = -300; // UTC-5
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTCMinus5_AndAfterServerTime_ReturnsTrue()
+    {
+        // Scenario: Client in UTC-5 submits 10:00 local time (which is 15:00 UTC)
+        // Server time is 14:00 UTC
+        // Expected: Should return true (15:00 UTC is after 14:00 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(10, 0, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 14, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = -300; // UTC-5
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTC_AndEqualToServerTime_ReturnsFalse()
+    {
+        // Scenario: Client in UTC submits 14:30 (which is 14:30 UTC)
+        // Server time is 14:30 UTC
+        // Expected: Should return false (equal times)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(14, 30, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 14, 30, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 0; // UTC
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WhenClientTimeInUTCPlus9_AndBeforeServerTime_ReturnsFalse()
+    {
+        // Scenario: Client in UTC+9 (Tokyo) submits 23:00 local time (which is 14:00 UTC)
+        // Server time is 15:00 UTC
+        // Expected: Should return false (14:00 UTC is before 15:00 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(23, 0, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 15, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 540; // UTC+9
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_CrossingDateBoundary_WorksCorrectly()
+    {
+        // Scenario: Client in UTC+10 submits 02:00 on June 1st (which is 16:00 May 31st UTC)
+        // Server time is 15:00 May 31st UTC
+        // Expected: Should return true (16:00 May 31 UTC is after 15:00 May 31 UTC)
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 6, 1), new TimeOnly(2, 0, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 15, 0, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 600; // UTC+10
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_WithZeroOffset_BehavesLikeIsAfter()
+    {
+        // When timezone offset is 0, IsAfterWithTimezone should behave identically to IsAfter
+        var datePlusTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(14, 30, 0));
+        var compareTime = new DateTime(2026, 5, 31, 14, 0, 0, DateTimeKind.Utc);
+
+        var resultWithTimezone = datePlusTime.IsAfterWithTimezone(compareTime, 0);
+        var resultWithoutTimezone = datePlusTime.IsAfter(compareTime);
+
+        resultWithTimezone.Should().Be(resultWithoutTimezone);
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_RealWorldScenario_UserSubmitsCurrentTimeFromUTCPlus2()
+    {
+        // Real scenario from the bug report:
+        // User in UTC+2 tries to submit a record for "now" (14:30 local)
+        // Server is in UTC and DateTime.Now is 12:30 UTC
+        // The submitted time should NOT be considered "in the future"
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(14, 30, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 12, 30, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 120; // UTC+2
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeFalse("the client's local time 14:30 UTC+2 equals 12:30 UTC, which is not after server time");
+    }
+
+    [Fact]
+    public void IsAfterWithTimezone_RealWorldScenario_UserSubmitsFutureTimeFromUTCPlus2()
+    {
+        // User in UTC+2 tries to submit a record for 16:00 local
+        // Server is in UTC and DateTime.Now is 12:30 UTC
+        // The submitted time SHOULD be considered "in the future" since 16:00 UTC+2 = 14:00 UTC > 12:30 UTC
+        
+        var clientLocalTime = new DatePlusTime(new DateOnly(2026, 5, 31), new TimeOnly(16, 0, 0));
+        var serverTimeUtc = new DateTime(2026, 5, 31, 12, 30, 0, DateTimeKind.Utc);
+        var timezoneOffsetMinutes = 120; // UTC+2
+
+        var result = clientLocalTime.IsAfterWithTimezone(serverTimeUtc, timezoneOffsetMinutes);
+
+        result.Should().BeTrue("the client's local time 16:00 UTC+2 equals 14:00 UTC, which is after 12:30 UTC");
+    }
 }

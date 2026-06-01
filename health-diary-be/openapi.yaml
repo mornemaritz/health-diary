@@ -265,7 +265,7 @@ paths:
   /api/health/bottle:
     post:
       summary: Add a bottle/hydration consumption record
-      description: Records a hydration event including the date, time, and quantity consumed. Helps track daily fluid intake. Requires authentication.
+      description: Records a hydration event including the date, time, and bottle size consumed. Helps track daily fluid intake. Requires authentication.
       operationId: createBottleRecord
       tags:
         - Health Records
@@ -312,7 +312,7 @@ paths:
   /api/health/bowel-movement:
     post:
       summary: Add a bowel movement record
-      description: Records a bowel movement event with the date, time, and consistency level (Hard, Normal, Soft, or Diarrhea). Requires authentication.
+      description: Records a bowel movement event with the date, time, size, consistency, and color. Requires authentication.
       operationId: createBowelMovementRecord
       tags:
         - Health Records
@@ -359,7 +359,7 @@ paths:
   /api/health/solid-food:
     post:
       summary: Add a solid food consumption record
-      description: Records solid food consumption with the date, time, food description, and quantity. Tracks dietary intake. Requires authentication.
+      description: Records solid food consumption with the date, time, food item, and size. Tracks dietary intake. Requires authentication.
       operationId: createSolidFoodRecord
       tags:
         - Health Records
@@ -406,7 +406,7 @@ paths:
   /api/health/note:
     post:
       summary: Add a note/observation record
-      description: Records a general note or observation with the date, time, notes content, and optional category. Allows free-form health tracking. Requires authentication.
+      description: Records a general note or observation with the date, time, and note content. Allows free-form health tracking. Requires authentication.
       operationId: createNoteRecord
       tags:
         - Health Records
@@ -511,6 +511,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Simple health check endpoint for container monitoring. Returns healthy status with timestamp.
+      operationId: healthCheck
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
 
 components:
   schemas:
@@ -710,6 +732,10 @@ components:
           type: string
           format: time
           description: Time of medication administration (HH:mm)
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
         medication:
           type: string
           default: ''
@@ -737,6 +763,10 @@ components:
           type: string
           format: time
           description: Time of medication administration
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
         medication:
           type: string
           description: Name of medication
@@ -766,15 +796,22 @@ components:
           type: string
           format: time
           description: Time of consumption
-        quantity:
-          type: number
-          description: Amount consumed in ml or oz
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
+        bottleSize:
+          type: integer
+          description: Amount consumed in ml
 
     BowelMovement:
       type: object
       required:
         - date
         - time
+        - size
+        - consistency
+        - color
       properties:
         date:
           type: string
@@ -784,20 +821,27 @@ components:
           type: string
           format: time
           description: Time of bowel movement
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
+        size:
+          type: string
+          description: Size of bowel movement
         consistency:
           type: string
-          enum:
-            - Hard
-            - Normal
-            - Soft
-            - Diarrhea
           description: Consistency of bowel movement
+        color:
+          type: string
+          description: Color of bowel movement
 
     SolidFoodConsumption:
       type: object
       required:
         - date
         - time
+        - item
+        - size
       properties:
         date:
           type: string
@@ -807,18 +851,23 @@ components:
           type: string
           format: time
           description: Time of food consumption
-        food:
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
+        item:
           type: string
-          description: Description of food consumed
-        quantity:
+          description: Description of food item consumed
+        size:
           type: string
-          description: Amount consumed
+          description: Size or quantity of food consumed
 
     Observation:
       type: object
       required:
         - date
         - time
+        - note
       properties:
         date:
           type: string
@@ -828,12 +877,13 @@ components:
           type: string
           format: time
           description: Time of observation
-        notes:
+        timezoneOffsetMinutes:
+          type: integer
+          default: 0
+          description: Timezone offset from UTC in minutes. Positive values are east of UTC, negative values are west. For example UTC+2 = 120, UTC-5 = -300
+        note:
           type: string
           description: Observation notes/text
-        category:
-          type: string
-          description: Category of observation
 
     DailySummary:
       type: object
@@ -841,14 +891,12 @@ components:
         date:
           type: string
           format: date
+          description: The date for this summary
         healthEntrySets:
           type: array
           items:
             $ref: '#/components/schemas/HealthEntrySet'
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/HealthRecord'
+          description: Grouped health records by type
 
     HealthEntrySet:
       type: object
@@ -873,8 +921,8 @@ components:
           description: The label for the highlight (e.g., SevenAm, ThreePm)
         status:
           type: string
-          enum: [success, warning, error, neutral]
-          default: success
+          enum: [success, warning, error, default]
+          default: default
           description: Status indicator for the highlight
 
     HealthRecord:
@@ -901,10 +949,15 @@ components:
       properties:
         statusCode:
           type: integer
+          description: HTTP status code
         message:
           type: string
+          description: Error message
         details:
-          type: object
+          type: array
+          items:
+            type: string
+          description: Optional list of detailed error messages
 
   securitySchemes:
     BearerAuth:
@@ -918,4 +971,6 @@ tags:
     description: User registration, login, and token management
   - name: Health Records
     description: Health tracking records and summaries
+  - name: System
+    description: System monitoring and health check endpoints
 

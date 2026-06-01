@@ -257,7 +257,7 @@ app.MapPost("/api/health/medication", async (MedicationAdministrationDto record,
             Message = "Date and Time are required." 
         });
 
-    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+    if (new DatePlusTime(record.Date, record.Time).IsAfterWithTimezone(DateTime.Now, record.TimezoneOffsetMinutes))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -290,7 +290,7 @@ app.MapPost("/api/health/medication", async (MedicationAdministrationDto record,
 /// <summary>
 /// POST: Add a bottle/hydration record for a date.
 /// </summary>
-app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecordService service) =>
+app.MapPost("/api/health/bottle", async (BottleConsumptionDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -299,7 +299,7 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
             Message = "Date and Time are required." 
         });
 
-    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+    if (new DatePlusTime(record.Date, record.Time).IsAfterWithTimezone(DateTime.Now, record.TimezoneOffsetMinutes))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -307,7 +307,7 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
         });
 
 
-    var (success, message, recordId) = await service.AddBottleConsumptionAsync(record);
+    var (success, message, recordId) = await service.AddBottleConsumptionAsync(record.ToBottleConsumption());
     return success 
         ? Results.Created($"/api/health/bottle/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -318,7 +318,7 @@ app.MapPost("/api/health/bottle", async (BottleConsumption record, IHealthRecord
 /// <summary>
 /// POST: Add a bowel movement record for a date.
 /// </summary>
-app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRecordService service) =>
+app.MapPost("/api/health/bowel-movement", async (BowelMovementDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -327,7 +327,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
             Message = "Date and Time are required." 
         });
 
-    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+    if (new DatePlusTime(record.Date, record.Time).IsAfterWithTimezone(DateTime.Now, record.TimezoneOffsetMinutes))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
@@ -335,7 +335,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
         });
 
 
-    var (success, message, recordId) = await service.AddBowelMovementAsync(record);
+    var (success, message, recordId) = await service.AddBowelMovementAsync(record.ToBowelMovement());
     return success 
         ? Results.Created($"/api/health/bowel-movement/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -346,7 +346,7 @@ app.MapPost("/api/health/bowel-movement", async (BowelMovement record, IHealthRe
 /// <summary>
 /// POST: Add a solid food record for a date.
 /// </summary>
-app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealthRecordService service) =>
+app.MapPost("/api/health/solid-food", async (SolidFoodConsumptionDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -355,14 +355,14 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
             Message = "Date and Time are required." 
         });
 
-    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+    if (new DatePlusTime(record.Date, record.Time).IsAfterWithTimezone(DateTime.Now, record.TimezoneOffsetMinutes))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
             Message = "Cannot add solid food record for a future date and time." 
         });
 
-    var (success, message, recordId) = await service.AddSolidFoodIntakeAsync(record);
+    var (success, message, recordId) = await service.AddSolidFoodIntakeAsync(record.ToSolidFoodConsumption());
     return success 
         ? Results.Created($"/api/health/solid-food/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
@@ -373,7 +373,7 @@ app.MapPost("/api/health/solid-food", async (SolidFoodConsumption record, IHealt
 /// <summary>
 /// POST: Add a note/observation record for a date.
 /// </summary>
-app.MapPost("/api/health/note", async (Observation record, IHealthRecordService service) =>
+app.MapPost("/api/health/note", async (ObservationDto record, IHealthRecordService service) =>
 {
     if (record.Date == default || record.Time == default)
         return Results.BadRequest(new ErrorResponse 
@@ -382,14 +382,14 @@ app.MapPost("/api/health/note", async (Observation record, IHealthRecordService 
             Message = "Date and Time are required." 
         });
 
-    if (new DatePlusTime(record.Date, record.Time).IsAfter(DateTime.Now))
+    if (new DatePlusTime(record.Date, record.Time).IsAfterWithTimezone(DateTime.Now, record.TimezoneOffsetMinutes))
         return Results.BadRequest(new ErrorResponse 
         { 
             StatusCode = 400, 
             Message = "Cannot add note record for a future date and time." 
         });
 
-    var (success, message, recordId) = await service.AddObservationAsync(record);
+    var (success, message, recordId) = await service.AddObservationAsync(record.ToObservation());
     return success 
         ? Results.Created($"/api/health/note/{recordId}", new { Id = recordId, Message = message })
         : Results.Conflict(new ErrorResponse { StatusCode = 409, Message = message });
