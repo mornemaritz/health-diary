@@ -8,6 +8,7 @@ import { apiRequest } from './apiClient'
 export type MedicationRecord = {
   date: string
   time: string
+  timezoneOffsetMinutes?: number
   medication?: string
   dosage?: string
   schedule?: string
@@ -16,27 +17,32 @@ export type MedicationRecord = {
 export type HydrationRecord = {
   date: string
   time: string
-  quantity?: number
+  timezoneOffsetMinutes?: number
+  bottleSize?: number
 }
 
 export type BowelMovementRecord = {
   date: string
   time: string
-  consistency?: 'Hard' | 'Normal' | 'Soft' | 'Diarrhea'
+  timezoneOffsetMinutes?: number
+  consistency?: string
+  size?: string
+  color?: string
 }
 
 export type FoodRecord = {
   date: string
   time: string
-  food?: string
-  quantity?: string
+  timezoneOffsetMinutes?: number
+  item?: string
+  size?: string
 }
 
 export type ObservationRecord = {
   date: string
   time: string
-  notes?: string
-  category?: string
+  timezoneOffsetMinutes?: number
+  note?: string
 }
 
 export type Highlight = {

@@ -115,10 +115,12 @@ const Summary: React.FC = () => {
   const handleRecordBottle = useCallback(async (data: { bottleTime: string; bottleSize: number }) => {
     try {
       const timeStr = moment(data.bottleTime).format('HH:mm');
+      const timezoneOffsetMinutes = -new Date().getTimezoneOffset();
       const result = await createHydration({
         date: formatDateForApi(selectedDate),
         time: timeStr,
-        quantity: data.bottleSize,
+        timezoneOffsetMinutes,
+        bottleSize: data.bottleSize,
       });
 
       if ('error' in result) {
@@ -138,11 +140,13 @@ const Summary: React.FC = () => {
    */
   const handleRecordMeds = useCallback(async (data: MedicationRecord[]) => {
     try {
+      const timezoneOffsetMinutes = -new Date().getTimezoneOffset();
       for (const med of data) {
         const timeStr = moment(med.recordTime, 'hh:mma').format('HH:mm');
         const result = await createMedication({
           date: formatDateForApi(selectedDate),
           time: timeStr,
+          timezoneOffsetMinutes,
           medication: med.medication,
           dosage: med.dosage,
           schedule: med.schedule ? convertScheduleToApiFormat(med.schedule) : undefined,
