@@ -1,26 +1,34 @@
 import type React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './layout/components/Home'
-import { useState, useEffect } from 'react';
-import { solidAuth } from './services/solid-auth.service';
-import Login from './pages/components/Login';
+import RegisterPage from './pages/RegisterPage'
+import LoginPage from './pages/LoginPage'
 
-const App: React.FC = () => {
-  const [loggedIn , setLoggedIn] = useState(false);
+const App: React.FC = () => (
+  <AuthProvider>
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
 
-   useEffect(() => {
-    async function init() {
-      const session = await solidAuth.handleRedirect();
-      setLoggedIn(session.info.isLoggedIn);
-    }
-    init();
-  }, []);
+        {/* Protected routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          } />
 
-  return (
-    <>
-      {loggedIn ?   <Home /> : <Login />}
-    </>
-  );
+        {/* Catch-all redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  </AuthProvider>
+)
 
-};
+export default App
 
-export default App;
