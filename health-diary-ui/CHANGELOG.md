@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.22.0] - 2026-09-18
+### :sparkles: New Features
+- [`3b2b4d8`](https://github.com/mornemaritz/health-diary/commit/3b2b4d87b53421967431532faa2cefe272ed9a0f) - moved App.tsx to AppSolid.tsx and Summary.tsx to SolidSummary.tsx *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+### :bug: Bug Fixes
+- [`f91fa3a`](https://github.com/mornemaritz/health-diary/commit/f91fa3a37dffedae610590981b3b2aa9fbfe1511) - added inrupt dependencies *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.21.1] - 2026-09-18
 ### :bug: Bug Fixes
 - [`0c9e742`](https://github.com/mornemaritz/health-diary/commit/0c9e742e0fb7cf58aa78c19a509edd032cdcd086) - use npm ci instead of npm install as per standard practice *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -208,3 +216,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.20.0]: https://github.com/mornemaritz/health-diary/compare/v0.19.3...v0.20.0
 [v0.21.0]: https://github.com/mornemaritz/health-diary/compare/v0.20.0...v0.21.0
 [v0.21.1]: https://github.com/mornemaritz/health-diary/compare/v0.21.0...v0.21.1
+[v0.22.0]: https://github.com/mornemaritz/health-diary/compare/v0.21.1...v0.22.0
