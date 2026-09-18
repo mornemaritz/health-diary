@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.21.0] - 2026-09-18
+### :sparkles: New Features
+- [`b29ac69`](https://github.com/mornemaritz/health-diary/commit/b29ac6978c27df2dfaa9a15b98d0c8001bee3958) - Added AllowAllMethods. Removed TimePicker *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`0ff2643`](https://github.com/mornemaritz/health-diary/commit/0ff26430e121cdcc77a30cbd4796ed351d43a68c) - enhanced summary response with highlights *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`825352b`](https://github.com/mornemaritz/health-diary/commit/825352be4570d0079af049f7361a4b94ca020e7a) - summary page with highlights *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`1386ee8`](https://github.com/mornemaritz/health-diary/commit/1386ee88c602ba0bf1fd8b31da01bb5fe8af0292) - well-known mapping in nginx *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`1259956`](https://github.com/mornemaritz/health-diary/commit/12599567881b200891a0638fb8de544f1de1787c) - Added docker components for backend *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`b9f41fb`](https://github.com/mornemaritz/health-diary/commit/b9f41fbe1d8e980a7a01dd5be92e9ff9495c131e) - MedicationDosageGroups data. FHIR POC files
+- [`8cb55d7`](https://github.com/mornemaritz/health-diary/commit/8cb55d7251d9bb75d1dc23d13d10a1e4513b48ac) - MedicationDosage normalisation *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`c3b1b85`](https://github.com/mornemaritz/health-diary/commit/c3b1b8557fc9b45a9868127d47e0bf35d3dec982) - medication administration complete *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`84535a9`](https://github.com/mornemaritz/health-diary/commit/84535a996fc86f58ecb37fa83c83398d9b0eeb5b) - sub-domain support *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`1472645`](https://github.com/mornemaritz/health-diary/commit/1472645ea80cc2029a1c3e21c881a73d6ef3a744) - future date invariant - disabled *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`42ba9be`](https://github.com/mornemaritz/health-diary/commit/42ba9be0afc04a14c69cbbbf410e103031370d7d) - frontend future date invariant - disabled *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+### :bug: Bug Fixes
+- [`c271cee`](https://github.com/mornemaritz/health-diary/commit/c271ceecef1c90d1cd946df105b8329f522bc5e6) - DatePicker spacing *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`860954e`](https://github.com/mornemaritz/health-diary/commit/860954e4dcba937ff90d4a9fab129c8ffeea4179) - future record restriction. under constructin alert *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`f6cfd0f`](https://github.com/mornemaritz/health-diary/commit/f6cfd0f9c6aabc9489d7adfcf3690d3db4acfe69) - Authorization + Invite Links *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+- [`e77f25f`](https://github.com/mornemaritz/health-diary/commit/e77f25f468247ba4d33338435494cc696866aab1) - merge issue *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.20.0] - 2026-05-25
 ### :sparkles: New Features
 - [`329e52f`](https://github.com/mornemaritz/health-diary/commit/329e52fb343ce124997d0195f7ef1c1fb35c536c) - update demo version
@@ -180,3 +201,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.19.1]: https://github.com/mornemaritz/health-diary/compare/v0.19.0...v0.19.1
 [v0.19.3]: https://github.com/mornemaritz/health-diary/compare/v0.19.2...v0.19.3
 [v0.20.0]: https://github.com/mornemaritz/health-diary/compare/v0.19.3...v0.20.0
+[v0.21.0]: https://github.com/mornemaritz/health-diary/compare/v0.20.0...v0.21.0
