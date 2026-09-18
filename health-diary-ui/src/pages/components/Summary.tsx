@@ -32,7 +32,7 @@ function formatTimeDisplay(timeStr: string | undefined): string {
 }
 
 const Summary: React.FC = () => {
-  console.log('Summary component is rendering!');``
+  console.log('Summary component is rendering!');
   const { isAuthenticated } = useAuth();
   const [selectedDate, setSelectedDate] = useState(moment());
   const [summary, setSummary] = useState<DailySummaryResponse | null>(null);
