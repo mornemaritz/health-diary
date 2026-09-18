@@ -1,9 +1,10 @@
-import { Box, Chip, Container, DialogContent, Stack } from "@mui/material";
+import { Box, Chip, Container, DialogContent, Stack, Typography } from "@mui/material";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { DataGrid, type GridRowsProp, type GridColDef } from '@mui/x-data-grid';
 import moment from "moment";
 import { useEffect, useState } from "react";
+import { getMedicationDosageGroups } from "../services/healthRecordService";
 
 export interface MedicationRecord {
   recordTime: string;
@@ -12,39 +13,9 @@ export interface MedicationRecord {
   schedule: '7am' | '3pm' | '7pm' | '10pm' | 'adhoc';
 };
 
-const medications = {
-  '7am' : [
-    'Epilim - 4ml',
-    'Gabapentin - 300mg',
-    'Risperidone - 1mg',
-    'Nexium - 20mg',
-    'Movicol - 0.5 sachet',
-    'Hyfibre - 15ml',
-    'Purmycin (125) - 3.2ml',
-    'Panado - 10ml'
-  ],
-  '3pm' : [
-    'Epilim - 4ml',
-    'Gabapentin - 300mg',
-    'Movicol - 0.5 sachet',
-    'Hyfibre - 15ml',
-    'Purmycin (125) - 3.2ml'
-  ],
-  '7pm' : [
-    'Menograine - 4 tablets',
-    'Urbanol - 5mg',
-    'Allecet - 5ml'
-  ],
-  '10pm' : [
-    'Epilim - 4ml',
-    'Gabapentin - 300mg',
-    'Senokot - 0.5 tablet',
-    'Probiotics - 1 capsule',
-    'Slippery Elm - 5 drops',
-    'Liquorice Root - 5 drops'
-  ],
-  'adhoc': ['Panado - 10ml', 'Neurofen - 5ml']
-}
+const EMPTY_MEDICATIONS: Record<string, string[]> = {
+  '7am': [], '3pm': [], '7pm': [], '10pm': [], adhoc: [],
+};
 
 const columns: GridColDef[] = [
   { field: 'medication', flex: 1, headerName: 'Medication' }
@@ -57,20 +28,39 @@ export const RecordMedicationDialogContent = ({
   const [recordTime, setRecordTime] = useState(moment());
   const [schedule, setSchedule] = useState<MedicationRecord['schedule']>('adhoc');
   const [selectedMedications, setSelectedMedications] = useState<string[]>([]);
-  const [gridRows, setGridRows] = useState<GridRowsProp>([
-    ...medications[schedule].map((med) => ({ id: med, medication: med })),
-  ]);
+  const [medications, setMedications] = useState<Record<string, string[]>>(EMPTY_MEDICATIONS);
+  const [loadingMedications, setLoadingMedications] = useState(true);
+  const [medicationsError, setMedicationsError] = useState<string | null>(null);
+  const [gridRows, setGridRows] = useState<GridRowsProp>([]);
 
   useEffect(() => {
-    setGridRows([...medications[schedule].map((med) => ({ id: med, medication: med }))]);
+    let cancelled = false;
+    setLoadingMedications(true);
+    setMedicationsError(null);
+    getMedicationDosageGroups().then((result) => {
+      if (cancelled) return;
+      if ('error' in result) {
+        setMedicationsError(Array.isArray(result.error) ? result.error.join(', ') : result.error);
+        setMedications(EMPTY_MEDICATIONS);
+      } else {
+        setMedications(result);
+        setGridRows((result['adhoc'] ?? []).map((med) => ({ id: med, medication: med })));
+      }
+      setLoadingMedications(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    setGridRows([...(medications[schedule] ?? []).map((med) => ({ id: med, medication: med }))]);
     setSelectedMedications([]);
-  }, [schedule]);
+  }, [schedule, medications]);
 
   const handleLocalSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const record = selectedMedications.map(selectedMedication => {
-      var [medication, dosage] = selectedMedication.split(' - ');
+      let [medication, dosage] = selectedMedication.split(' - ');
 
       return { recordTime: recordTime.format('hh:mma'), medication, dosage, schedule };
     })
@@ -121,8 +111,14 @@ export const RecordMedicationDialogContent = ({
           columns={columns}
           rows={gridRows}
           checkboxSelection
+          loading={loadingMedications}
           onRowSelectionModelChange={(newSelection) => setSelectedMedications(Array.from(newSelection.ids.values(), id => id.toString()))}
         />
+        {medicationsError && (
+          <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+            {medicationsError}
+          </Typography>
+        )}
       </form>
     </DialogContent>
   );

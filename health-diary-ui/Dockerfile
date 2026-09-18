@@ -12,7 +12,11 @@ RUN npm install
 
 RUN npm i -g serve
 
+# Copy application files (excludes .env via .dockerignore)
 COPY --chown=appuser:appgroup . .
+
+# Copy Docker-specific environment file for build
+COPY --chown=appuser:appgroup .env.docker .env
 
 RUN npm run build
 

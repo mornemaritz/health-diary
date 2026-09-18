@@ -29,7 +29,8 @@ namespace HealthDiary.Api.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("BottleSize")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Relational:JsonPropertyName", "quantity");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date")
@@ -127,13 +128,8 @@ namespace HealthDiary.Api.Migrations
                         .HasColumnType("date")
                         .HasAnnotation("Relational:JsonPropertyName", "date");
 
-                    b.Property<string>("Dosage")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Medication")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("MedicationDosageId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Schedule")
                         .IsRequired()
@@ -147,10 +143,12 @@ namespace HealthDiary.Api.Migrations
 
                     b.HasIndex("Date");
 
+                    b.HasIndex("MedicationDosageId");
+
                     b.ToTable("MedicationAdministrations");
                 });
 
-            modelBuilder.Entity("HealthDiary.Api.Models.MedicationDosageGroup", b =>
+            modelBuilder.Entity("HealthDiary.Api.Models.MedicationDosage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -164,12 +162,29 @@ namespace HealthDiary.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.HasKey("Id");
+
+                    b.HasIndex("Medication", "Dosage")
+                        .IsUnique();
+
+                    b.ToTable("MedicationDosages");
+                });
+
+            modelBuilder.Entity("HealthDiary.Api.Models.MedicationDosageGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MedicationId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Schedule")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Medication", "Dosage", "Schedule")
+                    b.HasIndex("MedicationId", "Schedule")
                         .IsUnique();
 
                     b.ToTable("MedicationDosageGroups");
@@ -354,6 +369,28 @@ namespace HealthDiary.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Creator");
+                });
+
+            modelBuilder.Entity("HealthDiary.Api.Models.MedicationAdministration", b =>
+                {
+                    b.HasOne("HealthDiary.Api.Models.MedicationDosage", "MedicationDosage")
+                        .WithMany()
+                        .HasForeignKey("MedicationDosageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicationDosage");
+                });
+
+            modelBuilder.Entity("HealthDiary.Api.Models.MedicationDosageGroup", b =>
+                {
+                    b.HasOne("HealthDiary.Api.Models.MedicationDosage", "MedicationDosage")
+                        .WithMany()
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicationDosage");
                 });
 
             modelBuilder.Entity("HealthDiary.Api.Models.PasswordResetLink", b =>

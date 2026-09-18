@@ -11,12 +11,17 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-test-tag:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semver.outputs.next }}
       old-version: ${{ steps.semver.outputs.current }}
+      bump: ${{ steps.semver.outputs.bump }}
     
     steps:
     - uses: actions/checkout@v5
@@ -42,6 +47,7 @@ jobs:
       run: npm run build
 
     - name: setup git config for pushing version tag
+      if: github.event_name == 'push'
       run: |
         git config user.name "GitHub Actions Bot"
         git config user.email "noreply.githubactionsbot@no-mail.com"
@@ -54,8 +60,14 @@ jobs:
         branch: main
         noVersionBumpBehavior: warn
 
+    - name: Sync with latest main before mutating files
+      if: github.event_name == 'push' && steps.semver.outputs.bump != 'none'
+      run: |
+        git fetch origin main
+        git reset --hard origin/main
+
     - name: write version to package.json and k8s manifest
-      if: steps.semver.outputs.next != steps.semver.outputs.current
+      if: github.event_name == 'push' && steps.semver.outputs.bump != 'none'
       run: |
         cd ./health-diary-ui
         npm version ${{ steps.semver.outputs.next }} --no-git-tag-version
@@ -68,7 +80,7 @@ jobs:
         git tag ${{ steps.semver.outputs.next }}
 
     - name: Push Changes and Tags
-      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
+      if: ${{ github.event_name == 'push' && steps.semver.outputs.bump != 'none' }}
       uses: ad-m/github-push-action@v0.6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -77,6 +89,7 @@ jobs:
 
     - name: Update CHANGELOG
       id: changelog
+      if: github.event_name == 'push' && steps.semver.outputs.bump != 'none'
       uses: requarks/changelog-action@v1
       with:
         token: ${{ github.token }}
@@ -85,7 +98,7 @@ jobs:
         excludeTypes: chore,docs,doc,perf
 
     - name: Create Release
-      if: steps.semver.outputs.next != steps.semver.outputs.current
+      if: github.event_name == 'push' && steps.semver.outputs.bump != 'none'
       uses: ncipollo/release-action@v1.12.0
       with:
         allowUpdates: true
@@ -97,7 +110,7 @@ jobs:
         token: ${{ github.token }}
 
     - name: Commit CHANGELOG.md
-      if: ${{ steps.semver.outputs.next != steps.semver.outputs.current }}
+      if: ${{ github.event_name == 'push' && steps.semver.outputs.bump != 'none' }}
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         branch: main
@@ -107,7 +120,7 @@ jobs:
   docker:
     needs: build-test-tag
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.version != needs.build-test-tag.outputs.old-version
+    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.bump != 'none'
 
     steps:
     - uses: actions/checkout@v5
@@ -138,7 +151,7 @@ jobs:
   deploy:
     needs: [docker, build-test-tag]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.version != needs.build-test-tag.outputs.old-version
+    if: github.ref == 'refs/heads/main' && needs.build-test-tag.outputs.bump != 'none'
 
     steps:
     - name: Checkout rendered gitops repository

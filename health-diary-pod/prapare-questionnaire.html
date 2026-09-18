@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRAPARE Questionnaire</title>
+  <style>
+    /* ── Reset & base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a202c;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    .page-header {
+      max-width: 760px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #2b6cb0;
+      line-height: 1.3;
+    }
+
+    .page-header p {
+      margin-top: .4rem;
+      font-size: .85rem;
+      color: #718096;
+    }
+
+    .questionnaire {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── Section cards ─────────────────────────────────────── */
+    .section {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #2b6cb0, #4299e1);
+      padding: .9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .section-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: .01em;
+    }
+
+    .section-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    /* ── Field ─────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: .35rem; }
+
+    .field label {
+      font-size: .875rem;
+      font-weight: 600;
+      color: #2d3748;
+      line-height: 1.4;
+    }
+
+    .field .hint {
+      font-size: .78rem;
+      color: #718096;
+      font-style: italic;
+      margin-top: -.15rem;
+    }
+
+    /* ── Controls ──────────────────────────────────────────── */
+    select,
+    input[type="number"],
+    input[type="text"] {
+      width: 100%;
+      padding: .55rem .75rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: .875rem;
+      color: #2d3748;
+      background: #fff;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23718096' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right .75rem center;
+      padding-right: 2.25rem;
+    }
+
+    select:focus,
+    input[type="number"]:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66,153,225,.2);
+    }
+
+    /* ── Checkbox group (multi-select) ─────────────────────── */
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: .45rem;
+      padding: .5rem .75rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      background: #f7fafc;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .875rem;
+      font-weight: 400;
+      color: #2d3748;
+      cursor: pointer;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: #3182ce;
+      flex-shrink: 0;
+    }
+
+    /* ── Actions ───────────────────────────────────────────── */
+    .actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      padding: 1.5rem 0 0;
+    }
+
+    button {
+      padding: .65rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+
+    button[type="reset"] {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+
+    button[type="submit"] {
+      background: #2b6cb0;
+      color: #fff;
+    }
+
+    button:hover { opacity: .88; }
+
+    /* ── Confirmation banner ───────────────────────────────── */
+    #confirmation {
+      display: none;
+      background: #c6f6d5;
+      border: 1px solid #9ae6b4;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      color: #276749;
+      font-weight: 600;
+      font-size: .9rem;
+      max-width: 760px;
+      margin: 1rem auto 0;
+    }
+
+    /* ── Code badge ────────────────────────────────────────── */
+    .loinc {
+      font-size: .65rem;
+      font-weight: 600;
+      font-family: ui-monospace, monospace;
+      color: #a0aec0;
+      margin-left: .4rem;
+    }
+
+    @media (max-width: 520px) {
+      .section-body { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Protocol for Responding to and Assessing Patients&rsquo; Assets, Risks, and Experiences</h1>
+    <p>PRAPARE &nbsp;&middot;&nbsp; SDOHCC Questionnaire &nbsp;&middot;&nbsp; LOINC 93025-5 &nbsp;&middot;&nbsp; All questions are optional unless marked required.</p>
+  </header>
+
+  <form class="questionnaire" id="prапаreForm" novalidate>
+
+    <!-- ══════════════════════════════════════════════════════
+         Section 1 — Personal characteristics  (LOINC 93043-8)
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="sec1-title">
+      <div class="section-header">
+        <span class="section-icon">👤</span>
+        <h2 id="sec1-title">Personal Characteristics</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 56051-6 Hispanic or Latino (choice / drop-down) -->
+        <div class="field">
+          <label for="q-56051-6">
+            Are you Hispanic or Latino?
+            <span class="loinc">56051-6</span>
+          </label>
+          <select id="q-56051-6" name="56051-6">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 32624-9 Race (choice, repeats → checkboxes) -->
+        <div class="field">
+          <label>
+            Race <em style="font-weight:400;">(select all that apply)</em>
+            <span class="loinc">32624-9</span>
+          </label>
+          <div class="checkbox-group" role="group" aria-labelledby="lbl-race">
+            <label><input type="checkbox" name="32624-9" value="LA6156-9" /> Asian</label>
+            <label><input type="checkbox" name="32624-9" value="LA14045-1" /> Native Hawaiian</label>
+            <label><input type="checkbox" name="32624-9" value="LA30187-1" /> Pacific Islander</label>
+            <label><input type="checkbox" name="32624-9" value="LA14042-8" /> Black / African American</label>
+            <label><input type="checkbox" name="32624-9" value="LA4457-3" /> White</label>
+            <label><input type="checkbox" name="32624-9" value="LA4-4" /> American Indian / Alaskan Native</label>
+            <label><input type="checkbox" name="32624-9" value="LA46-8" /> Other</label>
+            <label><input type="checkbox" name="32624-9" value="LA30122-8" /> I choose not to answer this question</label>
+          </div>
+        </div>
+
+        <!-- 93035-4 Farm work income (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93035-4">
+            Has seasonal or migrant farm work been your or your family&rsquo;s main source of income at any point in the past 2 years?
+            <span class="loinc">93035-4</span>
+          </label>
+          <select id="q-93035-4" name="93035-4">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 93034-7 US Armed Forces (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93034-7">
+            Have you been discharged from the armed forces of the United States?
+            <span class="loinc">93034-7</span>
+          </label>
+          <select id="q-93034-7" name="93034-7">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 54899-0 Preferred language (choice / drop-down) -->
+        <div class="field">
+          <label for="q-54899-0">
+            Preferred language
+            <span class="loinc">54899-0</span>
+          </label>
+          <select id="q-54899-0" name="54899-0">
+            <option value="">— Select —</option>
+            <option value="LA43-5">English</option>
+            <option value="LA30188-9">Language other than English</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         Section 2 — Family and home  (LOINC 93042-0)
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="sec2-title">
+      <div class="section-header">
+        <span class="section-icon">🏠</span>
+        <h2 id="sec2-title">Family and Home</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 63512-8 Number of people at address (integer) -->
+        <div class="field">
+          <label for="q-63512-8">
+            How many people are living or staying at this address?
+            <span class="loinc">63512-8</span>
+          </label>
+          <input type="number" id="q-63512-8" name="63512-8" min="0" max="99" placeholder="e.g. 4" />
+        </div>
+
+        <!-- 71802-3 Housing status (choice / drop-down) -->
+        <div class="field">
+          <label for="q-71802-3">
+            Housing status
+            <span class="loinc">71802-3</span>
+          </label>
+          <p class="hint">Describes the patient&rsquo;s living arrangement.</p>
+          <select id="q-71802-3" name="71802-3">
+            <option value="">— Select —</option>
+            <option value="LA30189-7">I have housing</option>
+            <option value="LA30190-5">I do not have housing (staying with others, in a hotel, in a shelter, living outside on the street, on a beach, in a car, or in a park)</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 93033-9 Worried about losing housing (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93033-9">
+            Are you worried about losing your housing?
+            <span class="loinc">93033-9</span>
+          </label>
+          <select id="q-93033-9" name="93033-9">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 56799-0 Address (string) -->
+        <div class="field">
+          <label for="q-56799-0">
+            Address
+            <span class="loinc">56799-0</span>
+          </label>
+          <input type="text" id="q-56799-0" name="56799-0" placeholder="Street, City, State, ZIP" />
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         Section 3 — Money and resources  (LOINC 93041-2)
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="sec3-title">
+      <div class="section-header">
+        <span class="section-icon">💼</span>
+        <h2 id="sec3-title">Money and Resources</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 82589-3 Education level (choice / drop-down) -->
+        <div class="field">
+          <label for="q-82589-3">
+            Highest level of education
+            <span class="loinc">82589-3</span>
+          </label>
+          <select id="q-82589-3" name="82589-3">
+            <option value="">— Select —</option>
+            <option value="LA30191-3">Less than high school degree</option>
+            <option value="LA30192-1">High school diploma or GED</option>
+            <option value="LA30193-9">More than high school</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 67875-5 Employment status (choice / drop-down) -->
+        <div class="field">
+          <label for="q-67875-5">
+            Current employment status
+            <span class="loinc">67875-5</span>
+          </label>
+          <select id="q-67875-5" name="67875-5">
+            <option value="">— Select —</option>
+            <option value="LA17956-6">Unemployed</option>
+            <option value="LA30138-4">Part-time or temporary work</option>
+            <option value="LA30136-8">Full-time work</option>
+            <option value="LA30137-6">Otherwise unemployed but not seeking work (e.g. student, retired, disabled, unpaid primary care giver)</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 76437-3 Primary insurance (choice / drop-down) -->
+        <div class="field">
+          <label for="q-76437-3">
+            Primary insurance
+            <span class="loinc">76437-3</span>
+          </label>
+          <select id="q-76437-3" name="76437-3">
+            <option value="">— Select —</option>
+            <option value="LA30194-7">None / uninsured</option>
+            <option value="LA17849-3">Medicaid</option>
+            <option value="LA30195-4">CHIP Medicaid</option>
+            <option value="LA15652-3">Medicare</option>
+            <option value="LA30196-2">Other public insurance (not CHIP)</option>
+            <option value="LA30197-0">Other public insurance (CHIP)</option>
+            <option value="LA6350-8">Private insurance</option>
+          </select>
+        </div>
+
+        <!-- 63586-2 Total family income (decimal) -->
+        <div class="field">
+          <label for="q-63586-2">
+            What was your best estimate of the total income of all family members from all sources, before taxes, in the last year?
+            <span class="loinc">63586-2</span>
+          </label>
+          <input type="number" id="q-63586-2" name="63586-2" min="0" step="0.01" placeholder="Annual income in USD" />
+        </div>
+
+        <!-- 93031-3 Unable to get in past year (choice, repeats → checkboxes) -->
+        <div class="field">
+          <label>
+            In the past year, have you or any family members you live with been unable to get any of the following when it was really needed?
+            <em style="font-weight:400;">(select all that apply)</em>
+            <span class="loinc">93031-3</span>
+          </label>
+          <div class="checkbox-group" role="group">
+            <label><input type="checkbox" name="93031-3" value="LA30125-1" /> Food</label>
+            <label><input type="checkbox" name="93031-3" value="LA30126-9" /> Clothing</label>
+            <label><input type="checkbox" name="93031-3" value="LA30124-4" /> Utilities</label>
+            <label><input type="checkbox" name="93031-3" value="LA30127-7" /> Child care</label>
+            <label><input type="checkbox" name="93031-3" value="LA30128-5" /> Medicine or any health care (medical, dental, mental health, vision)</label>
+            <label><input type="checkbox" name="93031-3" value="LA30129-3" /> Phone</label>
+            <label><input type="checkbox" name="93031-3" value="LA46-8" /> Other</label>
+            <label><input type="checkbox" name="93031-3" value="LA30122-8" /> I choose not to answer this question</label>
+          </div>
+        </div>
+
+        <!-- 93030-5 Transportation (choice, repeats → checkboxes) -->
+        <div class="field">
+          <label>
+            Has lack of transportation kept you from medical appointments, meetings, work, or from getting things needed for daily living?
+            <em style="font-weight:400;">(select all that apply)</em>
+            <span class="loinc">93030-5</span>
+          </label>
+          <div class="checkbox-group" role="group">
+            <label><input type="checkbox" name="93030-5" value="LA30133-5" /> Yes, it has kept me from medical appointments or from getting my medications</label>
+            <label><input type="checkbox" name="93030-5" value="LA30134-3" /> Yes, it has kept me from non-medical meetings, appointments, work, or from getting things that I need</label>
+            <label><input type="checkbox" name="93030-5" value="LA32-8" /> No</label>
+            <label><input type="checkbox" name="93030-5" value="LA30257-2" /> Patient unable to respond</label>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         Section 4 — Social and emotional health  (LOINC 93040-4)
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="sec4-title">
+      <div class="section-header">
+        <span class="section-icon">🤝</span>
+        <h2 id="sec4-title">Social and Emotional Health</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 93029-7 Social contact frequency (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93029-7">
+            How often do you see or talk to people that you care about and feel close to?
+            <span class="loinc">93029-7</span>
+          </label>
+          <p class="hint">For example: talking to friends on the phone, visiting friends or family, going to church or club meetings.</p>
+          <select id="q-93029-7" name="93029-7">
+            <option value="">— Select —</option>
+            <option value="LA27722-0">Less than once a week</option>
+            <option value="LA30130-1">1 or 2 times a week</option>
+            <option value="LA30131-9">3 to 5 times a week</option>
+            <option value="LA30132-7">5 or more times a week</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 93038-8 Stress level (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93038-8">
+            How stressed are you?
+            <span class="loinc">93038-8</span>
+          </label>
+          <p class="hint">Stress is when someone feels tense, nervous, anxious or can&rsquo;t sleep at night because their mind is troubled.</p>
+          <select id="q-93038-8" name="93038-8">
+            <option value="">— Select —</option>
+            <option value="LA6568-5">Not at all</option>
+            <option value="LA13863-8">A little bit</option>
+            <option value="LA13909-9">Somewhat</option>
+            <option value="LA13902-4">Quite a bit</option>
+            <option value="LA13914-9">Very much</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         Section 5 — Optional additional questions  (LOINC 93039-6)
+    ══════════════════════════════════════════════════════ -->
+    <section class="section" aria-labelledby="sec5-title">
+      <div class="section-header">
+        <span class="section-icon">📋</span>
+        <h2 id="sec5-title">Optional Additional Questions</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 93028-9 Incarceration (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93028-9">
+            In the past year, have you spent more than 2 nights in a row in a jail, prison, detention center, or juvenile correctional facility?
+            <span class="loinc">93028-9</span>
+          </label>
+          <select id="q-93028-9" name="93028-9">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 93027-1 Refugee (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93027-1">
+            Are you a refugee?
+            <span class="loinc">93027-1</span>
+          </label>
+          <select id="q-93027-1" name="93027-1">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 93026-3 Safety at home (choice / drop-down) -->
+        <div class="field">
+          <label for="q-93026-3">
+            Do you feel physically and emotionally safe where you currently live?
+            <span class="loinc">93026-3</span>
+          </label>
+          <select id="q-93026-3" name="93026-3">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+            <option value="LA14072-5">Unsure</option>
+            <option value="LA30122-8">I choose not to answer this question</option>
+          </select>
+        </div>
+
+        <!-- 76501-6 Afraid of partner (choice / drop-down) -->
+        <div class="field">
+          <label for="q-76501-6">
+            Within the last year, have you been afraid of your partner or ex-partner?
+            <span class="loinc">76501-6</span>
+          </label>
+          <select id="q-76501-6" name="76501-6">
+            <option value="">— Select —</option>
+            <option value="LA33-6">Yes</option>
+            <option value="LA32-8">No</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Actions ── -->
+    <div class="actions">
+      <button type="reset">Clear form</button>
+      <button type="submit">Submit questionnaire</button>
+    </div>
+
+  </form>
+
+  <div id="confirmation" role="alert" aria-live="polite">
+    ✓ Your responses have been recorded. Thank you for completing the PRAPARE questionnaire.
+  </div>
+
+  <script>
+    document.getElementById('prапаreForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // Collect all answers into a structured response object
+      const data = { questionnaire: 'SDOHCC-QuestionnairePRAPARE', answers: {} };
+      const form = e.target;
+
+      // Single-value selects and text/number inputs
+      form.querySelectorAll('select, input[type="text"], input[type="number"]').forEach(el => {
+        if (el.name && el.value !== '') {
+          data.answers[el.name] = el.value;
+        }
+      });
+
+      // Multi-value checkboxes
+      const checkboxNames = [...new Set(
+        [...form.querySelectorAll('input[type="checkbox"]')].map(c => c.name)
+      )];
+      checkboxNames.forEach(name => {
+        const checked = [...form.querySelectorAll(`input[type="checkbox"][name="${name}"]:checked`)]
+          .map(c => c.value);
+        if (checked.length > 0) {
+          data.answers[name] = checked;
+        }
+      });
+
+      // Log to console (replace with a real API call as needed)
+      console.log('PRAPARE response:', JSON.stringify(data, null, 2));
+
+      document.getElementById('confirmation').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.getElementById('prапаreForm').addEventListener('reset', function () {
+      document.getElementById('confirmation').style.display = 'none';
+    });
+  </script>
+
+</body>
+</html>
