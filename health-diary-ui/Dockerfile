@@ -6,13 +6,15 @@ RUN addgroup -S appgroup && \
 
 WORKDIR /app
 
-COPY package.json .
+COPY package.json package-lock.json ./
 
-RUN npm install
+RUN npm ci && npm i -g serve
 
-RUN npm i -g serve
-
+# Copy application files (excludes .env via .dockerignore)
 COPY --chown=appuser:appgroup . .
+
+# Copy Docker-specific environment file for build
+COPY --chown=appuser:appgroup .env.docker .env
 
 RUN npm run build
 

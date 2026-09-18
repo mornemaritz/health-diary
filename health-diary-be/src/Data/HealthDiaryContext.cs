@@ -10,6 +10,7 @@ public class HealthDiaryContext : DbContext
 {
     public HealthDiaryContext(DbContextOptions<HealthDiaryContext> options) : base(options) { }
 
+    public DbSet<MedicationDosage> MedicationDosages { get; set; } = null!;
     public DbSet<MedicationDosageGroup> MedicationDosageGroups { get; set; } = null!;
     public DbSet<MedicationAdministration> MedicationAdministrations { get; set; } = null!;
     public DbSet<BottleConsumption> Bottles { get; set; } = null!;
@@ -27,10 +28,21 @@ public class HealthDiaryContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<MedicationDosage>()
+            .HasKey(md => md.Id);
+        modelBuilder.Entity<MedicationDosage>()
+            .HasIndex(md => new { md.Medication, md.Dosage })
+            .IsUnique();
+
         modelBuilder.Entity<MedicationDosageGroup>()
             .HasKey(m => m.Id);
         modelBuilder.Entity<MedicationDosageGroup>()
-            .HasIndex(m => new { m.Medication, m.Dosage, m.Schedule })
+            .HasOne(mdg => mdg.MedicationDosage)
+            .WithMany()
+            .HasForeignKey("MedicationId")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<MedicationDosageGroup>()
+            .HasIndex("MedicationId", nameof(MedicationDosageGroup.Schedule))
             .IsUnique();
 
         // Configure MedicationRecord
@@ -39,6 +51,11 @@ public class HealthDiaryContext : DbContext
         modelBuilder.Entity<MedicationAdministration>()
             .Property(m => m.Schedule)
             .HasConversion<string>();
+        modelBuilder.Entity<MedicationAdministration>()
+            .HasOne(m => m.MedicationDosage)
+            .WithMany()
+            .HasForeignKey("MedicationDosageId")
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<MedicationAdministration>()
             .HasIndex(m => m.Date);
 

@@ -5,6 +5,7 @@ using HealthDiary.Api.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using HealthDiary.Api.Utilities;
 
 namespace HealthDiary.Tests.Unit;
 
@@ -35,8 +36,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
         var service = new HealthRecordService(_context);
         var record = new MedicationAdministration
         {
-            Medication = "Aspirin",
-            Dosage = "100mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Aspirin",
+                Dosage = "100mg"
+            },
             Schedule = MedicationSchedule.SevenAm,
             Date = DateOnly.FromDateTime(DateTime.Now),
             Time = new TimeOnly(7, 0)
@@ -61,8 +65,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
 
         var record1 = new MedicationAdministration
         {
-            Medication = "Aspirin",
-            Dosage = "100mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Aspirin",
+                Dosage = "100mg"
+            },
             Schedule = MedicationSchedule.SevenAm,
             Date = date,
             Time = time
@@ -70,8 +77,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
 
         var record2 = new MedicationAdministration
         {
-            Medication = "Ibuprofen",
-            Dosage = "200mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Aspirin",
+                Dosage = "100mg"
+            },
             Schedule = MedicationSchedule.SevenAm,
             Date = date,
             Time = time
@@ -95,8 +105,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
 
         var record1 = new MedicationAdministration
         {
-            Medication = "Aspirin",
-            Dosage = "100mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Aspirin",
+                Dosage = "100mg"
+            },
             Schedule = MedicationSchedule.SevenAm,
             Date = date,
             Time = new TimeOnly(7, 0)
@@ -104,8 +117,11 @@ public class HealthRecordServiceTests : IAsyncLifetime
 
         var record2 = new MedicationAdministration
         {
-            Medication = "Ibuprofen",
-            Dosage = "200mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Ibuprofen",
+                Dosage = "200mg"
+            },
             Schedule = MedicationSchedule.ThreePm,
             Date = date,
             Time = new TimeOnly(15, 0)
@@ -127,28 +143,31 @@ public class HealthRecordServiceTests : IAsyncLifetime
     {
         // Arrange
         var service = new HealthRecordService(_context);
-        var date = DateOnly.FromDateTime(DateTime.Now);
+        var datePlusTime = new DatePlusTime(DateTime.Now);
 
         var med = new MedicationAdministration
         {
-            Medication = "Aspirin",
-            Dosage = "100mg",
+            MedicationDosage = new MedicationDosage
+            {
+                Medication = "Aspirin",
+                Dosage = "100mg"
+            },
             Schedule = MedicationSchedule.SevenAm,
-            Date = date,
+            Date = datePlusTime.Date,
             Time = new TimeOnly(7, 0)
         };
 
         var bottle = new BottleConsumption
         {
             BottleSize = 250,
-            Date = date,
+            Date = datePlusTime.Date,
             Time = new TimeOnly(8, 0)
         };
 
         var note = new Observation
         {
             Note = "Feeling good",
-            Date = date,
+            Date = datePlusTime.Date,
             Time = new TimeOnly(9, 0)
         };
 
@@ -157,9 +176,14 @@ public class HealthRecordServiceTests : IAsyncLifetime
         await service.AddObservationAsync(note);
 
         // Act
-        var summary = await service.GetDailySummaryAsync(date);
+        var summary = await service.GetDailySummaryAsync(datePlusTime);
 
         // Assert
-        summary.Data.Should().HaveCount(3);
+        summary.HealthEntrySets.Should().HaveCount(5);
+        summary.HealthEntrySets[0].Records.Should().HaveCount(1);
+        summary.HealthEntrySets[1].Records.Should().HaveCount(1);
+        summary.HealthEntrySets[2].Records.Should().BeEmpty();
+        summary.HealthEntrySets[3].Records.Should().BeEmpty();
+        summary.HealthEntrySets[4].Records.Should().HaveCount(1);
     }
 }
