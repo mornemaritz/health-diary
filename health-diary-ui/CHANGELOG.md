@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [v0.21.1] - 2026-09-18
+### :bug: Bug Fixes
+- [`0c9e742`](https://github.com/mornemaritz/health-diary/commit/0c9e742e0fb7cf58aa78c19a509edd032cdcd086) - use npm ci instead of npm install as per standard practice *(commit by [@mornemaritz](https://github.com/mornemaritz))*
+
+
 ## [v0.21.0] - 2026-09-18
 ### :sparkles: New Features
 - [`b29ac69`](https://github.com/mornemaritz/health-diary/commit/b29ac6978c27df2dfaa9a15b98d0c8001bee3958) - Added AllowAllMethods. Removed TimePicker *(commit by [@mornemaritz](https://github.com/mornemaritz))*
@@ -202,3 +207,4 @@ All notable changes to this project will be documented in this file. See [standa
 [v0.19.3]: https://github.com/mornemaritz/health-diary/compare/v0.19.2...v0.19.3
 [v0.20.0]: https://github.com/mornemaritz/health-diary/compare/v0.19.3...v0.20.0
 [v0.21.0]: https://github.com/mornemaritz/health-diary/compare/v0.20.0...v0.21.0
+[v0.21.1]: https://github.com/mornemaritz/health-diary/compare/v0.21.0...v0.21.1
